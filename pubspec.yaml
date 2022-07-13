@@ -64,6 +64,19 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  fonts:
+    - family: NanumSquare
+      fonts:
+        - asset: assets/font/NanumSquare_acR.ttf
+          weight: 400
+        - asset: assets/font/NanumSquare_acL.ttf
+          weight: 300
+        - asset: assets/font/NanumSquare_acB.ttf
+          weight: 700
+        - asset: assets/font/NanumSquare_acEB.ttf
+          weight: 800
+        
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
