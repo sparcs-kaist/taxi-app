@@ -25,6 +25,8 @@ class TaxiView extends HookWidget {
     return SafeArea(
         child: Stack(children: [
       InAppWebView(
+          initialOptions: InAppWebViewGroupOptions(
+              android: AndroidInAppWebViewOptions(useHybridComposition: true)),
           initialUrlRequest: URLRequest(url: Uri.parse(address)),
           onWebViewCreated: (InAppWebViewController webcontroller) async {
             _controller = webcontroller;
