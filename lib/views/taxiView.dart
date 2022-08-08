@@ -30,39 +30,44 @@ class TaxiView extends HookWidget {
           initialUrlRequest: URLRequest(url: Uri.parse(address)),
           onWebViewCreated: (InAppWebViewController webcontroller) async {
             _controller = webcontroller;
-            String? sessionToken = await _storage.read(key: "sessionToken");
-            if (sessionToken == null) {
-              return;
+            try {
+              String? sessionToken = await _storage.read(key: "sessionToken");
+              if (sessionToken == null) {
+                return;
+              }
+              if (!await checkSession(sessionToken.toString())) {
+                await _storage.deleteAll();
+              } else {
+                _sessionToken.value = sessionToken.toString();
+                await _cookieManager.deleteAllCookies();
+                await _cookieManager.setCookie(
+                  url: Uri.parse(address),
+                  name: "connect.sid",
+                  value: sessionToken.toString(),
+                );
+              }
+            } catch(e){
+              // TODO : REFACTORING ERROR HANGLING
             }
-            if (!await checkSession(sessionToken.toString())) {
-              await _storage.deleteAll();
-            } else {
-              _sessionToken.value = sessionToken.toString();
-              await _cookieManager.deleteAllCookies();
-              await _cookieManager.setCookie(
-                url: Uri.parse(address),
-                name: "connect.sid",
-                value: sessionToken.toString(),
-              );
-            }
+            
           },
           onLoadStop: (finish, uri) async {
             _isLoaded.value = true;
-            Cookie? cookies = await _cookieManager.getCookie(
+            try {
+              Cookie? cookies = await _cookieManager.getCookie(
                 url: Uri.parse(address), name: "connect.sid");
 
-            if (_sessionToken.value != cookies?.value) {
-              print("저장된 코드와 미일치");
-              if (await checkSession(cookies?.value)) {
-                _sessionToken.value = cookies?.value;
-                await _storage.write(
-                    key: "sessionToken", value: cookies?.value);
-                print("SESSION TOKEN UPDATED!");
+              if (_sessionToken.value != cookies?.value) {
+                if (await checkSession(cookies?.value)) {
+                  _sessionToken.value = cookies?.value;
+                  await _storage.write(
+                      key: "sessionToken", value: cookies?.value);
+                }
               }
+            } catch(e) {
+              // TODO : REFACTORING ERROR HANDLING
             }
-
-            print("Cookies : " + cookies?.value);
-            print("CurrentURL : " + uri.toString());
+            
           }),
       _isLoaded.value ? Stack() : Center(child: CircularProgressIndicator())
     ]));
