@@ -13,7 +13,6 @@ Future<bool> checkSession(String sessionValue) {
             "Cookie": "connect.sid=" + sessionValue,
           }))
       .then((response) {
-    print(response.statusCode);
     if (response.statusCode == 403) {
       return false;
     }

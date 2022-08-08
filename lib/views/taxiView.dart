@@ -32,7 +32,7 @@ class TaxiView extends HookWidget {
             _controller = webcontroller;
             try {
               String? sessionToken = await _storage.read(key: "sessionToken");
-              if (sessionToken == null) {
+              if (!sessionToken) {
                 return;
               }
               if (!await checkSession(sessionToken.toString())) {
