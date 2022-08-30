@@ -48,8 +48,41 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+      RemoteNotification? notification = message.notification;
+      AndroidNotification? android = message.notification?.android;
+      var androidNotiDetails = AndroidNotificationDetails(
+          channel.id, channel.name,
+          channelDescription: channel.description);
+
+      var iOSNotiDetails = const IOSNotificationDetails();
+
+      var details =
+          NotificationDetails(android: androidNotiDetails, iOS: iOSNotiDetails);
+
+      if (notification != null) {
+        flutterLocalNotificationsPlugin.show(notification.hashCode,
+            notification.title, notification.body, details);
+      }
+    });
+
+    // FOR TEST CODE
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      print(message);
+    });
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
