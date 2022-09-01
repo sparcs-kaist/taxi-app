@@ -9,7 +9,6 @@ late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
 
   channel = const AndroidNotificationChannel(
     'taxi_channel',
@@ -44,6 +43,8 @@ void main() async {
       alert: true, badge: true, sound: true);
 
   await dotenv.load(fileName: ".env");
+
+  // 사용자가 푸시 알림을 허용했는지 확인
 
   runApp(const MyApp());
 }
