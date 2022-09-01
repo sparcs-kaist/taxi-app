@@ -4,6 +4,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:taxi_app/utils/auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:taxi_app/views/loadingView.dart';
 
 class TaxiView extends HookWidget {
   final CookieManager _cookieManager = CookieManager.instance();
@@ -32,7 +33,7 @@ class TaxiView extends HookWidget {
             _controller = webcontroller;
             try {
               String? sessionToken = await _storage.read(key: "sessionToken");
-              if (!sessionToken) {
+              if (sessionToken == null) {
                 return;
               }
               if (!await checkSession(sessionToken.toString())) {
@@ -46,16 +47,15 @@ class TaxiView extends HookWidget {
                   value: sessionToken.toString(),
                 );
               }
-            } catch(e){
+            } catch (e) {
               // TODO : REFACTORING ERROR HANGLING
             }
-            
           },
           onLoadStop: (finish, uri) async {
             _isLoaded.value = true;
             try {
               Cookie? cookies = await _cookieManager.getCookie(
-                url: Uri.parse(address), name: "connect.sid");
+                  url: Uri.parse(address), name: "connect.sid");
 
               if (_sessionToken.value != cookies?.value) {
                 if (await checkSession(cookies?.value)) {
@@ -64,12 +64,11 @@ class TaxiView extends HookWidget {
                       key: "sessionToken", value: cookies?.value);
                 }
               }
-            } catch(e) {
+            } catch (e) {
               // TODO : REFACTORING ERROR HANDLING
             }
-            
           }),
-      _isLoaded.value ? Stack() : Center(child: CircularProgressIndicator())
+      _isLoaded.value ? Stack() : Center(child: loadingView())
     ]));
   }
 }
