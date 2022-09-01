@@ -15,6 +15,14 @@ class TaxiView extends HookWidget {
   Widget build(BuildContext context) {
     final _isLoaded = useState(false);
     final _sessionToken = useState("");
+    final AnimationController _aniController = useAnimationController(
+      duration: const Duration(milliseconds: 500),
+    )..forward();
+
+    final Animation<double> _animation = CurvedAnimation(
+      parent: _aniController,
+      curve: Curves.easeIn,
+    );
 
     useEffect(() {
       _storage.read(key: "sessionToken").then((value) {
@@ -68,7 +76,9 @@ class TaxiView extends HookWidget {
               // TODO : REFACTORING ERROR HANDLING
             }
           }),
-      _isLoaded.value ? Stack() : Center(child: loadingView())
+      _isLoaded.value
+          ? Stack()
+          : FadeTransition(opacity: _animation, child: loadingView())
     ]));
   }
 }
