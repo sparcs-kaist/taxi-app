@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -9,6 +10,8 @@ late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp();
 
   channel = const AndroidNotificationChannel(
     'taxi_channel',
@@ -44,6 +47,7 @@ void main() async {
 
   await dotenv.load(fileName: ".env");
 
+  print("Firebase 등록 완료");
   // 사용자가 푸시 알림을 허용했는지 확인
 
   runApp(const MyApp());
