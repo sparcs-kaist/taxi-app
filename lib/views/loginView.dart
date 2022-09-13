@@ -24,7 +24,12 @@ class LoginView extends HookWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Text('LoginView'),
+        child: TextButton(
+            child: Text('LoginView'),
+            onPressed: () async {
+              final token = await getTokenFromLogin();
+              print(token);
+            }),
       ),
     );
   }
