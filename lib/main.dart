@@ -24,9 +24,10 @@ void main() async {
       AndroidInitializationSettings('@mipmap/ic_launcher');
 
   var initializationSettingsIOS = IOSInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true);
+    requestAlertPermission: true,
+    requestBadgePermission: true,
+    requestSoundPermission: true,
+  );
 
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
@@ -36,14 +37,19 @@ void main() async {
       ?.createNotificationChannel(channel);
 
   var initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
+    android: initializationSettingsAndroid,
+    iOS: initializationSettingsIOS,
+  );
 
   await flutterLocalNotificationsPlugin.initialize(
     initializationSettings,
   );
 
   await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-      alert: true, badge: true, sound: true);
+    alert: true,
+    badge: true,
+    sound: true,
+  );
 
   await FirebaseMessaging.instance.requestPermission(
     alert: true,
