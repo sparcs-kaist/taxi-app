@@ -45,11 +45,19 @@ void main() async {
   await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
       alert: true, badge: true, sound: true);
 
+  await FirebaseMessaging.instance.requestPermission(
+    alert: true,
+    announcement: false,
+    badge: true,
+    carPlay: false,
+    criticalAlert: false,
+    provisional: false,
+    sound: true,
+  );
+
   await dotenv.load(fileName: ".env");
 
-  print("Firebase 등록 완료");
   // 사용자가 푸시 알림을 허용했는지 확인
-
   runApp(const MyApp());
 }
 
@@ -79,11 +87,6 @@ class _MyAppState extends State<MyApp> {
         flutterLocalNotificationsPlugin.show(notification.hashCode,
             notification.title, notification.body, details);
       }
-    });
-
-    // FOR TEST CODE
-    FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      print(message);
     });
 
     super.initState();
