@@ -40,6 +40,9 @@ dependencies:
   flutter_secure_storage: ^5.0.2
   dio: ^4.0.6
   flutter_web_auth: ^0.4.1
+  firebase_messaging: ^13.0.1
+  flutter_local_notifications: ^9.3.2
+  firebase_core: ^1.22.0
 
 dev_dependencies:
   flutter_test:
