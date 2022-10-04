@@ -59,6 +59,9 @@ class TaxiView extends HookWidget {
               // TODO : REFACTORING ERROR HANGLING
             }
           },
+          onLoadStart: (controller, url) {
+            print("current URL : " + url.toString());
+          },
           onLoadStop: (finish, uri) async {
             _isLoaded.value = true;
             try {
