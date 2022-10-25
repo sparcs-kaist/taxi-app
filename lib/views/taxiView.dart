@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:taxi_app/utils/auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:taxi_app/views/loadingView.dart';
+import 'package:taxi_app/views/loginView.dart';
 
 class TaxiView extends HookWidget {
   final CookieManager _cookieManager = CookieManager.instance();
@@ -29,6 +30,7 @@ class TaxiView extends HookWidget {
         _sessionToken.value = value.toString();
       });
     }, []);
+
     String address = dotenv.get("FRONT_ADDRESS");
 
     return SafeArea(
@@ -81,7 +83,7 @@ class TaxiView extends HookWidget {
           }),
       _isLoaded.value
           ? Stack()
-          : FadeTransition(opacity: _animation, child: loadingView())
+          : FadeTransition(opacity: _animation, child: loadingView()),
     ]));
   }
 }

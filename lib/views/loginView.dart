@@ -7,17 +7,22 @@ class LoginView extends HookWidget {
   final _backUrl = dotenv.get("BACKEND_ADDRESS");
 
   Future<String?> getTokenFromLogin() async {
-    final url = Uri.https(_backUrl, "/auth/login");
-    final callbackUrlScheme = "org.sparcs.taxi_app";
+    final url = Uri.https(_backUrl, "/auth/generateToken");
+    final callbackUrlScheme = "org.sparcs.taxiApp";
 
     final result = await FlutterWebAuth.authenticate(
       url: url.toString(),
       callbackUrlScheme: callbackUrlScheme,
     );
 
-    final String? token = Uri.parse(result).queryParameters['token'];
+    final String? accessToken =
+        Uri.parse(result).queryParameters['accessToken'];
+    final String? refreshToken =
+        Uri.parse(result).queryParameters['refreshToken'];
 
-    return token;
+    print(accessToken);
+
+    return accessToken;
   }
 
   @override
