@@ -22,3 +22,27 @@ Future<bool> checkSession(String sessionValue) {
     return false;
   });
 }
+
+Future<bool> loginWithToken(String accessToken, String session) {
+  String address = dotenv.get("BACKEND_ADDRESS");
+
+  final BaseOptions options = ConnectionOptions;
+  Dio _dio = Dio(options);
+  return _dio
+      .get("/login/token",
+          queryParameters: {
+            "accessToken": accessToken,
+          },
+          options: Options(headers: {
+            "Cookie": "connect.sid=" + session,
+          }))
+      .then((response) {
+    if (response.statusCode == 403) {
+      return false;
+    }
+    return true;
+  }).catchError((error) {
+    print(error);
+    return false;
+  });
+}
