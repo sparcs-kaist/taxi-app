@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:taxi_app/utils/token.dart';
 
 class LoginView extends HookWidget {
   final _backUrl = dotenv.get("BACKEND_ADDRESS");
@@ -14,7 +15,7 @@ class LoginView extends HookWidget {
     this._isAuthLogin = _isAuthLogin;
   }
 
-  Future<Map<String, String?>> getTokenFromLogin() async {
+  Future<Map<String, String>> getTokenFromLogin() async {
     final url = Uri.http("localhost:3526", "/auth/login/app");
     final callbackUrlScheme = "org.sparcs.taxiApp";
 
@@ -23,10 +24,10 @@ class LoginView extends HookWidget {
       callbackUrlScheme: callbackUrlScheme,
     );
 
-    final String? accessToken =
-        Uri.parse(result).queryParameters['accessToken'];
-    final String? refreshToken =
-        Uri.parse(result).queryParameters['refreshToken'];
+    final String accessToken =
+        Uri.parse(result).queryParameters['accessToken'] ?? '';
+    final String refreshToken =
+        Uri.parse(result).queryParameters['refreshToken'] ?? '';
 
     return {'accessToken': accessToken, 'refreshToken': refreshToken};
   }
@@ -54,12 +55,10 @@ class LoginView extends HookWidget {
               child: Text("로그인", style: TextStyle(fontSize: 20)),
               onPressed: () async {
                 final tokens = await getTokenFromLogin();
-                await _storage.write(
-                    key: "accessToken",
-                    value: tokens['accessToken'].toString());
-                await _storage.write(
-                    key: "refreshToken",
-                    value: tokens['refreshToken'].toString());
+                await Token()
+                    .setAccessToken(accessToken: tokens['accessToken']!);
+                await Token()
+                    .setRefreshToken(refreshToken: tokens['refreshToken']!);
                 _isAuthLogin.value = true;
               }),
         ],

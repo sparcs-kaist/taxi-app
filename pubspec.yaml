@@ -44,6 +44,7 @@ dependencies:
   firebase_core: ^1.22.0
   flutter_web_auth: ^0.4.1
   firebase_dynamic_links: ^4.3.11
+  uni_links: ^0.5.1
 
 dev_dependencies:
   flutter_test:

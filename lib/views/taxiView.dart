@@ -6,10 +6,12 @@ import 'package:taxi_app/utils/auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:taxi_app/views/loadingView.dart';
 import 'package:taxi_app/views/loginView.dart';
+import 'package:taxi_app/utils/token.dart';
 
 class TaxiView extends HookWidget {
   final CookieManager _cookieManager = CookieManager.instance();
   late InAppWebViewController _controller;
+
   final _storage = FlutterSecureStorage();
 
   @override
@@ -18,6 +20,7 @@ class TaxiView extends HookWidget {
     final _sessionToken = useState("");
     final _isLogin = useState(false);
     final _isAuthLogin = useState(false);
+    final _firstLoad = useState(false);
 
     final AnimationController _aniController = useAnimationController(
       duration: const Duration(milliseconds: 500),
@@ -29,13 +32,22 @@ class TaxiView extends HookWidget {
     );
 
     useEffect(() {
-      _storage.read(key: "accessToken").then((value) {
-        if (value != null && !_isAuthLogin.value) {
-          _isAuthLogin.value = false;
-        }
-
-        _sessionToken.value = value.toString();
-      });
+      if (_firstLoad.value == false) {
+        Token().init();
+        _firstLoad.value = true;
+      }
+      if (_isAuthLogin.value) {
+        Token().getSession().then((value) {
+          if (value == null) {
+            _isLogin.value = false;
+            _isAuthLogin.value = false;
+          } else {
+            _sessionToken.value = value;
+            _isLogin.value = true;
+          }
+        });
+      }
+      return;
     }, [_isAuthLogin.value]);
     String address = dotenv.get("FRONT_ADDRESS");
 
@@ -48,23 +60,13 @@ class TaxiView extends HookWidget {
           onWebViewCreated: (InAppWebViewController webcontroller) async {
             _controller = webcontroller;
             try {
-              String? sessionToken = await _storage.read(key: "sessionToken");
-              if (sessionToken == null) {
-                return;
-              }
-              if (!await checkSession(sessionToken.toString())) {
-                await _storage.deleteAll();
-              } else {
-                _sessionToken.value = sessionToken.toString();
-                await _cookieManager.deleteAllCookies();
-                await _cookieManager.setCookie(
-                  url: Uri.parse(address),
-                  name: "connect.sid",
-                  value: sessionToken.toString(),
-                );
-              }
+              await _cookieManager.setCookie(
+                url: Uri.parse(address),
+                name: "connect.sid",
+                value: _sessionToken.value.toString(),
+              );
             } catch (e) {
-              // TODO : REFACTORING ERROR HANGLING
+              // TODO
             }
           },
           onLoadStop: (finish, uri) async {
@@ -73,11 +75,18 @@ class TaxiView extends HookWidget {
               Cookie? cookies = await _cookieManager.getCookie(
                   url: Uri.parse(address), name: "connect.sid");
 
-              if (_sessionToken.value != cookies?.value) {
-                if (await checkSession(cookies?.value)) {
-                  _sessionToken.value = cookies?.value;
-                  await _storage.write(
-                      key: "sessionToken", value: cookies?.value);
+              if (!await checkSession(cookies?.value)) {
+                String? session = await Token().getSession();
+                if (session == null) {
+                  _isLogin.value = false;
+                  _isAuthLogin.value = false;
+                } else {
+                  _sessionToken.value = session;
+                  await _cookieManager.setCookie(
+                    url: Uri.parse(address),
+                    name: "connect.sid",
+                    value: _sessionToken.value.toString(),
+                  );
                 }
               }
             } catch (e) {
