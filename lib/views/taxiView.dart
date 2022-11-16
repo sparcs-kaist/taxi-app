@@ -39,8 +39,12 @@ class TaxiView extends HookWidget {
             sessionToken.value = value;
             isLogin.value = true;
             isLoaded.value = true;
-            await _controller.loadUrl(
-                urlRequest: URLRequest(url: Uri.parse(address)));
+            try {
+              await _controller.loadUrl(
+                  urlRequest: URLRequest(url: Uri.parse(address)));
+            } catch (e) {
+              print(e);
+            }
           }
         });
       }
@@ -64,14 +68,18 @@ class TaxiView extends HookWidget {
             if (url.toString().contains("login") &&
                 isLogin.value &&
                 isAuthLogin.value) {
-              String? session = await Token().getSession();
-              if (session == null) {
-                isLogin.value = false;
-                isAuthLogin.value = false;
-              } else {
-                sessionToken.value = session;
-                await _controller.loadUrl(
-                    urlRequest: URLRequest(url: Uri.parse(address)));
+              try {
+                String? session = await Token().getSession();
+                if (session == null) {
+                  isLogin.value = false;
+                  isAuthLogin.value = false;
+                } else {
+                  sessionToken.value = session;
+                  await _controller.loadUrl(
+                      urlRequest: URLRequest(url: Uri.parse(address)));
+                }
+              } catch (e) {
+                // TODO handle error
               }
             }
             // 로그아웃 감지 시 토큰 지우고 처음 로그인 페이지로 돌아가기
@@ -88,17 +96,21 @@ class TaxiView extends HookWidget {
           },
           onLoadStart: (controller, uri) async {
             if (sessionToken.value != '') {
-              await _cookieManager.deleteAllCookies();
-              await _cookieManager.setCookie(
-                url: Uri.parse(address),
-                name: "connect.sid",
-                value: sessionToken.value,
-              );
-              await _cookieManager.setCookie(
-                url: Uri.parse(address),
-                name: "deviceToken",
-                value: FcmToken().fcmToken,
-              );
+              try {
+                await _cookieManager.deleteAllCookies();
+                await _cookieManager.setCookie(
+                  url: Uri.parse(address),
+                  name: "connect.sid",
+                  value: sessionToken.value,
+                );
+                await _cookieManager.setCookie(
+                  url: Uri.parse(address),
+                  name: "deviceToken",
+                  value: FcmToken().fcmToken,
+                );
+              } catch (e) {
+                // TODO : handle error
+              }
             }
           },
           onLoadStop: (finish, uri) async {

@@ -58,15 +58,18 @@ class LoginView extends HookWidget {
               child: Text("로그인", style: TextStyle(fontSize: 20)),
               onPressed: () async {
                 // FCM 토큰 등록
+                try {
+                  final tokens = await getTokenFromLogin();
+                  await Token()
+                      .setAccessToken(accessToken: tokens['accessToken']!);
+                  await Token()
+                      .setRefreshToken(refreshToken: tokens['refreshToken']!);
 
-                final tokens = await getTokenFromLogin();
-                await Token()
-                    .setAccessToken(accessToken: tokens['accessToken']!);
-                await Token()
-                    .setRefreshToken(refreshToken: tokens['refreshToken']!);
-
-                await FcmToken().registerToken(tokens['accessToken']!);
-                _isAuthLogin.value = true;
+                  await FcmToken().registerToken(tokens['accessToken']!);
+                  _isAuthLogin.value = true;
+                } catch (e) {
+                  // TODO : handle error
+                }
               }),
         ],
       )),
