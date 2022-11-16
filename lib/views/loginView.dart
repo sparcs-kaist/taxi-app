@@ -1,8 +1,10 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:taxi_app/utils/fcmToken.dart';
 import 'package:taxi_app/utils/token.dart';
 
 class LoginView extends HookWidget {
@@ -16,11 +18,12 @@ class LoginView extends HookWidget {
   }
 
   Future<Map<String, String>> getTokenFromLogin() async {
-    final url = Uri.http("localhost:3526", "/auth/app/token/generate");
+    final _url = Uri.parse(_backUrl).replace(path: "auth/app/token/generate");
+
     final callbackUrlScheme = "org.sparcs.taxiApp";
 
     final result = await FlutterWebAuth.authenticate(
-      url: url.toString(),
+      url: _url.toString(),
       callbackUrlScheme: callbackUrlScheme,
     );
 
@@ -54,11 +57,15 @@ class LoginView extends HookWidget {
               ),
               child: Text("로그인", style: TextStyle(fontSize: 20)),
               onPressed: () async {
+                // FCM 토큰 등록
+
                 final tokens = await getTokenFromLogin();
                 await Token()
                     .setAccessToken(accessToken: tokens['accessToken']!);
                 await Token()
                     .setRefreshToken(refreshToken: tokens['refreshToken']!);
+
+                await FcmToken().registerToken(tokens['accessToken']!);
                 _isAuthLogin.value = true;
               }),
         ],

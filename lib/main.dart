@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:taxi_app/utils/fcmToken.dart';
 import 'package:taxi_app/utils/token.dart';
 import 'package:taxi_app/views/taxiView.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -70,6 +71,8 @@ void main() async {
   await dotenv.load(fileName: ".env");
 
   await Token().init();
+
+  await FcmToken().init();
 
   // 사용자가 푸시 알림을 허용했는지 확인
   runApp(const MyApp());
