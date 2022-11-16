@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:taxi_app/utils/fcmToken.dart';
 import 'package:taxi_app/views/loadingView.dart';
 import 'package:taxi_app/views/loginView.dart';
@@ -11,8 +10,6 @@ import 'package:taxi_app/utils/token.dart';
 class TaxiView extends HookWidget {
   final CookieManager _cookieManager = CookieManager.instance();
   late InAppWebViewController _controller;
-
-  final _storage = FlutterSecureStorage();
 
   @override
   Widget build(BuildContext context) {
