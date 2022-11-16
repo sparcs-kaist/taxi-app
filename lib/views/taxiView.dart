@@ -43,7 +43,7 @@ class TaxiView extends HookWidget {
               await _controller.loadUrl(
                   urlRequest: URLRequest(url: Uri.parse(address)));
             } catch (e) {
-              print(e);
+              // TODO: handle error
             }
           }
         });
