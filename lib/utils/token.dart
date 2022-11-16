@@ -67,9 +67,9 @@ class Token {
   }
 
   Future<String?> getSession() async {
-    _dio.interceptors.add(CookieManager(_cookieJar));
     print(accessToken);
-    print(refreshToken);
+    _dio.interceptors.add(CookieManager(_cookieJar));
+
     return _dio.get("/auth/app/token/login", queryParameters: {
       "accessToken": accessToken,
     }, options: Options(validateStatus: ((status) {
@@ -78,24 +78,25 @@ class Token {
       if (response.statusCode == 403) {
         return null;
       }
-      if (response.statusCode == 401) {
-        print(response.data);
+      if (response.statusCode == 401 &&
+          response.data['message'] == "Expired token") {
         if (await updateAccessTokenUsingRefreshToken()) {
-          // return await getSession();
+          return await getSession();
         }
         return null;
       }
-      List<Cookie> cookies = await _cookieJar.loadForRequest(
-          Uri.parse(ConnectionOptions.baseUrl + "/auth/app/token/login"));
-      for (Cookie cookie in cookies) {
-        if (cookie.name == "connect.sid") {
-          return cookie.value;
+      if (response.statusCode == 200) {
+        List<Cookie> cookies = await _cookieJar.loadForRequest(
+            Uri.parse(ConnectionOptions.baseUrl + "/auth/app/token/login"));
+        for (Cookie cookie in cookies) {
+          if (cookie.name == "connect.sid") {
+            return cookie.value;
+          }
         }
       }
+
       return null;
     }).catchError((error) {
-      print("ERROR");
-      print(error);
       return null;
     });
   }

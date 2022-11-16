@@ -17,10 +17,9 @@ class TaxiView extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final _isLoaded = useState(false);
-    final _sessionToken = useState("");
+    final _sessionToken = useState('');
     final _isLogin = useState(false);
     final _isAuthLogin = useState(true);
-    final _firstLoad = useState(false);
 
     final AnimationController _aniController = useAnimationController(
       duration: const Duration(milliseconds: 500),
@@ -33,24 +32,7 @@ class TaxiView extends HookWidget {
     String address = dotenv.get("FRONT_ADDRESS");
 
     useEffect(() {
-      if (_firstLoad.value == false) {
-        print(_isAuthLogin.value);
-        Token().getSession().then((value) async {
-          if (value == null) {
-            _firstLoad.value = true;
-            _isAuthLogin.value = false;
-          } else {
-            _sessionToken.value = value;
-            _isLogin.value = true;
-            _isLoaded.value = true;
-
-            _firstLoad.value = true;
-            await _controller.loadUrl(
-                urlRequest: URLRequest(url: Uri.parse(address)));
-          }
-        });
-      }
-      if (_firstLoad.value && _isAuthLogin.value && !_isLogin.value) {
+      if (_isAuthLogin.value && !_isLogin.value) {
         _isLoaded.value = false;
         Token().getSession().then((value) async {
           if (value == null) {
@@ -60,7 +42,6 @@ class TaxiView extends HookWidget {
             _sessionToken.value = value;
             _isLogin.value = true;
             _isLoaded.value = true;
-
             await _controller.loadUrl(
                 urlRequest: URLRequest(url: Uri.parse(address)));
           }
@@ -80,51 +61,42 @@ class TaxiView extends HookWidget {
           onWebViewCreated: (InAppWebViewController webcontroller) async {
             _controller = webcontroller;
           },
-          shouldOverrideUrlLoading:
-              (controller, shouldOverrideUrlLoadingRequest) async {
-            print(shouldOverrideUrlLoadingRequest.request.url);
-            return NavigationActionPolicy.ALLOW;
-          },
-          onLoadStart: (controller, uri) async {
-            print("IT IS CALLED!");
-            Cookie? cookies = await _cookieManager.getCookie(
-                url: Uri.parse(address), name: "connect.sid");
-            if (!await checkSession(cookies?.value) && _firstLoad.value) {
+          // React Link는 Page를 로드하는 것이 아니라 history를 바꾸는 것이기 때문에 history 변화로 링크 변화를 감지해야함.
+          onUpdateVisitedHistory: (controller, url, androidIsReload) async {
+            print(url);
+            // 세션이 만료되어 로그인 페이지로 돌아갈 시 자동으로 세션 갱신
+            if (url.toString().contains("login") &&
+                _isLogin.value &&
+                _isAuthLogin.value) {
+              String? session = await Token().getSession();
+              if (session == null) {
+                _isLogin.value = false;
+                _isAuthLogin.value = false;
+              } else {
+                _sessionToken.value = session;
+                await _controller.loadUrl(
+                    urlRequest: URLRequest(url: Uri.parse(address)));
+              }
+            }
+            // 로그아웃 감지 시 토큰 지우고 처음 로그인 페이지로 돌아가기
+            if (url.toString().contains("logout") && _isLogin.value) {
+              await Token().deleteAll();
               _isLogin.value = false;
               _isAuthLogin.value = false;
             }
-            print("RUNNED! WITH " + _sessionToken.value);
-            await _cookieManager.deleteAllCookies();
-            await _cookieManager.setCookie(
-              url: Uri.parse(address),
-              name: "connect.sid",
-              value: _sessionToken.value,
-            );
+          },
+          onLoadStart: (controller, uri) async {
+            if (_sessionToken.value != '') {
+              await _cookieManager.deleteAllCookies();
+              await _cookieManager.setCookie(
+                url: Uri.parse(address),
+                name: "connect.sid",
+                value: _sessionToken.value,
+              );
+            }
           },
           onLoadStop: (finish, uri) async {
             _isLoaded.value = true;
-            try {
-              Cookie? cookies = await _cookieManager.getCookie(
-                  url: Uri.parse(address), name: "connect.sid");
-
-              if (!await checkSession(cookies?.value)) {
-                String? session = await Token().getSession();
-                if (session == null) {
-                  print("IT RUNNED!");
-                  _isLogin.value = false;
-                  _isAuthLogin.value = false;
-                } else {
-                  _sessionToken.value = session;
-                  await _cookieManager.setCookie(
-                    url: Uri.parse(address),
-                    name: "connect.sid",
-                    value: _sessionToken.value.toString(),
-                  );
-                }
-              }
-            } catch (e) {
-              // TODO : REFACTORING ERROR HANDLING
-            }
           }),
       _isLoaded.value
           ? Stack()
