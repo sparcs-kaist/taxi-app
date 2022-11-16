@@ -3,41 +3,17 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:taxi_app/utils/token.dart';
 import 'package:taxi_app/views/taxiView.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:taxi_app/firebase_options.dart';
-import 'package:uni_links/uni_links.dart';
 
 late AndroidNotificationChannel channel;
 late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
-late StreamSubscription _sub;
-
-Future<void> initUniLinks() async {
-  try {
-    final initialLink = await getInitialLink();
-    if (initialLink != null) {
-      print("initialLink: $initialLink");
-    }
-  } on PlatformException {
-    print("Failed to get initial link");
-  }
-
-  _sub = linkStream.listen((String? link) async {
-    if (link == "org.sparcs.taxiapp://logout") {
-      await Token().deleteAll();
-    }
-  }, onError: (Object err) {
-    print("linkStream error: $err");
-  });
-}
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initUniLinks();
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
