@@ -67,7 +67,6 @@ class Token {
   }
 
   Future<String?> getSession() async {
-    print(accessToken);
     _dio.interceptors.add(CookieManager(_cookieJar));
 
     return _dio.get("/auth/app/token/login", queryParameters: {

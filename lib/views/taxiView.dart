@@ -79,10 +79,14 @@ class TaxiView extends HookWidget {
             }
             // 로그아웃 감지 시 토큰 지우고 처음 로그인 페이지로 돌아가기
             if (url.toString().contains("logout") && _isLogin.value) {
-              await FcmToken().removeToken(Token().getAccessToken());
-              await Token().deleteAll();
-              _isLogin.value = false;
-              _isAuthLogin.value = false;
+              try {
+                await FcmToken().removeToken(Token().getAccessToken());
+                await Token().deleteAll();
+                _isLogin.value = false;
+                _isAuthLogin.value = false;
+              } catch (e) {
+                // TODO
+              }
             }
           },
           onLoadStart: (controller, uri) async {
@@ -96,7 +100,7 @@ class TaxiView extends HookWidget {
               await _cookieManager.setCookie(
                 url: Uri.parse(address),
                 name: "deviceToken",
-                value: FcmToken().token,
+                value: FcmToken().fcmToken,
               );
             }
           },
