@@ -13,39 +13,39 @@ class TaxiView extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _isLoaded = useState(false);
-    final _sessionToken = useState('');
-    final _isLogin = useState(false);
-    final _isAuthLogin = useState(true);
+    final isLoaded = useState(false);
+    final sessionToken = useState('');
+    final isLogin = useState(false);
+    final isAuthLogin = useState(true);
 
-    final AnimationController _aniController = useAnimationController(
+    final AnimationController aniController = useAnimationController(
       duration: const Duration(milliseconds: 500),
     )..forward();
 
-    final Animation<double> _animation = CurvedAnimation(
-      parent: _aniController,
+    final Animation<double> animation = CurvedAnimation(
+      parent: aniController,
       curve: Curves.easeIn,
     );
     String address = dotenv.get("FRONT_ADDRESS");
 
     useEffect(() {
-      if (_isAuthLogin.value && !_isLogin.value) {
-        _isLoaded.value = false;
+      if (isAuthLogin.value && !isLogin.value) {
+        isLoaded.value = false;
         Token().getSession().then((value) async {
           if (value == null) {
-            _isLogin.value = false;
-            _isAuthLogin.value = false;
+            isLogin.value = false;
+            isAuthLogin.value = false;
           } else {
-            _sessionToken.value = value;
-            _isLogin.value = true;
-            _isLoaded.value = true;
+            sessionToken.value = value;
+            isLogin.value = true;
+            isLoaded.value = true;
             await _controller.loadUrl(
                 urlRequest: URLRequest(url: Uri.parse(address)));
           }
         });
       }
       return;
-    }, [_isAuthLogin.value]);
+    }, [isAuthLogin.value]);
 
     return SafeArea(
         child: Stack(children: [
@@ -62,37 +62,37 @@ class TaxiView extends HookWidget {
           onUpdateVisitedHistory: (controller, url, androidIsReload) async {
             // 세션이 만료되어 로그인 페이지로 돌아갈 시 자동으로 세션 갱신
             if (url.toString().contains("login") &&
-                _isLogin.value &&
-                _isAuthLogin.value) {
+                isLogin.value &&
+                isAuthLogin.value) {
               String? session = await Token().getSession();
               if (session == null) {
-                _isLogin.value = false;
-                _isAuthLogin.value = false;
+                isLogin.value = false;
+                isAuthLogin.value = false;
               } else {
-                _sessionToken.value = session;
+                sessionToken.value = session;
                 await _controller.loadUrl(
                     urlRequest: URLRequest(url: Uri.parse(address)));
               }
             }
             // 로그아웃 감지 시 토큰 지우고 처음 로그인 페이지로 돌아가기
-            if (url.toString().contains("logout") && _isLogin.value) {
+            if (url.toString().contains("logout") && isLogin.value) {
               try {
                 await FcmToken().removeToken(Token().getAccessToken());
                 await Token().deleteAll();
-                _isLogin.value = false;
-                _isAuthLogin.value = false;
+                isLogin.value = false;
+                isAuthLogin.value = false;
               } catch (e) {
                 // TODO
               }
             }
           },
           onLoadStart: (controller, uri) async {
-            if (_sessionToken.value != '') {
+            if (sessionToken.value != '') {
               await _cookieManager.deleteAllCookies();
               await _cookieManager.setCookie(
                 url: Uri.parse(address),
                 name: "connect.sid",
-                value: _sessionToken.value,
+                value: sessionToken.value,
               );
               await _cookieManager.setCookie(
                 url: Uri.parse(address),
@@ -102,12 +102,12 @@ class TaxiView extends HookWidget {
             }
           },
           onLoadStop: (finish, uri) async {
-            _isLoaded.value = true;
+            isLoaded.value = true;
           }),
-      _isLoaded.value
+      isLoaded.value
           ? Stack()
-          : FadeTransition(opacity: _animation, child: loadingView()),
-      _isAuthLogin.value ? Stack() : LoginView(_isAuthLogin),
+          : FadeTransition(opacity: animation, child: loadingView()),
+      isAuthLogin.value ? Stack() : LoginView(isAuthLogin),
     ]));
   }
 }
