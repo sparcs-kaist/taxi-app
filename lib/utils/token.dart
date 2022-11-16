@@ -1,26 +1,29 @@
+import 'dart:io';
+
 import "package:dio/dio.dart";
 import 'package:taxi_app/constants/constants.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:cookie_jar/cookie_jar.dart';
+import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 
 class Token {
   String accessToken;
   String refreshToken;
-  static late Token _instance;
+  static Token? _instance;
   static final _storage = FlutterSecureStorage();
+
+  final Dio _dio = Dio(ConnectionOptions);
+  final CookieJar _cookieJar = CookieJar();
 
   Token._internal({required this.accessToken, required this.refreshToken});
 
   factory Token({String? accessToken, String? refreshToken}) {
     if (accessToken == null || refreshToken == null) {
-      if (_instance == null) {
-        _instance = Token._internal(accessToken: "", refreshToken: "");
-      }
-      return _instance;
+      return _instance ??= Token._internal(accessToken: '', refreshToken: '');
     }
     _instance =
         Token._internal(accessToken: accessToken, refreshToken: refreshToken);
-    return _instance;
+    return _instance ??= Token._internal(accessToken: '', refreshToken: '');
   }
 
   Future<void> init() async {
@@ -40,8 +43,6 @@ class Token {
     }
   }
 
-  static Token get instance => _instance;
-
   Future<void> setAccessToken({required String accessToken}) async {
     this.accessToken = accessToken;
     await setAccessTokenAtStorage(accessToken);
@@ -58,37 +59,50 @@ class Token {
   }
 
   String getAccessToken() {
-    return this.accessToken;
+    return accessToken;
   }
 
   String getRefreshToken() {
-    return this.refreshToken;
+    return refreshToken;
   }
 
-  Future<String?> getSession() {
-    String address = dotenv.get("BACKEND_ADDRESS");
-
-    final BaseOptions options = ConnectionOptions;
-    Dio _dio = Dio(options);
-    return _dio.get("/app/token/login", queryParameters: {
+  Future<String?> getSession() async {
+    _dio.interceptors.add(CookieManager(_cookieJar));
+    print(accessToken);
+    print(refreshToken);
+    return _dio.get("/auth/app/token/login", queryParameters: {
       "accessToken": accessToken,
-    }).then((response) {
+    }, options: Options(validateStatus: ((status) {
+      return (status ??= 200) < 500;
+    }))).then((response) async {
       if (response.statusCode == 403) {
         return null;
       }
-
-      return response.headers['set-cookie'][0];
+      if (response.statusCode == 401) {
+        print(response.data);
+        if (await updateAccessTokenUsingRefreshToken()) {
+          // return await getSession();
+        }
+        return null;
+      }
+      List<Cookie> cookies = await _cookieJar.loadForRequest(
+          Uri.parse(ConnectionOptions.baseUrl + "/auth/app/token/login"));
+      for (Cookie cookie in cookies) {
+        if (cookie.name == "connect.sid") {
+          return cookie.value;
+        }
+      }
+      return null;
     }).catchError((error) {
+      print("ERROR");
+      print(error);
       return null;
     });
   }
 
   Future<bool> updateAccessTokenUsingRefreshToken() {
-    String address = dotenv.get("BACKEND_ADDRESS");
-
-    final BaseOptions options = ConnectionOptions;
-    Dio _dio = Dio(options);
-    return _dio.get("/app/token/refresh", queryParameters: {
+    return _dio.get("/auth/app/token/refresh", queryParameters: {
+      "accessToken": accessToken,
       "refreshToken": refreshToken,
     }).then((response) async {
       if (response.statusCode == 403) {

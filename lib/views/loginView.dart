@@ -16,7 +16,7 @@ class LoginView extends HookWidget {
   }
 
   Future<Map<String, String>> getTokenFromLogin() async {
-    final url = Uri.http("localhost:3526", "/auth/login/app");
+    final url = Uri.http("localhost:3526", "/auth/app/token/generate");
     final callbackUrlScheme = "org.sparcs.taxiApp";
 
     final result = await FlutterWebAuth.authenticate(
