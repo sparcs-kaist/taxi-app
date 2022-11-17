@@ -27,20 +27,8 @@ class Token {
   }
 
   Future<void> init() async {
-    final accessToken = await getAccessTokenFromStorage();
-    final refreshToken = await getRefreshTokenFromStorage();
-
-    if (accessToken == null) {
-      this.accessToken = '';
-    } else {
-      this.accessToken = accessToken;
-    }
-
-    if (refreshToken == null) {
-      this.refreshToken = '';
-    } else {
-      this.refreshToken = refreshToken;
-    }
+    accessToken = (await getAccessTokenFromStorage()) ?? '';
+    refreshToken = (await getRefreshTokenFromStorage()) ?? '';
   }
 
   Future<void> setAccessToken({required String accessToken}) async {
@@ -72,7 +60,7 @@ class Token {
     return _dio.get("/auth/app/token/login", queryParameters: {
       "accessToken": accessToken,
     }, options: Options(validateStatus: ((status) {
-      return (status ??= 200) < 500;
+      return (status ?? 200) < 500;
     }))).then((response) async {
       if (response.statusCode == 403) {
         return null;

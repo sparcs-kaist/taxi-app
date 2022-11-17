@@ -12,6 +12,8 @@ late AndroidNotificationChannel channel;
 late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
 void main() async {
+  await dotenv.load(fileName: ".env");
+
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
@@ -56,6 +58,7 @@ void main() async {
     sound: true,
   );
 
+  // 사용자가 푸시 알림을 허용했는지 확인 후 권한요청
   await FirebaseMessaging.instance.requestPermission(
     alert: true,
     announcement: false,
@@ -66,13 +69,10 @@ void main() async {
     sound: true,
   );
 
-  await dotenv.load(fileName: ".env");
-
   await Token().init();
 
   await FcmToken().init();
 
-  // 사용자가 푸시 알림을 허용했는지 확인
   runApp(const MyApp());
 }
 
