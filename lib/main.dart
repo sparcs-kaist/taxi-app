@@ -2,16 +2,23 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:taxi_app/utils/fcmToken.dart';
+import 'package:taxi_app/utils/token.dart';
 import 'package:taxi_app/views/taxiView.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:taxi_app/firebase_options.dart';
 
 late AndroidNotificationChannel channel;
 late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
 void main() async {
+  await dotenv.load(fileName: ".env");
+
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   channel = const AndroidNotificationChannel(
     'taxi_channel',
@@ -21,9 +28,9 @@ void main() async {
   );
 
   var initializationSettingsAndroid =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
+      const AndroidInitializationSettings('@mipmap/ic_launcher');
 
-  var initializationSettingsIOS = IOSInitializationSettings(
+  var initializationSettingsIOS = const IOSInitializationSettings(
     requestAlertPermission: true,
     requestBadgePermission: true,
     requestSoundPermission: true,
@@ -51,6 +58,7 @@ void main() async {
     sound: true,
   );
 
+  // 사용자가 푸시 알림을 허용했는지 확인 후 권한요청
   await FirebaseMessaging.instance.requestPermission(
     alert: true,
     announcement: false,
@@ -61,9 +69,10 @@ void main() async {
     sound: true,
   );
 
-  await dotenv.load(fileName: ".env");
+  await Token().init();
 
-  // 사용자가 푸시 알림을 허용했는지 확인
+  await FcmToken().init();
+
   runApp(const MyApp());
 }
 
@@ -105,7 +114,10 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: TaxiView(),
+      home: Container(
+        color: Colors.white,
+        child: TaxiView(),
+      ),
     );
   }
 }
