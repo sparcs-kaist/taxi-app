@@ -106,7 +106,12 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: TaxiView(),
+      home: Container(
+        color: Colors.black,
+        child: SafeArea(
+          child: Container(color: Colors.white, child: TaxiView()),
+        ),
+      ),
     );
   }
 }
