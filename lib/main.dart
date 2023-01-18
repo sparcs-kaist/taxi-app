@@ -115,9 +115,10 @@ class _MyAppState extends State<MyApp> {
         primarySwatch: Colors.blue,
       ),
       home: Container(
-        color: Colors.white,
-        child: TaxiView(),
-      ),
+          color: const Color(0xFF6E3647),
+          child: Container(
+            child: Container(color: Colors.white, child: TaxiView()),
+          )),
     );
   }
 }
