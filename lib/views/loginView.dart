@@ -81,7 +81,7 @@ class LoginView extends HookWidget {
                 } catch (e) {
                   // TODO : handle error
                   Fluttertoast.showToast(
-                    msg: "서버와의 연결에 실패했습니다.",
+                    msg: "로그인에 실패했습니다.",
                     toastLength: Toast.LENGTH_SHORT,
                   );
                 }
