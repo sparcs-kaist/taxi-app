@@ -45,6 +45,7 @@ dependencies:
   firebase_dynamic_links: ^5.0.0
   dio_cookie_manager: ^2.0.0
   google_fonts: ^3.0.1
+  fluttertoast: ^8.1.2
 
 dev_dependencies:
   flutter_test:

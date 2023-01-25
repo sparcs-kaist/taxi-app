@@ -7,6 +7,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:taxi_app/utils/fcmToken.dart';
 import 'package:taxi_app/utils/token.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class LoginView extends HookWidget {
   final _backUrl = dotenv.get("BACKEND_ADDRESS");
@@ -19,7 +20,10 @@ class LoginView extends HookWidget {
   }
 
   Future<Map<String, String>> getTokenFromLogin() async {
-    final _url = Uri.parse(_backUrl).replace(path: "auth/app/token/generate");
+    final _url =
+        Uri.parse(_backUrl).replace(path: "api/auth/app/token/generate");
+
+    print(_url);
 
     final callbackUrlScheme = "org.sparcs.taxiApp";
 
@@ -76,6 +80,10 @@ class LoginView extends HookWidget {
                   _isAuthLogin.value = true;
                 } catch (e) {
                   // TODO : handle error
+                  Fluttertoast.showToast(
+                    msg: "서버와의 연결에 실패했습니다.",
+                    toastLength: Toast.LENGTH_SHORT,
+                  );
                 }
               }),
         ],

@@ -6,6 +6,7 @@ import 'package:taxi_app/utils/fcmToken.dart';
 import 'package:taxi_app/views/loadingView.dart';
 import 'package:taxi_app/views/loginView.dart';
 import 'package:taxi_app/utils/token.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class TaxiView extends HookWidget {
   final CookieManager _cookieManager = CookieManager.instance();
@@ -44,6 +45,11 @@ class TaxiView extends HookWidget {
                   urlRequest: URLRequest(url: Uri.parse(address)));
             } catch (e) {
               // TODO: handle error
+              Fluttertoast.showToast(
+                msg: "로그인 정보 확인에 실패했습니다.",
+                backgroundColor: Colors.white,
+                toastLength: Toast.LENGTH_SHORT,
+              );
             }
           }
         });
@@ -80,6 +86,11 @@ class TaxiView extends HookWidget {
                 }
               } catch (e) {
                 // TODO handle error
+                Fluttertoast.showToast(
+                  msg: "서버와의 연결에 실패했습니다.",
+                  toastLength: Toast.LENGTH_SHORT,
+                );
+                isAuthLogin.value = false;
               }
             }
             // 로그아웃 감지 시 토큰 지우고 처음 로그인 페이지로 돌아가기
@@ -91,6 +102,11 @@ class TaxiView extends HookWidget {
                 isAuthLogin.value = false;
               } catch (e) {
                 // TODO
+                Fluttertoast.showToast(
+                  msg: "서버와의 연결에 실패했습니다.",
+                  toastLength: Toast.LENGTH_SHORT,
+                );
+                isAuthLogin.value = false;
               }
             }
           },
@@ -110,6 +126,11 @@ class TaxiView extends HookWidget {
                 );
               } catch (e) {
                 // TODO : handle error
+                Fluttertoast.showToast(
+                  msg: "서버와의 연결에 실패했습니다.",
+                  toastLength: Toast.LENGTH_SHORT,
+                );
+                isAuthLogin.value = false;
               }
             }
           },
