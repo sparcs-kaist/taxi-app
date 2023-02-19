@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:taxi_app/utils/fcmToken.dart';
-import 'package:taxi_app/views/loadingView.dart';
-import 'package:taxi_app/views/loginView.dart';
-import 'package:taxi_app/utils/token.dart';
+import 'package:taxiapp/utils/fcmToken.dart';
+import 'package:taxiapp/views/loadingView.dart';
+import 'package:taxiapp/views/loginView.dart';
+import 'package:taxiapp/utils/token.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class TaxiView extends HookWidget {
@@ -30,9 +30,11 @@ class TaxiView extends HookWidget {
     String address = dotenv.get("FRONT_ADDRESS");
 
     useEffect(() {
+      print("들어옴");
       if (isAuthLogin.value && !isLogin.value) {
         isLoaded.value = false;
         Token().getSession().then((value) async {
+          print(value);
           if (value == null) {
             isLogin.value = false;
             isAuthLogin.value = false;
@@ -44,7 +46,6 @@ class TaxiView extends HookWidget {
               await _controller.loadUrl(
                   urlRequest: URLRequest(url: Uri.parse(address)));
             } catch (e) {
-              // TODO: handle error
               Fluttertoast.showToast(
                 msg: "로그인 정보 확인에 실패했습니다.",
                 backgroundColor: Colors.white,

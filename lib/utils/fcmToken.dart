@@ -1,6 +1,6 @@
 import "package:dio/dio.dart";
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:taxi_app/constants/constants.dart';
+import 'package:taxiapp/constants/constants.dart';
 
 class FcmToken {
   String token;

@@ -4,8 +4,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:taxi_app/utils/fcmToken.dart';
-import 'package:taxi_app/utils/token.dart';
+import 'package:taxiapp/utils/fcmToken.dart';
+import 'package:taxiapp/utils/token.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -25,7 +25,7 @@ class LoginView extends HookWidget {
 
     print(_url);
 
-    final callbackUrlScheme = "org.sparcs.taxiApp";
+    final callbackUrlScheme = "org.sparcs.taxiapp";
 
     final result = await FlutterWebAuth.authenticate(
       url: _url.toString(),
@@ -75,8 +75,8 @@ class LoginView extends HookWidget {
                       .setAccessToken(accessToken: tokens['accessToken']!);
                   await Token()
                       .setRefreshToken(refreshToken: tokens['refreshToken']!);
-
                   await FcmToken().registerToken(tokens['accessToken']!);
+
                   _isAuthLogin.value = true;
                 } catch (e) {
                   // TODO : handle error
