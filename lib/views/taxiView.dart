@@ -30,11 +30,9 @@ class TaxiView extends HookWidget {
     String address = dotenv.get("FRONT_ADDRESS");
 
     useEffect(() {
-      print("들어옴");
       if (isAuthLogin.value && !isLogin.value) {
         isLoaded.value = false;
         Token().getSession().then((value) async {
-          print(value);
           if (value == null) {
             isLogin.value = false;
             isAuthLogin.value = false;
