@@ -6,6 +6,28 @@ if (localPropertiesFile.exists()) {
     }
 }
 
+def keyProperties = new Properties()
+def keyPropertiesFile = rootProject.file('key.properties')
+if (keyPropertiesFile.exists()) {
+    keyPropertiesFile.withReader('UTF-8') { reader ->
+        keyProperties.load(reader)
+    }
+}
+
+def releaseKeyFile = keyProperties.getProperty('UPLOAD_STORE_FILE');
+if (releaseKeyFile == null ){
+    throw new GradleException("Key File Doesn't Exist")
+}
+
+def releaseKeyAlias = keyProperties.getProperty('UPLOAD_KEY_ALIAS');
+if (releaseKeyAlias == null ){
+    throw new GradleException("Key Settings Doesn't Exist")
+}
+
+def releaseKeyStorePassword = keyProperties.getProperty('UPLOAD_STORE_PASSWORD');
+
+def releaseKeyPassword = keyProperties.getProperty('UPLOAD_KEY_PASSWORD');
+
 def flutterRoot = localProperties.getProperty('flutter.sdk')
 if (flutterRoot == null) {
     throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
@@ -56,12 +78,10 @@ android {
     }
     signingConfigs {
         release {
-            if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
-                storeFile file(MYAPP_UPLOAD_STORE_FILE)
-                storePassword MYAPP_UPLOAD_STORE_PASSWORD
-                keyAlias MYAPP_UPLOAD_KEY_ALIAS
-                keyPassword MYAPP_UPLOAD_KEY_PASSWORD
-            }
+                storeFile file(releaseKeyFile)
+                storePassword releaseKeyStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
         }
         debug {
             storeFile file('debug.keystore')
