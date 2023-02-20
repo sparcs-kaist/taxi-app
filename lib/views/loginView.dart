@@ -23,8 +23,6 @@ class LoginView extends HookWidget {
     final _url =
         Uri.parse(_backUrl).replace(path: "api/auth/app/token/generate");
 
-    print(_url);
-
     final callbackUrlScheme = "org.sparcs.taxiapp";
 
     final result = await FlutterWebAuth.authenticate(
