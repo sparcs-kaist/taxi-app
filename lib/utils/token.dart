@@ -1,10 +1,11 @@
 import 'dart:io';
 
 import "package:dio/dio.dart";
-import 'package:taxi_app/constants/constants.dart';
+import 'package:taxiapp/constants/constants.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+import 'package:taxiapp/utils/fcmToken.dart';
 
 class Token {
   String accessToken;
@@ -59,6 +60,7 @@ class Token {
 
     return _dio.get("/auth/app/token/login", queryParameters: {
       "accessToken": accessToken,
+      "deviceToken": FcmToken().fcmToken
     }, options: Options(validateStatus: ((status) {
       return (status ?? 200) < 500;
     }))).then((response) async {
@@ -74,7 +76,7 @@ class Token {
       }
       if (response.statusCode == 200) {
         List<Cookie> cookies = await _cookieJar.loadForRequest(
-            Uri.parse(ConnectionOptions.baseUrl + "/auth/app/token/login"));
+            Uri.parse(ConnectionOptions.baseUrl + "auth/app/token/login"));
         for (Cookie cookie in cookies) {
           if (cookie.name == "connect.sid") {
             return cookie.value;

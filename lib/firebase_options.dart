@@ -63,8 +63,10 @@ class DefaultFirebaseOptions {
     messagingSenderId: '595225681170',
     projectId: 'taxi-app-d226a',
     storageBucket: 'taxi-app-d226a.appspot.com',
-    androidClientId: '595225681170-2fn4n67kd2rmpsqv15qc2f4ts8llph7i.apps.googleusercontent.com',
-    iosClientId: '595225681170-23agv6ak4lcnjl8phinsl5gaeovv3m9e.apps.googleusercontent.com',
+    androidClientId:
+        '595225681170-2fn4n67kd2rmpsqv15qc2f4ts8llph7i.apps.googleusercontent.com',
+    iosClientId:
+        '595225681170-23agv6ak4lcnjl8phinsl5gaeovv3m9e.apps.googleusercontent.com',
     iosBundleId: 'org.sparcs.taxi-app',
   );
 }

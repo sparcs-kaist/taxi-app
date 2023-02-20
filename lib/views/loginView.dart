@@ -4,9 +4,10 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:taxi_app/utils/fcmToken.dart';
-import 'package:taxi_app/utils/token.dart';
+import 'package:taxiapp/utils/fcmToken.dart';
+import 'package:taxiapp/utils/token.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class LoginView extends HookWidget {
   final _backUrl = dotenv.get("BACKEND_ADDRESS");
@@ -19,14 +20,15 @@ class LoginView extends HookWidget {
   }
 
   Future<Map<String, String>> getTokenFromLogin() async {
-    final _url = Uri.parse(_backUrl).replace(path: "auth/app/token/generate");
+    final _url =
+        Uri.parse(_backUrl).replace(path: "api/auth/app/token/generate");
 
-    final callbackUrlScheme = "org.sparcs.taxiApp";
+    final callbackUrlScheme = "org.sparcs.taxiapp";
 
     final result = await FlutterWebAuth.authenticate(
-      url: _url.toString(),
-      callbackUrlScheme: callbackUrlScheme,
-    );
+        url: _url.toString(),
+        callbackUrlScheme: callbackUrlScheme,
+        preferEphemeral: true);
 
     final String accessToken =
         Uri.parse(result).queryParameters['accessToken'] ?? '';
@@ -71,11 +73,15 @@ class LoginView extends HookWidget {
                       .setAccessToken(accessToken: tokens['accessToken']!);
                   await Token()
                       .setRefreshToken(refreshToken: tokens['refreshToken']!);
-
                   await FcmToken().registerToken(tokens['accessToken']!);
+
                   _isAuthLogin.value = true;
                 } catch (e) {
                   // TODO : handle error
+                  Fluttertoast.showToast(
+                    msg: "로그인에 실패했습니다.",
+                    toastLength: Toast.LENGTH_SHORT,
+                  );
                 }
               }),
         ],
