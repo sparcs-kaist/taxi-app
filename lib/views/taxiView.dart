@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -32,7 +34,6 @@ class TaxiView extends HookWidget {
 
     useEffect(() {
       if (isAuthLogin.value && !isLogin.value) {
-        isLoaded.value = false;
         Token().getSession().then((value) async {
           if (value == null) {
             isLogin.value = false;
@@ -40,7 +41,6 @@ class TaxiView extends HookWidget {
           } else {
             sessionToken.value = value;
             isLogin.value = true;
-            isLoaded.value = true;
             try {
               await _controller.loadUrl(
                   urlRequest: URLRequest(url: Uri.parse(address)));
@@ -56,6 +56,13 @@ class TaxiView extends HookWidget {
       }
       return;
     }, [isAuthLogin.value]);
+
+    useEffect(() {
+      Timer(const Duration(seconds: 2), () {
+        isLoaded.value = true;
+      });
+      return;
+    }, []);
 
     return SafeArea(
         child: Stack(children: [
@@ -137,13 +144,12 @@ class TaxiView extends HookWidget {
                   }
                 }
               },
-              onLoadStop: (finish, uri) async {
-                isLoaded.value = true;
-              })),
+              onLoadStop: (finish, uri) async {})),
+      isAuthLogin.value ? Stack() : LoginView(isAuthLogin),
       isLoaded.value
           ? Stack()
-          : FadeTransition(opacity: animation, child: loadingView()),
-      isAuthLogin.value ? Stack() : LoginView(isAuthLogin),
+          : Scaffold(
+              body: FadeTransition(opacity: animation, child: loadingView())),
     ]));
   }
 
