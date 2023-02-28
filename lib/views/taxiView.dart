@@ -18,11 +18,14 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:taxiapp/views/taxiDialog.dart';
 
 class TaxiView extends HookWidget {
+  Uri? url = null;
   final CookieManager _cookieManager = CookieManager.instance();
   // late InAppWebViewController _controller;
 
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
+
+  TaxiView({url});
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +34,7 @@ class TaxiView extends HookWidget {
     final isLogin = useState(false);
     final isAuthLogin = useState(true);
     final backCount = useState(false);
+<<<<<<< HEAD
     final LoadCount = useState(0);
     final url = useState('');
     final _controller = useRef<InAppWebViewController?>(null);
@@ -96,6 +100,9 @@ class TaxiView extends HookWidget {
             .then((value) {});
       }
     }, [LoadCount.value]);
+=======
+    final isFirstLoaded = useState(false);
+>>>>>>> d3f6746 (Add: TaxiView Dynamic Links)
 
     final AnimationController aniController = useAnimationController(
       duration: const Duration(milliseconds: 500),
@@ -108,6 +115,7 @@ class TaxiView extends HookWidget {
     String address = dotenv.get("FRONT_ADDRESS");
 
     useEffect(() {
+<<<<<<< HEAD
       PackageInfo.fromPlatform().then((value) async {
         final remoteConfig = FirebaseRemoteConfig.instance;
         try {
@@ -124,6 +132,16 @@ class TaxiView extends HookWidget {
           print(e);
         }
       });
+=======
+      if (url != null) {
+        _controller.loadUrl(urlRequest: URLRequest(url: url)).then((value) {
+          isFirstLoaded.value = true;
+        }).catchError((error) {
+          // TODO: Handle error
+          print(error);
+        });
+      }
+>>>>>>> d3f6746 (Add: TaxiView Dynamic Links)
     }, []);
 
     useEffect(() {
@@ -140,7 +158,11 @@ class TaxiView extends HookWidget {
                   .loadUrl(urlRequest: URLRequest(url: Uri.parse(address)));
             } catch (e) {
               Fluttertoast.showToast(
+<<<<<<< HEAD
                 msg: "초기 페이지 로딩에 실패했습니다.",
+=======
+                msg: "웹사이트 로드 중 에러가 발생했습니다.",
+>>>>>>> d3f6746 (Add: TaxiView Dynamic Links)
                 backgroundColor: Colors.white,
                 toastLength: Toast.LENGTH_SHORT,
               );
