@@ -157,7 +157,8 @@ class TaxiView extends HookWidget {
       ValueNotifier<bool> isAuthLogin) async {
     if (await _controller.canGoBack() &&
         ((await _controller.getUrl())?.path != '/') &&
-        isAuthLogin.value) {
+        isAuthLogin.value &&
+        ((await _controller.getUrl())?.path != '/home')) {
       _controller.goBack();
       backCount.value = false;
       return Future.value(false);
