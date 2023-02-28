@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -84,6 +85,40 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  Uri? _url = null;
+
+  void initDynamicLinks() async {
+    FirebaseDynamicLinks.instance.onLink.listen((dynamicLinkData) async {
+      final Uri deepLink = dynamicLinkData.link;
+
+      print(deepLink);
+      print(deepLink.path);
+
+      if (deepLink != null) {
+        // do something
+        setState(() {
+          _url = deepLink;
+        });
+      }
+    }).onError((e) async {
+      print('onLinkError');
+      print(e.message);
+    });
+
+    final PendingDynamicLinkData? data =
+        await FirebaseDynamicLinks.instance.getInitialLink();
+    final Uri? deepLink = data?.link;
+
+    print(deepLink);
+
+    if (deepLink != null) {
+      // do something
+      setState(() {
+        _url = deepLink;
+      });
+    }
+  }
+
   @override
   void initState() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
