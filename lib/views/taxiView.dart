@@ -11,8 +11,11 @@ import 'package:taxiapp/utils/token.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class TaxiView extends HookWidget {
+  Uri? url = null;
   final CookieManager _cookieManager = CookieManager.instance();
   late InAppWebViewController _controller;
+
+  TaxiView({url});
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +24,7 @@ class TaxiView extends HookWidget {
     final isLogin = useState(false);
     final isAuthLogin = useState(true);
     final backCount = useState(false);
+    final isFirstLoaded = useState(false);
 
     final AnimationController aniController = useAnimationController(
       duration: const Duration(milliseconds: 500),
@@ -31,6 +35,17 @@ class TaxiView extends HookWidget {
       curve: Curves.easeIn,
     );
     String address = dotenv.get("FRONT_ADDRESS");
+
+    useEffect(() {
+      if (url != null) {
+        _controller.loadUrl(urlRequest: URLRequest(url: url)).then((value) {
+          isFirstLoaded.value = true;
+        }).catchError((error) {
+          // TODO: Handle error
+          print(error);
+        });
+      }
+    }, []);
 
     useEffect(() {
       if (isAuthLogin.value && !isLogin.value) {
@@ -46,7 +61,7 @@ class TaxiView extends HookWidget {
                   urlRequest: URLRequest(url: Uri.parse(address)));
             } catch (e) {
               Fluttertoast.showToast(
-                msg: "로그인 정보 확인에 실패했습니다.",
+                msg: "웹사이트 로드 중 에러가 발생했습니다.",
                 backgroundColor: Colors.white,
                 toastLength: Toast.LENGTH_SHORT,
               );
