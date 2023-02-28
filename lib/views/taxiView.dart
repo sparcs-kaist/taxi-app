@@ -9,6 +9,7 @@ import 'package:taxiapp/views/loadingView.dart';
 import 'package:taxiapp/views/loginView.dart';
 import 'package:taxiapp/utils/token.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:taxiapp/views/taxiDialog.dart';
 
 class TaxiView extends HookWidget {
   final CookieManager _cookieManager = CookieManager.instance();
@@ -63,7 +64,6 @@ class TaxiView extends HookWidget {
       });
       return;
     }, []);
-
     return SafeArea(
         child: Stack(children: [
       WillPopScope(
