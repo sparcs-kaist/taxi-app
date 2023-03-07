@@ -30,7 +30,7 @@ void main() async {
   var initializationSettingsAndroid =
       const AndroidInitializationSettings('@mipmap/ic_launcher');
 
-  var initializationSettingsIOS = const IOSInitializationSettings(
+  var initializationSettingsIOS = const DarwinInitializationSettings(
     requestAlertPermission: true,
     requestBadgePermission: true,
     requestSoundPermission: true,
@@ -93,7 +93,7 @@ class _MyAppState extends State<MyApp> {
           channel.id, channel.name,
           channelDescription: channel.description);
 
-      var iOSNotiDetails = const IOSNotificationDetails();
+      var iOSNotiDetails = const DarwinNotificationDetails();
 
       var details =
           NotificationDetails(android: androidNotiDetails, iOS: iOSNotiDetails);

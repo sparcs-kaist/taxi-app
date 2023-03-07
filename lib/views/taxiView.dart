@@ -11,8 +11,11 @@ import 'package:taxiapp/utils/token.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class TaxiView extends HookWidget {
+  final Uri? init_uri = null;
   final CookieManager _cookieManager = CookieManager.instance();
   late InAppWebViewController _controller;
+
+  TaxiView({init_uri});
 
   @override
   Widget build(BuildContext context) {
