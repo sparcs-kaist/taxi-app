@@ -17,7 +17,7 @@ class TaxiDialog extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text("새로운 버전이 출시되었습니다!",
+            Text("새로운 버전이 출시되었습니다!\n정상적인 사용을 위해 앱을 업데이트 해주세요!",
                 style: GoogleFonts.roboto(
                     textStyle: TextStyle(
                         color: Color(0xFF323232),
