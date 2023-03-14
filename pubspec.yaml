@@ -48,6 +48,7 @@ dependencies:
   fluttertoast: ^8.1.2
   package_info: ^2.0.2
   firebase_remote_config: ^3.0.14
+  launch_review: ^3.0.1
 
 dev_dependencies:
   flutter_test:

@@ -46,10 +46,8 @@ class TaxiView extends HookWidget {
           ));
           await remoteConfig.setDefaults({"version": value.version});
           await remoteConfig.fetchAndActivate();
-          print(remoteConfig.getString("android_version"));
           if (remoteConfig.getString("version") != value.version) {
             isMustUpdate.value = true;
-            print("업데이트 다릅니다");
           }
         } catch (e) {
           print(e);

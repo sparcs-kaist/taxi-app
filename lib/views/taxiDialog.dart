@@ -1,7 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:launch_review/launch_review.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class TaxiDialog extends StatelessWidget {
   const TaxiDialog({super.key});
@@ -47,7 +52,11 @@ class TaxiDialog extends StatelessWidget {
                                 color: Colors.white,
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold))),
-                    onPressed: () async {}),
+                    onPressed: () async {
+                      LaunchReview.launch(
+                          androidAppId: dotenv.get("ANDROID_APPID"),
+                          iOSAppId: dotenv.get("IOS_APPID"));
+                    }),
                 Padding(
                   padding: EdgeInsets.all(10),
                 ),
@@ -69,7 +78,13 @@ class TaxiDialog extends StatelessWidget {
                                 color: Color(0xFFEEEEEE),
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold))),
-                    onPressed: () async {}),
+                    onPressed: () async {
+                      if (Platform.isIOS) {
+                        exit(0);
+                      } else {
+                        SystemNavigator.pop();
+                      }
+                    }),
               ],
             )
           ]),
