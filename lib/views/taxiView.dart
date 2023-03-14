@@ -150,6 +150,10 @@ class TaxiView extends HookWidget {
           ? Stack()
           : Scaffold(
               body: FadeTransition(opacity: animation, child: loadingView())),
+      Container(
+        color: Color(0x66C8C8C8),
+        child: Center(child: TaxiDialog()),
+      )
     ]));
   }
 

@@ -9,7 +9,10 @@ class TaxiDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
+      width: 350,
+      height: 150,
+      decoration: BoxDecoration(
+          color: Colors.white, borderRadius: BorderRadius.circular(15)),
       child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -20,11 +23,15 @@ class TaxiDialog extends StatelessWidget {
                         color: Color(0xFF323232),
                         fontSize: 15,
                         fontWeight: FontWeight.bold))),
+            Padding(
+              padding: EdgeInsets.all(15),
+            ),
             Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 OutlinedButton(
                     style: ButtonStyle(
-                      fixedSize: MaterialStateProperty.all(Size(250, 45)),
+                      fixedSize: MaterialStateProperty.all(Size(150, 45)),
                       backgroundColor:
                           MaterialStateProperty.all<Color>(Color(0xFF6E3678)),
                       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
@@ -41,9 +48,12 @@ class TaxiDialog extends StatelessWidget {
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold))),
                     onPressed: () async {}),
+                Padding(
+                  padding: EdgeInsets.all(10),
+                ),
                 OutlinedButton(
                     style: ButtonStyle(
-                      fixedSize: MaterialStateProperty.all(Size(250, 45)),
+                      fixedSize: MaterialStateProperty.all(Size(150, 45)),
                       backgroundColor:
                           MaterialStateProperty.all<Color>(Color(0xFFFAF8FB)),
                       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
