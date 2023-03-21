@@ -19,9 +19,6 @@ class TaxiView extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("PRINTED ONLINE");
-    print("init uri is ${init_uri}");
-
     final isLoaded = useState(false);
     final sessionToken = useState('');
     final isLogin = useState(false);
@@ -40,10 +37,6 @@ class TaxiView extends HookWidget {
     String address = dotenv.get("FRONT_ADDRESS");
 
     useEffect(() {
-      // if (isLogin.value && init_uri != null) {
-      //   _controller.loadUrl(urlRequest: URLRequest(url: init_uri));
-      //   isFirstLoaded.value = true;
-      // }
       if (isAuthLogin.value && !isLogin.value) {
         Token().getSession().then((value) async {
           if (value == null) {
@@ -53,14 +46,8 @@ class TaxiView extends HookWidget {
             sessionToken.value = value;
             isLogin.value = true;
             try {
-              if (isFirstLoaded.value == false && init_uri != null) {
-                isFirstLoaded.value = true;
-                await _controller.loadUrl(
-                    urlRequest: URLRequest(url: init_uri));
-              } else {
-                await _controller.loadUrl(
-                    urlRequest: URLRequest(url: Uri.parse(address)));
-              }
+              await _controller.loadUrl(
+                  urlRequest: URLRequest(url: Uri.parse(address)));
             } catch (e) {
               Fluttertoast.showToast(
                 msg: "초기 페이지 로딩에 실패했습니다.",
@@ -94,11 +81,6 @@ class TaxiView extends HookWidget {
               initialUrlRequest: URLRequest(url: Uri.parse(address)),
               onWebViewCreated: (InAppWebViewController webcontroller) async {
                 _controller = webcontroller;
-                print("INIT URL IS ${init_uri.toString()}");
-                if (init_uri != null) {
-                  await _controller.loadUrl(
-                      urlRequest: URLRequest(url: init_uri));
-                }
               },
               // React Link는 Page를 로드하는 것이 아니라 history를 바꾸는 것이기 때문에 history 변화로 링크 변화를 감지해야함.
               onUpdateVisitedHistory: (controller, url, androidIsReload) async {
