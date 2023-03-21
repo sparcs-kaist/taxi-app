@@ -9,12 +9,15 @@ import 'package:taxiapp/views/loadingView.dart';
 import 'package:taxiapp/views/loginView.dart';
 import 'package:taxiapp/utils/token.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class TaxiView extends HookWidget {
   Uri? init_uri;
   final CookieManager _cookieManager = CookieManager.instance();
   late InAppWebViewController _controller;
-
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
   TaxiView({this.init_uri});
 
   @override
@@ -25,6 +28,51 @@ class TaxiView extends HookWidget {
     final isAuthLogin = useState(true);
     final backCount = useState(false);
     final isFirstLoaded = useState(false);
+    final url = useState('');
+
+    useEffect(() {
+      var initializationSettingsAndroid =
+          const AndroidInitializationSettings('@mipmap/ic_launcher');
+
+      var initializationSettingsIOS = const DarwinInitializationSettings(
+        requestAlertPermission: true,
+        requestBadgePermission: true,
+        requestSoundPermission: true,
+      );
+
+      var initializationSettings = InitializationSettings(
+        android: initializationSettingsAndroid,
+        iOS: initializationSettingsIOS,
+      );
+
+      flutterLocalNotificationsPlugin.initialize(
+        initializationSettings,
+        onDidReceiveNotificationResponse: (details) {
+          print("onReceive Payload ${details.payload}");
+          if (details.payload != null) {
+            url.value = details.payload!;
+            print("SET STATE CALLED! ${url.value}");
+          }
+        },
+      );
+
+      flutterLocalNotificationsPlugin
+          .getNotificationAppLaunchDetails()
+          .then((NotificationAppLaunchDetails? details) {
+        if (details != null) {
+          if (details.didNotificationLaunchApp &&
+              details.notificationResponse?.payload != null) {
+            url.value = details.notificationResponse!.payload!;
+          }
+        }
+      });
+    }, []);
+
+    useEffect(() {
+      if (url.value != '') {
+        _controller.loadUrl(urlRequest: URLRequest(url: Uri.parse(url.value)));
+      }
+    }, [url.value]);
 
     final AnimationController aniController = useAnimationController(
       duration: const Duration(milliseconds: 500),

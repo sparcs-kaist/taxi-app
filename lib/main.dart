@@ -128,49 +128,9 @@ class MyHome extends HookWidget {
 class SubHome extends HookWidget {
   @override
   Widget build(BuildContext context) {
-    final url = useState('');
-
-    useEffect(() {
-      var initializationSettingsAndroid =
-          const AndroidInitializationSettings('@mipmap/ic_launcher');
-
-      var initializationSettingsIOS = const DarwinInitializationSettings(
-        requestAlertPermission: true,
-        requestBadgePermission: true,
-        requestSoundPermission: true,
-      );
-
-      var initializationSettings = InitializationSettings(
-        android: initializationSettingsAndroid,
-        iOS: initializationSettingsIOS,
-      );
-
-      flutterLocalNotificationsPlugin.initialize(
-        initializationSettings,
-        onDidReceiveNotificationResponse: (details) {
-          print("onReceive Payload ${details.payload}");
-          if (details.payload != null) {
-            // url.value = details.payload!;
-            print("SET STATE CALLED! ${url.value}");
-          }
-        },
-      );
-
-      flutterLocalNotificationsPlugin
-          .getNotificationAppLaunchDetails()
-          .then((NotificationAppLaunchDetails? details) {
-        if (details != null) {
-          if (details.didNotificationLaunchApp &&
-              details.notificationResponse?.payload != null) {
-            // url.value = details.notificationResponse!.payload!;
-          }
-        }
-      });
-    }, []);
-
     return Container(
       color: Colors.white,
-      child: TaxiView(init_uri: url.value == '' ? null : Uri.parse(url.value)),
+      child: TaxiView(),
     );
   }
 }
