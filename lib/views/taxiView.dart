@@ -24,6 +24,7 @@ class TaxiView extends HookWidget {
     final isLogin = useState(false);
     final isAuthLogin = useState(true);
     final backCount = useState(false);
+    final isFirstLoaded = useState(false);
 
     final AnimationController aniController = useAnimationController(
       duration: const Duration(milliseconds: 500),
@@ -36,6 +37,14 @@ class TaxiView extends HookWidget {
     String address = dotenv.get("FRONT_ADDRESS");
 
     useEffect(() {
+      print(init_uri.toString());
+    }, []);
+
+    useEffect(() {
+      if (isLogin.value && !isFirstLoaded.value && init_uri != null) {
+        isFirstLoaded.value = true;
+        _controller.loadUrl(urlRequest: URLRequest(url: init_uri));
+      }
       if (isAuthLogin.value && !isLogin.value) {
         Token().getSession().then((value) async {
           if (value == null) {
@@ -45,11 +54,17 @@ class TaxiView extends HookWidget {
             sessionToken.value = value;
             isLogin.value = true;
             try {
-              await _controller.loadUrl(
-                  urlRequest: URLRequest(url: Uri.parse(address)));
+              if (isFirstLoaded.value == false && init_uri != null) {
+                isFirstLoaded.value = true;
+                await _controller.loadUrl(
+                    urlRequest: URLRequest(url: init_uri));
+              } else {
+                await _controller.loadUrl(
+                    urlRequest: URLRequest(url: Uri.parse(address)));
+              }
             } catch (e) {
               Fluttertoast.showToast(
-                msg: "로그인 정보 확인에 실패했습니다.",
+                msg: "초기 페이지 로딩에 실패했습니다.",
                 backgroundColor: Colors.white,
                 toastLength: Toast.LENGTH_SHORT,
               );

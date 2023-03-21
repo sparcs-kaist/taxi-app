@@ -7,6 +7,8 @@ import 'package:taxiapp/utils/token.dart';
 import 'package:taxiapp/views/taxiView.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:taxiapp/firebase_options.dart';
+import 'package:http/http.dart' as http;
+import 'dart:typed_data';
 
 late AndroidNotificationChannel channel;
 late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
@@ -27,15 +29,6 @@ void main() async {
     importance: Importance.high,
   );
 
-  var initializationSettingsAndroid =
-      const AndroidInitializationSettings('@mipmap/ic_launcher');
-
-  var initializationSettingsIOS = const DarwinInitializationSettings(
-    requestAlertPermission: true,
-    requestBadgePermission: true,
-    requestSoundPermission: true,
-  );
-
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
   await flutterLocalNotificationsPlugin
@@ -43,14 +36,7 @@ void main() async {
           AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
 
-  var initializationSettings = InitializationSettings(
-    android: initializationSettingsAndroid,
-    iOS: initializationSettingsIOS,
-  );
-
-  await flutterLocalNotificationsPlugin.initialize(
-    initializationSettings,
-  );
+  FirebaseMessaging.onBackgroundMessage(handleMessage);
 
   await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
     alert: true,
@@ -73,6 +59,8 @@ void main() async {
 
   await FcmToken().init();
 
+  FirebaseMessaging.onMessage.listen(handleMessage);
+
   runApp(const MyApp());
 }
 
@@ -83,40 +71,125 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
+@pragma('vm:entry-point')
+Future<void> handleMessage(RemoteMessage message) async {
+  channel = const AndroidNotificationChannel(
+    'taxi_channel',
+    'taxi_notification',
+    description: 'This channel is used for taxi notifications',
+    importance: Importance.high,
+  );
+
+  flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+  print("BACKGROUND SERVICE RUNNED!");
+  print(message.toMap());
+
+  RemoteNotification? notification = message.notification;
+  AndroidNotification? android = message.notification?.android;
+  ByteArrayAndroidBitmap? largeIcon;
+
+  if (android?.imageUrl != null) {
+    largeIcon = ByteArrayAndroidBitmap(
+      await _getByteArrayFromUrl(android!.imageUrl!),
+    );
+  }
+  var androidNotiDetails = AndroidNotificationDetails(channel.id, channel.name,
+      channelDescription: channel.description, largeIcon: largeIcon);
+
+  var iOSNotiDetails = const DarwinNotificationDetails();
+
+  var details =
+      NotificationDetails(android: androidNotiDetails, iOS: iOSNotiDetails);
+
+  if (notification != null) {
+    flutterLocalNotificationsPlugin.show(
+        notification.hashCode, notification.title, notification.body, details,
+        payload: message.data['url']);
+  }
+}
+
+Future<Uint8List> _getByteArrayFromUrl(String url) async {
+  final http.Response response = await http.get(Uri.parse(url));
+  return response.bodyBytes;
+}
+
 class _MyAppState extends State<MyApp> {
   String url = '';
 
   @override
   void initState() {
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-      RemoteNotification? notification = message.notification;
-      AndroidNotification? android = message.notification?.android;
-      var androidNotiDetails = AndroidNotificationDetails(
-          channel.id, channel.name,
-          channelDescription: channel.description);
-
-      var iOSNotiDetails = const DarwinNotificationDetails();
-
-      var details =
-          NotificationDetails(android: androidNotiDetails, iOS: iOSNotiDetails);
-
-      if (notification != null) {
-        flutterLocalNotificationsPlugin.show(notification.hashCode,
-            notification.title, notification.body, details);
-      }
-    });
-
     super.initState();
 
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('msg : ${message.data}');
+    var initializationSettingsAndroid =
+        const AndroidInitializationSettings('@mipmap/ic_launcher');
 
-      if (message.data['url'] != null) {
-        setState(() {
-          url = message.data['url'];
-        });
+    var initializationSettingsIOS = const DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
+
+    var initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsIOS,
+    );
+
+    flutterLocalNotificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: (details) {
+        print("onReceive Payload ${details.payload}");
+        if (details.payload != null) {
+          this.setState(() {
+            url = details.payload!;
+          });
+          print("SET STATE CALLED! ${this.url}");
+        }
+      },
+      onDidReceiveBackgroundNotificationResponse: (details) {
+        print("onTap Payload ${details.payload}");
+        if (details.payload != null) {
+          this.setState(() {
+            url = details.payload!;
+          });
+        }
+      },
+    );
+
+    flutterLocalNotificationsPlugin
+        .getNotificationAppLaunchDetails()
+        .then((NotificationAppLaunchDetails? details) {
+      if (details != null) {
+        if (details.didNotificationLaunchApp &&
+            details.notificationResponse?.payload != null) {
+          this.setState(() {
+            url = details.notificationResponse!.payload!;
+          });
+        }
       }
     });
+
+    // FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    //   if (message.data['url'] != null) {
+    //     setState(() {
+    //       url = message.data['url'];
+    //     });
+    //   }
+    // });
+
+    // FirebaseMessaging.instance
+    //     .getInitialMessage()
+    //     .then((RemoteMessage? message) {
+    //   if (message != null) {
+    //     print('msg : ${message.toMap()}');
+
+    //     if (message.data['url'] != null) {
+    //       setState(() {
+    //         url = message.data['url'];
+    //       });
+    //     }
+    //   }
+    // });
   }
 
   @override
@@ -132,7 +205,7 @@ class _MyAppState extends State<MyApp> {
             child: Container(
                 color: Colors.white,
                 child: TaxiView(
-                  init_uri: Uri.parse(url),
+                  init_uri: url == '' ? null : Uri.parse(url),
                 )),
           )),
     );
