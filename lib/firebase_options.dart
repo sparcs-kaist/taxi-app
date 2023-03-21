@@ -67,6 +67,6 @@ class DefaultFirebaseOptions {
         '595225681170-2fn4n67kd2rmpsqv15qc2f4ts8llph7i.apps.googleusercontent.com',
     iosClientId:
         '595225681170-23agv6ak4lcnjl8phinsl5gaeovv3m9e.apps.googleusercontent.com',
-    iosBundleId: 'org.sparcs.taxi_app-app',
+    iosBundleId: 'org.sparcs.taxi-app',
   );
 }
