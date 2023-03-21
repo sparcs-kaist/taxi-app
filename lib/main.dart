@@ -137,12 +137,6 @@ class MyHome extends HookWidget {
             print("SET STATE CALLED! ${url.value}");
           }
         },
-        onDidReceiveBackgroundNotificationResponse: (details) {
-          print("onTap Payload ${details.payload}");
-          if (details.payload != null) {
-            url.value = details.payload!;
-          }
-        },
       );
 
       flutterLocalNotificationsPlugin

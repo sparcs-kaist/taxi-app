@@ -28,7 +28,6 @@ class TaxiView extends HookWidget {
     final isAuthLogin = useState(true);
     final backCount = useState(false);
     final isFirstLoaded = useState(false);
-    final isWebControllerInit = useState(false);
 
     final AnimationController aniController = useAnimationController(
       duration: const Duration(milliseconds: 500),
@@ -41,17 +40,10 @@ class TaxiView extends HookWidget {
     String address = dotenv.get("FRONT_ADDRESS");
 
     useEffect(() {
-      print("USE EFFECT");
-      if (isWebControllerInit.value) {
-        _controller.loadUrl(urlRequest: URLRequest(url: init_uri));
-      }
-    }, [init_uri, isWebControllerInit.value]);
-
-    useEffect(() {
-      if (isLogin.value && init_uri != null) {
-        isFirstLoaded.value = true;
-        _controller.loadUrl(urlRequest: URLRequest(url: init_uri));
-      }
+      // if (isLogin.value && init_uri != null) {
+      //   _controller.loadUrl(urlRequest: URLRequest(url: init_uri));
+      //   isFirstLoaded.value = true;
+      // }
       if (isAuthLogin.value && !isLogin.value) {
         Token().getSession().then((value) async {
           if (value == null) {
@@ -61,10 +53,7 @@ class TaxiView extends HookWidget {
             sessionToken.value = value;
             isLogin.value = true;
             try {
-              print(isWebControllerInit.value);
-              if (isFirstLoaded.value == false &&
-                  init_uri != null &&
-                  isWebControllerInit.value == true) {
+              if (isFirstLoaded.value == false && init_uri != null) {
                 isFirstLoaded.value = true;
                 await _controller.loadUrl(
                     urlRequest: URLRequest(url: init_uri));
@@ -103,9 +92,13 @@ class TaxiView extends HookWidget {
                   android:
                       AndroidInAppWebViewOptions(useHybridComposition: true)),
               initialUrlRequest: URLRequest(url: Uri.parse(address)),
-              onWebViewCreated: (InAppWebViewController webcontroller) {
+              onWebViewCreated: (InAppWebViewController webcontroller) async {
                 _controller = webcontroller;
-                isWebControllerInit.value = true;
+                print("INIT URL IS ${init_uri.toString()}");
+                if (init_uri != null) {
+                  await _controller.loadUrl(
+                      urlRequest: URLRequest(url: init_uri));
+                }
               },
               // React Link는 Page를 로드하는 것이 아니라 history를 바꾸는 것이기 때문에 history 변화로 링크 변화를 감지해야함.
               onUpdateVisitedHistory: (controller, url, androidIsReload) async {
