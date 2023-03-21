@@ -60,6 +60,8 @@ void main() async {
 
   await FcmToken().init();
 
+  print(FcmToken().token);
+
   FirebaseMessaging.onMessage.listen(handleMessage);
 
   runApp(MyHome());

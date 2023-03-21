@@ -35,7 +35,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   flutter_hooks: ^0.18.6
   webview_flutter: ^3.0.4
-  flutter_inappwebview: ^5.7.2+3
+  flutter_inappwebview: ^6.0.0-beta.22
   flutter_secure_storage: ^8.0.0
   dio: ^4.0.6
   firebase_messaging: ^14.2.1

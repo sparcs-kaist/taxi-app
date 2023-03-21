@@ -27,7 +27,7 @@ class TaxiView extends HookWidget {
     final isLogin = useState(false);
     final isAuthLogin = useState(true);
     final backCount = useState(false);
-    final isFirstLoaded = useState(false);
+    final isFirstLoaded = useState(0);
     final url = useState('');
 
     useEffect(() {
@@ -52,7 +52,8 @@ class TaxiView extends HookWidget {
           if (details.payload != null) {
             String address = dotenv.get("FRONT_ADDRESS");
             url.value = address + details.payload!;
-            print("SET STATE CALLED! ${url.value}");
+            print("SET STATE CALLED! ${isFirstLoaded.value}");
+            isFirstLoaded.value += 1;
           }
         },
       );
@@ -65,6 +66,7 @@ class TaxiView extends HookWidget {
               details.notificationResponse?.payload != null) {
             String address = dotenv.get("FRONT_ADDRESS");
             url.value = address + details.notificationResponse!.payload!;
+            isFirstLoaded.value != 1;
           }
         }
       });
@@ -72,9 +74,13 @@ class TaxiView extends HookWidget {
 
     useEffect(() {
       if (url.value != '') {
-        _controller.loadUrl(urlRequest: URLRequest(url: Uri.parse(url.value)));
+        _controller
+            .loadUrl(urlRequest: URLRequest(url: WebUri(url.value)))
+            .then((value) {
+          print("LOAD URL CALLED!");
+        });
       }
-    }, [url.value]);
+    }, [isFirstLoaded.value]);
 
     final AnimationController aniController = useAnimationController(
       duration: const Duration(milliseconds: 500),
@@ -97,7 +103,7 @@ class TaxiView extends HookWidget {
             isLogin.value = true;
             try {
               await _controller.loadUrl(
-                  urlRequest: URLRequest(url: Uri.parse(address)));
+                  urlRequest: URLRequest(url: WebUri(address)));
             } catch (e) {
               Fluttertoast.showToast(
                 msg: "초기 페이지 로딩에 실패했습니다.",
@@ -123,13 +129,10 @@ class TaxiView extends HookWidget {
       WillPopScope(
           onWillPop: () => _goBack(context, backCount, isAuthLogin),
           child: InAppWebView(
-              initialOptions: InAppWebViewGroupOptions(
-                  crossPlatform: InAppWebViewOptions(
-                    useShouldOverrideUrlLoading: true,
-                  ),
-                  android:
-                      AndroidInAppWebViewOptions(useHybridComposition: true)),
-              initialUrlRequest: URLRequest(url: Uri.parse(address)),
+              initialSettings: InAppWebViewSettings(
+                  useHybridComposition: true,
+                  useShouldOverrideUrlLoading: true),
+              initialUrlRequest: URLRequest(url: WebUri(address)),
               onWebViewCreated: (InAppWebViewController webcontroller) async {
                 _controller = webcontroller;
               },
@@ -147,7 +150,7 @@ class TaxiView extends HookWidget {
                     } else {
                       sessionToken.value = session;
                       await _controller.loadUrl(
-                          urlRequest: URLRequest(url: Uri.parse(address)));
+                          urlRequest: URLRequest(url: WebUri(address)));
                     }
                   } catch (e) {
                     // TODO handle error
@@ -181,12 +184,12 @@ class TaxiView extends HookWidget {
                   try {
                     await _cookieManager.deleteAllCookies();
                     await _cookieManager.setCookie(
-                      url: Uri.parse(address),
+                      url: WebUri(address),
                       name: "connect.sid",
                       value: sessionToken.value,
                     );
                     await _cookieManager.setCookie(
-                      url: Uri.parse(address),
+                      url: WebUri(address),
                       name: "deviceToken",
                       value: FcmToken().fcmToken,
                     );
