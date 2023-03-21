@@ -62,6 +62,7 @@ void main() async {
 
   FirebaseMessaging.onMessage.listen(handleMessage);
 
+  print(FcmToken().token);
   runApp(MyHome());
 }
 
@@ -111,6 +112,22 @@ Future<Uint8List> _getByteArrayFromUrl(String url) async {
 class MyHome extends HookWidget {
   @override
   Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Taxi App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: Container(
+        color: const Color(0xFF6E3647),
+        child: SubHome(),
+      ),
+    );
+  }
+}
+
+class SubHome extends HookWidget {
+  @override
+  Widget build(BuildContext context) {
     final url = useState('');
 
     useEffect(() {
@@ -133,7 +150,7 @@ class MyHome extends HookWidget {
         onDidReceiveNotificationResponse: (details) {
           print("onReceive Payload ${details.payload}");
           if (details.payload != null) {
-            url.value = details.payload!;
+            // url.value = details.payload!;
             print("SET STATE CALLED! ${url.value}");
           }
         },
@@ -145,25 +162,15 @@ class MyHome extends HookWidget {
         if (details != null) {
           if (details.didNotificationLaunchApp &&
               details.notificationResponse?.payload != null) {
-            url.value = details.notificationResponse!.payload!;
+            // url.value = details.notificationResponse!.payload!;
           }
         }
       });
     }, []);
 
-    return MaterialApp(
-      title: 'Taxi App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: Container(
-        color: const Color(0xFF6E3647),
-        child: Container(
-            color: Colors.white,
-            child: TaxiView(
-              init_uri: url.value == '' ? null : Uri.parse(url.value),
-            )),
-      ),
+    return Container(
+      color: Colors.white,
+      child: TaxiView(init_uri: url.value == '' ? null : Uri.parse(url.value)),
     );
   }
 }

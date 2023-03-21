@@ -125,6 +125,7 @@ class TaxiView extends HookWidget {
                 }
               },
               onLoadStart: (controller, uri) async {
+                _controller = controller;
                 if (sessionToken.value != '') {
                   try {
                     await _cookieManager.deleteAllCookies();
