@@ -62,7 +62,6 @@ void main() async {
 
   FirebaseMessaging.onMessage.listen(handleMessage);
 
-  print(FcmToken().token);
   runApp(MyHome());
 }
 
@@ -119,127 +118,11 @@ class MyHome extends HookWidget {
       ),
       home: Container(
         color: const Color(0xFF6E3647),
-        child: SubHome(),
+        child: Container(
+          color: Colors.white,
+          child: TaxiView(),
+        ),
       ),
     );
   }
 }
-
-class SubHome extends HookWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: TaxiView(),
-    );
-  }
-}
-
-// class MyApp extends StatefulWidget {
-//   const MyApp({Key? key}) : super(key: key);
-
-//   @override
-//   State<MyApp> createState() => _MyAppState();
-// }
-
-// class _MyAppState extends State<MyApp> {
-//   String url = '';
-
-//   @override
-//   void initState() {
-//     super.initState();
-
-//     var initializationSettingsAndroid =
-//         const AndroidInitializationSettings('@mipmap/ic_launcher');
-
-//     var initializationSettingsIOS = const DarwinInitializationSettings(
-//       requestAlertPermission: true,
-//       requestBadgePermission: true,
-//       requestSoundPermission: true,
-//     );
-
-//     var initializationSettings = InitializationSettings(
-//       android: initializationSettingsAndroid,
-//       iOS: initializationSettingsIOS,
-//     );
-
-//     flutterLocalNotificationsPlugin.initialize(
-//       initializationSettings,
-//       onDidReceiveNotificationResponse: (details) {
-//         print("onReceive Payload ${details.payload}");
-//         if (details.payload != null) {
-//           url = details.payload!;
-//           this.setState(() {
-//             url = details.payload!;
-//           });
-//           print("SET STATE CALLED! ${this.url}");
-//         }
-//       },
-//       onDidReceiveBackgroundNotificationResponse: (details) {
-//         print("onTap Payload ${details.payload}");
-//         if (details.payload != null) {
-//           url = details.payload!;
-//           this.setState(() {
-//             url = details.payload!;
-//           });
-//         }
-//       },
-//     );
-
-//     flutterLocalNotificationsPlugin
-//         .getNotificationAppLaunchDetails()
-//         .then((NotificationAppLaunchDetails? details) {
-//       if (details != null) {
-//         if (details.didNotificationLaunchApp &&
-//             details.notificationResponse?.payload != null) {
-//           url = details.notificationResponse!.payload!;
-//           setState(() {
-//             url = details.notificationResponse!.payload!;
-//           });
-//         }
-//       }
-//     });
-
-//     // FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-//     //   if (message.data['url'] != null) {
-//     //     setState(() {
-//     //       url = message.data['url'];
-//     //     });
-//     //   }
-//     // });
-
-//     // FirebaseMessaging.instance
-//     //     .getInitialMessage()
-//     //     .then((RemoteMessage? message) {
-//     //   if (message != null) {
-//     //     print('msg : ${message.toMap()}');
-
-//     //     if (message.data['url'] != null) {
-//     //       setState(() {
-//     //         url = message.data['url'];
-//     //       });
-//     //     }
-//     //   }
-//     // });
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     print("URL IS ${url}");
-
-//     return MaterialApp(
-//       title: 'Taxi App',
-//       theme: ThemeData(
-//         primarySwatch: Colors.blue,
-//       ),
-//       home: Container(
-//         color: const Color(0xFF6E3647),
-//         child: Container(
-//             color: Colors.white,
-//             child: TaxiView(
-//               init_uri: url == '' ? null : Uri.parse(url),
-//             )),
-//       ),
-//     );
-//   }
-// }

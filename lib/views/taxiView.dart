@@ -50,7 +50,8 @@ class TaxiView extends HookWidget {
         onDidReceiveNotificationResponse: (details) {
           print("onReceive Payload ${details.payload}");
           if (details.payload != null) {
-            url.value = details.payload!;
+            String address = dotenv.get("FRONT_ADDRESS");
+            url.value = address + details.payload!;
             print("SET STATE CALLED! ${url.value}");
           }
         },
@@ -62,7 +63,8 @@ class TaxiView extends HookWidget {
         if (details != null) {
           if (details.didNotificationLaunchApp &&
               details.notificationResponse?.payload != null) {
-            url.value = details.notificationResponse!.payload!;
+            String address = dotenv.get("FRONT_ADDRESS");
+            url.value = address + details.notificationResponse!.payload!;
           }
         }
       });
@@ -122,8 +124,9 @@ class TaxiView extends HookWidget {
           onWillPop: () => _goBack(context, backCount, isAuthLogin),
           child: InAppWebView(
               initialOptions: InAppWebViewGroupOptions(
-                  crossPlatform:
-                      InAppWebViewOptions(useShouldOverrideUrlLoading: true),
+                  crossPlatform: InAppWebViewOptions(
+                    useShouldOverrideUrlLoading: true,
+                  ),
                   android:
                       AndroidInAppWebViewOptions(useHybridComposition: true)),
               initialUrlRequest: URLRequest(url: Uri.parse(address)),
