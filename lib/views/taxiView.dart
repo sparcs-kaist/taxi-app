@@ -11,20 +11,24 @@ import 'package:taxiapp/utils/token.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class TaxiView extends HookWidget {
-  final Uri? init_uri = null;
+  Uri? init_uri;
   final CookieManager _cookieManager = CookieManager.instance();
   late InAppWebViewController _controller;
 
-  TaxiView({init_uri});
+  TaxiView({this.init_uri});
 
   @override
   Widget build(BuildContext context) {
+    print("PRINTED ONLINE");
+    print("init uri is ${init_uri}");
+
     final isLoaded = useState(false);
     final sessionToken = useState('');
     final isLogin = useState(false);
     final isAuthLogin = useState(true);
     final backCount = useState(false);
     final isFirstLoaded = useState(false);
+    final isWebControllerInit = useState(false);
 
     final AnimationController aniController = useAnimationController(
       duration: const Duration(milliseconds: 500),
@@ -37,11 +41,14 @@ class TaxiView extends HookWidget {
     String address = dotenv.get("FRONT_ADDRESS");
 
     useEffect(() {
-      print(init_uri.toString());
-    }, []);
+      print("USE EFFECT");
+      if (isWebControllerInit.value) {
+        _controller.loadUrl(urlRequest: URLRequest(url: init_uri));
+      }
+    }, [init_uri, isWebControllerInit.value]);
 
     useEffect(() {
-      if (isLogin.value && !isFirstLoaded.value && init_uri != null) {
+      if (isLogin.value && init_uri != null) {
         isFirstLoaded.value = true;
         _controller.loadUrl(urlRequest: URLRequest(url: init_uri));
       }
@@ -54,7 +61,10 @@ class TaxiView extends HookWidget {
             sessionToken.value = value;
             isLogin.value = true;
             try {
-              if (isFirstLoaded.value == false && init_uri != null) {
+              print(isWebControllerInit.value);
+              if (isFirstLoaded.value == false &&
+                  init_uri != null &&
+                  isWebControllerInit.value == true) {
                 isFirstLoaded.value = true;
                 await _controller.loadUrl(
                     urlRequest: URLRequest(url: init_uri));
@@ -93,8 +103,9 @@ class TaxiView extends HookWidget {
                   android:
                       AndroidInAppWebViewOptions(useHybridComposition: true)),
               initialUrlRequest: URLRequest(url: Uri.parse(address)),
-              onWebViewCreated: (InAppWebViewController webcontroller) async {
+              onWebViewCreated: (InAppWebViewController webcontroller) {
                 _controller = webcontroller;
+                isWebControllerInit.value = true;
               },
               // React Link는 Page를 로드하는 것이 아니라 history를 바꾸는 것이기 때문에 history 변화로 링크 변화를 감지해야함.
               onUpdateVisitedHistory: (controller, url, androidIsReload) async {
