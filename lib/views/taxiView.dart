@@ -183,24 +183,24 @@ class TaxiView extends HookWidget {
 
   Future<bool> _goBack(BuildContext context, ValueNotifier<bool> backCount,
       ValueNotifier<bool> isAuthLogin) async {
+    Uri? current_uri = await _controller.getUrl();
     if (await _controller.canGoBack() &&
-        ((await _controller.getUrl())?.path != '/') &&
-        isAuthLogin.value) {
+        (current_uri?.path != '/') &&
+        isAuthLogin.value &&
+        (current_uri?.path != '/home')) {
       _controller.goBack();
       backCount.value = false;
-      return Future.value(false);
+      return false;
+    } else if (backCount.value) {
+      return true;
     } else {
-      if (backCount.value) {
-        return Future.value(true);
-      } else {
-        backCount.value = true;
-        Fluttertoast.showToast(
-          msg: "한번 더 누르시면 앱을 종료합니다.",
-          backgroundColor: Colors.white,
-          toastLength: Toast.LENGTH_SHORT,
-        );
-        return Future.value(false);
-      }
+      backCount.value = true;
+      Fluttertoast.showToast(
+        msg: "한번 더 누르시면 앱을 종료합니다.",
+        backgroundColor: Colors.white,
+        toastLength: Toast.LENGTH_SHORT,
+      );
+      return false;
     }
   }
 }
