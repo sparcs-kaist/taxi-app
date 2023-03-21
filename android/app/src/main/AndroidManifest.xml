@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.sparcs.taxiapp">
+    package="org.sparcs.taxi_app">
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -36,7 +36,7 @@
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="org.sparcs.taxiapp" />
+        <data android:scheme="org.sparcs.taxi_app" />
       </intent-filter>
     </activity>
         <!-- Don't delete the meta-data below.
