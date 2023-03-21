@@ -84,6 +84,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  String url = '';
+
   @override
   void initState() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
@@ -105,6 +107,16 @@ class _MyAppState extends State<MyApp> {
     });
 
     super.initState();
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('msg : ${message.data}');
+
+      if (message.data['url'] != null) {
+        setState(() {
+          url = message.data['url'];
+        });
+      }
+    });
   }
 
   @override
@@ -117,7 +129,11 @@ class _MyAppState extends State<MyApp> {
       home: Container(
           color: const Color(0xFF6E3647),
           child: Container(
-            child: Container(color: Colors.white, child: TaxiView()),
+            child: Container(
+                color: Colors.white,
+                child: TaxiView(
+                  init_uri: Uri.parse(url),
+                )),
           )),
     );
   }
