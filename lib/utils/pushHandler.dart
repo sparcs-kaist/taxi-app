@@ -10,6 +10,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:taxiapp/firebase_options.dart';
 import 'package:http/http.dart' as http;
 import 'dart:typed_data';
+import 'dart:math';
 
 @pragma('vm:entry-point')
 Future<void> handleMessage(RemoteMessage message) async {
@@ -25,13 +26,11 @@ Future<void> handleMessage(RemoteMessage message) async {
   print("BACKGROUND SERVICE RUNNED!");
   print(message.toMap());
 
-  RemoteNotification? notification = message.notification;
-  AndroidNotification? android = message.notification?.android;
   ByteArrayAndroidBitmap? largeIcon;
 
-  if (android?.imageUrl != null) {
+  if (message.data['icon'] != null) {
     largeIcon = ByteArrayAndroidBitmap(
-      await _getByteArrayFromUrl(android!.imageUrl!),
+      await _getByteArrayFromUrl(message.data['icon']),
     );
   }
   var androidNotiDetails = AndroidNotificationDetails(channel.id, channel.name,
@@ -42,9 +41,9 @@ Future<void> handleMessage(RemoteMessage message) async {
   var details =
       NotificationDetails(android: androidNotiDetails, iOS: iOSNotiDetails);
 
-  if (notification != null) {
-    flutterLocalNotificationsPlugin.show(
-        notification.hashCode, notification.title, notification.body, details,
+  if (message.data != null) {
+    flutterLocalNotificationsPlugin.show(Random().nextInt(100000000),
+        message.data['title'], message.data['body'], details,
         payload: message.data['url']);
   }
 }
