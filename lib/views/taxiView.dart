@@ -5,6 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:taxiapp/utils/fcmToken.dart';
+import 'package:taxiapp/utils/pushHandler.dart';
 import 'package:taxiapp/views/loadingView.dart';
 import 'package:taxiapp/views/loginView.dart';
 import 'package:taxiapp/utils/token.dart';
@@ -15,7 +16,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 class TaxiView extends HookWidget {
   Uri? init_uri;
   final CookieManager _cookieManager = CookieManager.instance();
-  late InAppWebViewController _controller;
+  // late InAppWebViewController _controller;
+
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
   TaxiView({this.init_uri});
@@ -29,6 +31,7 @@ class TaxiView extends HookWidget {
     final backCount = useState(false);
     final isFirstLoaded = useState(0);
     final url = useState('');
+    final _controller = useRef<InAppWebViewController?>(null);
 
     useEffect(() {
       var initializationSettingsAndroid =
@@ -44,6 +47,18 @@ class TaxiView extends HookWidget {
         android: initializationSettingsAndroid,
         iOS: initializationSettingsIOS,
       );
+
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+        if (message.data['url'] != null) {
+          print((await _controller.value!.getUrl())?.path);
+          if (message.data['url'] ==
+              (await _controller.value!.getUrl())?.path) {
+            print("SAME URL!");
+          } else {
+            handleMessage(message);
+          }
+        }
+      });
 
       flutterLocalNotificationsPlugin.initialize(
         initializationSettings,
@@ -74,7 +89,7 @@ class TaxiView extends HookWidget {
 
     useEffect(() {
       if (url.value != '') {
-        _controller
+        _controller.value!
             .loadUrl(urlRequest: URLRequest(url: WebUri(url.value)))
             .then((value) {
           print("LOAD URL CALLED!");
@@ -102,8 +117,8 @@ class TaxiView extends HookWidget {
             sessionToken.value = value;
             isLogin.value = true;
             try {
-              await _controller.loadUrl(
-                  urlRequest: URLRequest(url: WebUri(address)));
+              await _controller.value!
+                  .loadUrl(urlRequest: URLRequest(url: WebUri(address)));
             } catch (e) {
               Fluttertoast.showToast(
                 msg: "초기 페이지 로딩에 실패했습니다.",
@@ -127,14 +142,16 @@ class TaxiView extends HookWidget {
     return SafeArea(
         child: Stack(children: [
       WillPopScope(
-          onWillPop: () => _goBack(context, backCount, isAuthLogin),
+          onWillPop: () =>
+              _goBack(context, backCount, isAuthLogin, _controller.value),
           child: InAppWebView(
               initialSettings: InAppWebViewSettings(
                   useHybridComposition: true,
                   useShouldOverrideUrlLoading: true),
               initialUrlRequest: URLRequest(url: WebUri(address)),
               onWebViewCreated: (InAppWebViewController webcontroller) async {
-                _controller = webcontroller;
+                print("웹뷰 로딩중");
+                _controller.value = webcontroller;
               },
               // React Link는 Page를 로드하는 것이 아니라 history를 바꾸는 것이기 때문에 history 변화로 링크 변화를 감지해야함.
               onUpdateVisitedHistory: (controller, url, androidIsReload) async {
@@ -149,7 +166,7 @@ class TaxiView extends HookWidget {
                       isAuthLogin.value = false;
                     } else {
                       sessionToken.value = session;
-                      await _controller.loadUrl(
+                      await _controller.value!.loadUrl(
                           urlRequest: URLRequest(url: WebUri(address)));
                     }
                   } catch (e) {
@@ -179,7 +196,7 @@ class TaxiView extends HookWidget {
                 }
               },
               onLoadStart: (controller, uri) async {
-                _controller = controller;
+                _controller.value = controller;
                 if (sessionToken.value != '') {
                   try {
                     await _cookieManager.deleteAllCookies();
@@ -212,9 +229,12 @@ class TaxiView extends HookWidget {
     ]));
   }
 
-  Future<bool> _goBack(BuildContext context, ValueNotifier<bool> backCount,
-      ValueNotifier<bool> isAuthLogin) async {
-    Uri? current_uri = await _controller.getUrl();
+  Future<bool> _goBack(
+      BuildContext context,
+      ValueNotifier<bool> backCount,
+      ValueNotifier<bool> isAuthLogin,
+      InAppWebViewController? _controller) async {
+    Uri? current_uri = await _controller!.getUrl();
     if (await _controller.canGoBack() &&
         (current_uri?.path != '/') &&
         isAuthLogin.value &&

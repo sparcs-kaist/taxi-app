@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:taxiapp/utils/fcmToken.dart';
+import 'package:taxiapp/utils/pushHandler.dart';
 import 'package:taxiapp/utils/token.dart';
 import 'package:taxiapp/views/taxiView.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -65,49 +66,6 @@ void main() async {
   FirebaseMessaging.onMessage.listen(handleMessage);
 
   runApp(MyHome());
-}
-
-@pragma('vm:entry-point')
-Future<void> handleMessage(RemoteMessage message) async {
-  channel = const AndroidNotificationChannel(
-    'taxi_channel',
-    'taxi_notification',
-    description: 'This channel is used for taxi notifications',
-    importance: Importance.high,
-  );
-
-  flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
-  print("BACKGROUND SERVICE RUNNED!");
-  print(message.toMap());
-
-  RemoteNotification? notification = message.notification;
-  AndroidNotification? android = message.notification?.android;
-  ByteArrayAndroidBitmap? largeIcon;
-
-  if (android?.imageUrl != null) {
-    largeIcon = ByteArrayAndroidBitmap(
-      await _getByteArrayFromUrl(android!.imageUrl!),
-    );
-  }
-  var androidNotiDetails = AndroidNotificationDetails(channel.id, channel.name,
-      channelDescription: channel.description, largeIcon: largeIcon);
-
-  var iOSNotiDetails = const DarwinNotificationDetails();
-
-  var details =
-      NotificationDetails(android: androidNotiDetails, iOS: iOSNotiDetails);
-
-  if (notification != null) {
-    flutterLocalNotificationsPlugin.show(
-        notification.hashCode, notification.title, notification.body, details,
-        payload: message.data['url']);
-  }
-}
-
-Future<Uint8List> _getByteArrayFromUrl(String url) async {
-  final http.Response response = await http.get(Uri.parse(url));
-  return response.bodyBytes;
 }
 
 class MyHome extends HookWidget {
