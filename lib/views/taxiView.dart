@@ -50,10 +50,12 @@ class TaxiView extends HookWidget {
 
       FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
         if (message.data['url'] != null) {
-          print((await _controller.value!.getUrl())?.path);
           if (message.data['url'] ==
-              (await _controller.value!.getUrl())?.path) {
+              (await _controller.value!.getUrl())
+                  ?.path
+                  .replaceAll("chatting", "myroom")) {
             print("SAME URL!");
+            return;
           } else {
             handleMessage(message);
           }
