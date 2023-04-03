@@ -23,7 +23,7 @@ class LoginView extends HookWidget {
     final _url =
         Uri.parse(_backUrl).replace(path: "api/auth/app/token/generate");
 
-    final callbackUrlScheme = "org.sparcs.taxiapp";
+    const callbackUrlScheme = "org.sparcs.taxiapp";
 
     final result = await FlutterWebAuth.authenticate(
         url: _url.toString(),
@@ -45,23 +45,24 @@ class LoginView extends HookWidget {
           child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image(image: AssetImage('assets/img/taxiLogoText.png'), height: 60),
-          Padding(padding: EdgeInsets.only(top: 15)),
+          const Image(
+              image: AssetImage('assets/img/taxiLogoText.png'), height: 60),
+          const Padding(padding: EdgeInsets.only(top: 15)),
           OutlinedButton(
               style: ButtonStyle(
-                fixedSize: MaterialStateProperty.all(Size(250, 45)),
+                fixedSize: MaterialStateProperty.all(const Size(250, 45)),
                 backgroundColor:
-                    MaterialStateProperty.all<Color>(Color(0xFF6E3678)),
+                    MaterialStateProperty.all<Color>(const Color(0xFF6E3678)),
                 shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                   RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.0),
-                    side: BorderSide(color: Colors.black),
+                    side: const BorderSide(color: Colors.black),
                   ),
                 ),
               ),
               child: Text("로그인",
                   style: GoogleFonts.roboto(
-                      textStyle: TextStyle(
+                      textStyle: const TextStyle(
                           color: Colors.white,
                           fontSize: 15,
                           fontWeight: FontWeight.bold))),

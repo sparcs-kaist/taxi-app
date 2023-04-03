@@ -44,6 +44,7 @@ dependencies:
   dio_cookie_manager: ^2.0.0
   google_fonts: ^3.0.1
   fluttertoast: ^8.1.2
+  cookie_jar: ^3.0.1
 
 dev_dependencies:
   flutter_test:

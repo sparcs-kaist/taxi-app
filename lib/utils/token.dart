@@ -13,7 +13,7 @@ class Token {
   static Token? _instance;
   static final _storage = FlutterSecureStorage();
 
-  final Dio _dio = Dio(ConnectionOptions);
+  final Dio _dio = Dio(connectionOptions);
   final CookieJar _cookieJar = CookieJar();
 
   Token._internal({required this.accessToken, required this.refreshToken});
@@ -76,7 +76,7 @@ class Token {
       }
       if (response.statusCode == 200) {
         List<Cookie> cookies = await _cookieJar.loadForRequest(
-            Uri.parse(ConnectionOptions.baseUrl + "auth/app/token/login"));
+            Uri.parse(connectionOptions.baseUrl + "auth/app/token/login"));
         for (Cookie cookie in cookies) {
           if (cookie.name == "connect.sid") {
             return cookie.value;

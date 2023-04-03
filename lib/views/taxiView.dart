@@ -14,13 +14,12 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 class TaxiView extends HookWidget {
-  Uri? init_uri;
   final CookieManager _cookieManager = CookieManager.instance();
   // late InAppWebViewController _controller;
 
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
-  TaxiView({this.init_uri});
+  TaxiView();
 
   @override
   Widget build(BuildContext context) {
