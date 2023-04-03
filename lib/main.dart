@@ -9,8 +9,6 @@ import 'package:taxiapp/utils/token.dart';
 import 'package:taxiapp/views/taxiView.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:taxiapp/firebase_options.dart';
-import 'package:http/http.dart' as http;
-import 'dart:typed_data';
 
 late AndroidNotificationChannel channel;
 late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
