@@ -23,9 +23,6 @@ Future<void> handleMessage(RemoteMessage message) async {
 
   var flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
-  print("BACKGROUND SERVICE RUNNED!");
-  print(message.toMap());
-
   ByteArrayAndroidBitmap? largeIcon;
 
   if (message.data['icon'] != null) {
