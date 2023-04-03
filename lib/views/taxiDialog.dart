@@ -28,7 +28,7 @@ class TaxiDialog extends StatelessWidget {
                   style: GoogleFonts.roboto(
                       textStyle: const TextStyle(
                           color: Color(0xFF323232),
-                          fontSize: 20,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold)),
                   children: <TextSpan>[
                     TextSpan(text: "버전"),
@@ -47,7 +47,7 @@ class TaxiDialog extends StatelessWidget {
                 style: GoogleFonts.roboto(
                     textStyle: const TextStyle(
                         color: Color(0xFF888888),
-                        fontSize: 10,
+                        fontSize: 8,
                         fontWeight: FontWeight.bold))),
             const Padding(
               padding: EdgeInsets.all(15),
