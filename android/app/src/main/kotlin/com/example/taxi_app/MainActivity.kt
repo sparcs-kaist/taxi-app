@@ -1,4 +1,4 @@
-package org.sparcs.taxiapp
+package org.sparcs.taxi_app
 
 import io.flutter.embedding.android.FlutterActivity
 
