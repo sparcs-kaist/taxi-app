@@ -35,6 +35,7 @@ class TaxiView extends HookWidget {
     final isFirstLoaded = useState(0);
     final url = useState('');
     final _controller = useRef<InAppWebViewController?>(null);
+    final isMustUpdate = useState(false);
 
     useEffect(() {
       var initializationSettingsAndroid =
@@ -96,7 +97,6 @@ class TaxiView extends HookWidget {
             .then((value) {});
       }
     }, [isFirstLoaded.value]);
-
 
     final AnimationController aniController = useAnimationController(
       duration: const Duration(milliseconds: 500),
