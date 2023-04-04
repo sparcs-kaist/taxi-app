@@ -1,14 +1,17 @@
 import 'dart:async';
 
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:package_info/package_info.dart';
 import 'package:taxiapp/utils/fcmToken.dart';
 import 'package:taxiapp/views/loadingView.dart';
 import 'package:taxiapp/views/loginView.dart';
 import 'package:taxiapp/utils/token.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:taxiapp/views/taxiDialog.dart';
 
 class TaxiView extends HookWidget {
   final CookieManager _cookieManager = CookieManager.instance();
@@ -21,6 +24,7 @@ class TaxiView extends HookWidget {
     final isLogin = useState(false);
     final isAuthLogin = useState(true);
     final backCount = useState(false);
+    final isMustUpdate = useState(false);
 
     final AnimationController aniController = useAnimationController(
       duration: const Duration(milliseconds: 500),
@@ -31,6 +35,25 @@ class TaxiView extends HookWidget {
       curve: Curves.easeIn,
     );
     String address = dotenv.get("FRONT_ADDRESS");
+
+    useEffect(() {
+      PackageInfo.fromPlatform().then((value) async {
+        final remoteConfig = FirebaseRemoteConfig.instance;
+        try {
+          await remoteConfig.setConfigSettings(RemoteConfigSettings(
+            fetchTimeout: const Duration(seconds: 10),
+            minimumFetchInterval: Duration.zero,
+          ));
+          await remoteConfig.setDefaults({"version": value.version});
+          await remoteConfig.fetchAndActivate();
+          if (remoteConfig.getString("version") != value.version) {
+            isMustUpdate.value = true;
+          }
+        } catch (e) {
+          print(e);
+        }
+      });
+    }, []);
 
     useEffect(() {
       if (isAuthLogin.value && !isLogin.value) {
@@ -63,7 +86,6 @@ class TaxiView extends HookWidget {
       });
       return;
     }, []);
-
     return SafeArea(
         child: Stack(children: [
       WillPopScope(
@@ -150,6 +172,12 @@ class TaxiView extends HookWidget {
           ? Stack()
           : Scaffold(
               body: FadeTransition(opacity: animation, child: loadingView())),
+      isMustUpdate.value
+          ? Container(
+              color: Color(0x66C8C8C8),
+              child: Center(child: TaxiDialog()),
+            )
+          : Stack()
     ]));
   }
 
