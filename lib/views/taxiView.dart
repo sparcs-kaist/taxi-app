@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
@@ -36,6 +37,17 @@ class TaxiView extends HookWidget {
     final url = useState('');
     final _controller = useRef<InAppWebViewController?>(null);
     final isMustUpdate = useState(false);
+    final pullToRefreshController =
+        useRef<PullToRefreshController>(PullToRefreshController(
+      onRefresh: () async {
+        if (Platform.isAndroid) {
+          _controller.value!.reload();
+        } else {
+          _controller.value!.loadUrl(
+              urlRequest: URLRequest(url: await _controller.value!.getUrl()));
+        }
+      },
+    ));
 
     useEffect(() {
       var initializationSettingsAndroid =
@@ -119,7 +131,7 @@ class TaxiView extends HookWidget {
           await remoteConfig.setDefaults({"version": value.version});
           await remoteConfig.fetchAndActivate();
           if (remoteConfig.getString("version") != value.version) {
-            isMustUpdate.value = true;
+            // isMustUpdate.value = true;
           }
         } catch (e) {
           print(e);
@@ -153,6 +165,7 @@ class TaxiView extends HookWidget {
     }, [isAuthLogin.value]);
 
     useEffect(() {
+      pullToRefreshController.value.setEnabled(true);
       Timer(const Duration(seconds: 2), () {
         isLoaded.value = true;
       });
@@ -161,89 +174,90 @@ class TaxiView extends HookWidget {
     return SafeArea(
         child: Stack(children: [
       WillPopScope(
-          onWillPop: () =>
-              _goBack(context, backCount, isAuthLogin, _controller.value),
+        onWillPop: () =>
+            _goBack(context, backCount, isAuthLogin, _controller.value),
           child: Scaffold(
             body: InAppWebView(
-                initialOptions: InAppWebViewGroupOptions(
-                    crossPlatform:
-                        InAppWebViewOptions(useShouldOverrideUrlLoading: true),
-                    android:
-                        AndroidInAppWebViewOptions(useHybridComposition: true)),
-                initialUrlRequest: URLRequest(url: Uri.parse(address)),
-                onWebViewCreated: (InAppWebViewController webcontroller) async {
-                  _controller.value = webcontroller;
-                },
-                // React Link는 Page를 로드하는 것이 아니라 history를 바꾸는 것이기 때문에 history 변화로 링크 변화를 감지해야함.
-                onUpdateVisitedHistory:
-                    (controller, url, androidIsReload) async {
-                  // 세션이 만료되어 로그인 페이지로 돌아갈 시 자동으로 세션 갱신
-                  if (url.toString().contains("login") &&
-                      isLogin.value &&
-                      isAuthLogin.value) {
-                    try {
-                      String? session = await Token().getSession();
-                      if (session == null) {
-                        isLogin.value = false;
-                        isAuthLogin.value = false;
-                      } else {
-                        sessionToken.value = session;
-                        await _controller.value!.loadUrl(
-                            urlRequest: URLRequest(url: Uri.parse(address)));
-                      }
-                    } catch (e) {
-                      // TODO handle error
-                      Fluttertoast.showToast(
-                        msg: "서버와의 연결에 실패했습니다.",
-                        toastLength: Toast.LENGTH_SHORT,
-                      );
-                      isAuthLogin.value = false;
-                    }
+            initialOptions: InAppWebViewGroupOptions(
+                crossPlatform:
+                    InAppWebViewOptions(useShouldOverrideUrlLoading: true),
+                android:
+                    AndroidInAppWebViewOptions(useHybridComposition: true)),
+            initialUrlRequest: URLRequest(url: Uri.parse(address)),
+            onWebViewCreated: (InAppWebViewController webcontroller) async {
+              _controller.value = webcontroller;
+            },
+            // React Link는 Page를 로드하는 것이 아니라 history를 바꾸는 것이기 때문에 history 변화로 링크 변화를 감지해야함.
+            onUpdateVisitedHistory: (controller, url, androidIsReload) async {
+              // 세션이 만료되어 로그인 페이지로 돌아갈 시 자동으로 세션 갱신
+              if (url.toString().contains("login") &&
+                  isLogin.value &&
+                  isAuthLogin.value) {
+                try {
+                  String? session = await Token().getSession();
+                  if (session == null) {
+                    isLogin.value = false;
+                    isAuthLogin.value = false;
+                  } else {
+                    sessionToken.value = session;
+                    await _controller.value!.loadUrl(
+                        urlRequest: URLRequest(url: Uri.parse(address)));
                   }
-                  // 로그아웃 감지 시 토큰 지우고 처음 로그인 페이지로 돌아가기
-                  if (url.toString().contains("logout") && isLogin.value) {
-                    try {
-                      await FcmToken().removeToken(Token().getAccessToken());
-                      await Token().deleteAll();
-                      isLogin.value = false;
-                      isAuthLogin.value = false;
-                    } catch (e) {
-                      // TODO
-                      Fluttertoast.showToast(
-                        msg: "서버와의 연결에 실패했습니다.",
-                        toastLength: Toast.LENGTH_SHORT,
-                      );
-                      isAuthLogin.value = false;
-                    }
-                  }
-                },
-                onLoadStart: (controller, uri) async {
-                  _controller.value = controller;
-                  if (sessionToken.value != '') {
-                    try {
-                      await _cookieManager.deleteAllCookies();
-                      await _cookieManager.setCookie(
-                        url: Uri.parse(address),
-                        name: "connect.sid",
-                        value: sessionToken.value,
-                      );
-                      await _cookieManager.setCookie(
-                        url: Uri.parse(address),
-                        name: "deviceToken",
-                        value: FcmToken().fcmToken,
-                      );
-                    } catch (e) {
-                      // TODO : handle error
-                      Fluttertoast.showToast(
-                        msg: "서버와의 연결에 실패했습니다.",
-                        toastLength: Toast.LENGTH_SHORT,
-                      );
-                      isAuthLogin.value = false;
-                    }
-                  }
-                },
-                onLoadStop: (finish, uri) async {}),
-          )),
+                } catch (e) {
+                  // TODO handle error
+                  Fluttertoast.showToast(
+                    msg: "서버와의 연결에 실패했습니다.",
+                    toastLength: Toast.LENGTH_SHORT,
+                  );
+                  isAuthLogin.value = false;
+                }
+              }
+              // 로그아웃 감지 시 토큰 지우고 처음 로그인 페이지로 돌아가기
+              if (url.toString().contains("logout") && isLogin.value) {
+                try {
+                  await FcmToken().removeToken(Token().getAccessToken());
+                  await Token().deleteAll();
+                  isLogin.value = false;
+                  isAuthLogin.value = false;
+                } catch (e) {
+                  // TODO
+                  Fluttertoast.showToast(
+                    msg: "서버와의 연결에 실패했습니다.",
+                    toastLength: Toast.LENGTH_SHORT,
+                  );
+                  isAuthLogin.value = false;
+                }
+              }
+            },
+            onLoadStart: (controller, uri) async {
+              _controller.value = controller;
+              if (sessionToken.value != '') {
+                try {
+                  await _cookieManager.deleteAllCookies();
+                  await _cookieManager.setCookie(
+                    url: Uri.parse(address),
+                    name: "connect.sid",
+                    value: sessionToken.value,
+                  );
+                  await _cookieManager.setCookie(
+                    url: Uri.parse(address),
+                    name: "deviceToken",
+                    value: FcmToken().fcmToken,
+                  );
+                } catch (e) {
+                  // TODO : handle error
+                  Fluttertoast.showToast(
+                    msg: "서버와의 연결에 실패했습니다.",
+                    toastLength: Toast.LENGTH_SHORT,
+                  );
+                  isAuthLogin.value = false;
+                }
+              }
+            },
+            onLoadStop: (finish, uri) async {
+              pullToRefreshController.value.endRefreshing();
+            }),
+      ),
       isAuthLogin.value ? Stack() : LoginView(isAuthLogin),
       isLoaded.value
           ? Stack()
