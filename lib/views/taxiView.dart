@@ -88,7 +88,7 @@ class TaxiView extends HookWidget {
     useEffect(() {
       if (url.value != '') {
         _controller.value!
-            .loadUrl(urlRequest: URLRequest(url: WebUri(url.value)))
+            .loadUrl(urlRequest: URLRequest(url: Uri.parse(url.value)))
             .then((value) {});
       }
     }, [isFirstLoaded.value]);
@@ -114,7 +114,7 @@ class TaxiView extends HookWidget {
             isLogin.value = true;
             try {
               await _controller.value!
-                  .loadUrl(urlRequest: URLRequest(url: WebUri(address)));
+                  .loadUrl(urlRequest: URLRequest(url: Uri.parse(address)));
             } catch (e) {
               Fluttertoast.showToast(
                 msg: "초기 페이지 로딩에 실패했습니다.",
@@ -142,12 +142,12 @@ class TaxiView extends HookWidget {
               _goBack(context, backCount, isAuthLogin, _controller.value),
           child: Scaffold(
             body: InAppWebView(
-                initialSettings: InAppWebViewSettings(
-                  useHybridComposition: true,
-                  useShouldOverrideUrlLoading: true,
-                  enableViewportScale: true,
-                ),
-                initialUrlRequest: URLRequest(url: WebUri(address)),
+                initialOptions: InAppWebViewGroupOptions(
+                    crossPlatform:
+                        InAppWebViewOptions(useShouldOverrideUrlLoading: true),
+                    android:
+                        AndroidInAppWebViewOptions(useHybridComposition: true)),
+                initialUrlRequest: URLRequest(url: Uri.parse(address)),
                 onWebViewCreated: (InAppWebViewController webcontroller) async {
                   _controller.value = webcontroller;
                 },
@@ -166,7 +166,7 @@ class TaxiView extends HookWidget {
                       } else {
                         sessionToken.value = session;
                         await _controller.value!.loadUrl(
-                            urlRequest: URLRequest(url: WebUri(address)));
+                            urlRequest: URLRequest(url: Uri.parse(address)));
                       }
                     } catch (e) {
                       // TODO handle error
@@ -200,12 +200,12 @@ class TaxiView extends HookWidget {
                     try {
                       await _cookieManager.deleteAllCookies();
                       await _cookieManager.setCookie(
-                        url: WebUri(address),
+                        url: Uri.parse(address),
                         name: "connect.sid",
                         value: sessionToken.value,
                       );
                       await _cookieManager.setCookie(
-                        url: WebUri(address),
+                        url: Uri.parse(address),
                         name: "deviceToken",
                         value: FcmToken().fcmToken,
                       );
