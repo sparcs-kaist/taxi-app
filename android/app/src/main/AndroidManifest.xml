@@ -31,6 +31,9 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
             />
+            <meta-data
+  android:name="flutterEmbedding"
+  android:value="2" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -43,6 +46,7 @@
         <category android:name="android.intent.category.BROWSABLE" />
         <data android:scheme="org.sparcs.taxiapp" />
       </intent-filter>
+      <intent-filter> <action android:name="FLUTTER_NOTIFICATION_CLICK" /> <category android:name="android.intent.category.DEFAULT" /> </intent-filter>
       
     </activity>
         <!-- Don't delete the meta-data below.
