@@ -59,8 +59,6 @@ void main() async {
 
   await FcmToken().init();
 
-  print(FcmToken().token);
-
   runApp(MyHome());
 }
 
