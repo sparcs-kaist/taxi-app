@@ -28,7 +28,7 @@ class TaxiDialog extends StatelessWidget {
                   style: GoogleFonts.roboto(
                       textStyle: const TextStyle(
                           color: Color(0xFF323232),
-                          fontSize: 16,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold)),
                   children: <TextSpan>[
                     TextSpan(text: "버전"),
@@ -47,7 +47,7 @@ class TaxiDialog extends StatelessWidget {
                 style: GoogleFonts.roboto(
                     textStyle: const TextStyle(
                         color: Color(0xFF888888),
-                        fontSize: 8,
+                        fontSize: 12,
                         fontWeight: FontWeight.bold))),
             const Padding(
               padding: EdgeInsets.all(15),
@@ -69,7 +69,7 @@ class TaxiDialog extends StatelessWidget {
                         style: GoogleFonts.roboto(
                             textStyle: const TextStyle(
                                 color: Color(0xFFC8C8C8),
-                                fontSize: 15,
+                                fontSize: 13,
                                 fontWeight: FontWeight.normal))),
                     onPressed: () async {
                       if (Platform.isIOS) {
@@ -97,12 +97,13 @@ class TaxiDialog extends StatelessWidget {
                         style: GoogleFonts.roboto(
                             textStyle: const TextStyle(
                                 color: Color(0xFFEEEEEE),
-                                fontSize: 15,
+                                fontSize: 13,
                                 fontWeight: FontWeight.bold))),
                     onPressed: () async {
                       LaunchReview.launch(
                           androidAppId: dotenv.get("ANDROID_APPID"),
-                          iOSAppId: dotenv.get("IOS_APPID"));
+                          iOSAppId: dotenv.get("IOS_APPID"),
+                          writeReview: false);
                     }),
               ],
             )
