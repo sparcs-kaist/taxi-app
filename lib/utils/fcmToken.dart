@@ -7,7 +7,7 @@ class FcmToken {
 
   static FcmToken? _instance;
 
-  final Dio _dio = Dio(ConnectionOptions);
+  final Dio _dio = Dio(connectionOptions);
 
   FcmToken._internal({required this.token});
 

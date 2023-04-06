@@ -104,6 +104,7 @@ flutter {
 }
 
 dependencies {
+    implementation 'com.google.android.material:material:1.8.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation platform('com.google.firebase:firebase-bom:30.2.0')
     implementation 'com.google.firebase:firebase-analytics'

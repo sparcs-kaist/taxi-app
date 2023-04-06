@@ -1,8 +1,10 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:taxiapp/utils/fcmToken.dart';
+import 'package:taxiapp/utils/pushHandler.dart';
 import 'package:taxiapp/utils/token.dart';
 import 'package:taxiapp/views/taxiView.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -12,9 +14,9 @@ late AndroidNotificationChannel channel;
 late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
 void main() async {
-  await dotenv.load(fileName: ".env");
-
   WidgetsFlutterBinding.ensureInitialized();
+
+  await dotenv.load(fileName: ".env");
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -27,15 +29,6 @@ void main() async {
     importance: Importance.high,
   );
 
-  var initializationSettingsAndroid =
-      const AndroidInitializationSettings('@mipmap/ic_launcher');
-
-  var initializationSettingsIOS = const IOSInitializationSettings(
-    requestAlertPermission: true,
-    requestBadgePermission: true,
-    requestSoundPermission: true,
-  );
-
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
   await flutterLocalNotificationsPlugin
@@ -43,14 +36,7 @@ void main() async {
           AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
 
-  var initializationSettings = InitializationSettings(
-    android: initializationSettingsAndroid,
-    iOS: initializationSettingsIOS,
-  );
-
-  await flutterLocalNotificationsPlugin.initialize(
-    initializationSettings,
-  );
+  FirebaseMessaging.onBackgroundMessage(handleMessage);
 
   await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
     alert: true,
@@ -73,40 +59,10 @@ void main() async {
 
   await FcmToken().init();
 
-  runApp(const MyApp());
+  runApp(MyHome());
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  @override
-  void initState() {
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-      RemoteNotification? notification = message.notification;
-      AndroidNotification? android = message.notification?.android;
-      var androidNotiDetails = AndroidNotificationDetails(
-          channel.id, channel.name,
-          channelDescription: channel.description);
-
-      var iOSNotiDetails = const IOSNotificationDetails();
-
-      var details =
-          NotificationDetails(android: androidNotiDetails, iOS: iOSNotiDetails);
-
-      if (notification != null) {
-        flutterLocalNotificationsPlugin.show(notification.hashCode,
-            notification.title, notification.body, details);
-      }
-    });
-
-    super.initState();
-  }
-
+class MyHome extends HookWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -115,10 +71,12 @@ class _MyAppState extends State<MyApp> {
         primarySwatch: Colors.blue,
       ),
       home: Container(
-          color: const Color(0xFF6E3647),
-          child: Container(
-            child: Container(color: Colors.white, child: TaxiView()),
-          )),
+        color: const Color(0xFF6E3647),
+        child: Container(
+          color: Colors.white,
+          child: TaxiView(),
+        ),
+      ),
     );
   }
 }
