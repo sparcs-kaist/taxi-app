@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:launch_review/launch_review.dart';
+import 'package:open_store/open_store.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class TaxiDialog extends StatelessWidget {
@@ -100,10 +100,9 @@ class TaxiDialog extends StatelessWidget {
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold))),
                     onPressed: () async {
-                      LaunchReview.launch(
-                          androidAppId: dotenv.get("ANDROID_APPID"),
-                          iOSAppId: dotenv.get("IOS_APPID"),
-                          writeReview: false);
+                      OpenStore.instance.open(
+                          androidAppBundleId: dotenv.get("ANDROID_APPID"),
+                          appStoreId: dotenv.get("IOS_APPID"));
                     }),
               ],
             )
