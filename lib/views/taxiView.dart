@@ -23,7 +23,6 @@ class TaxiView extends HookWidget {
 
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
-  TaxiView();
 
   @override
   Widget build(BuildContext context) {
@@ -32,21 +31,22 @@ class TaxiView extends HookWidget {
     final isLogin = useState(false);
     final isAuthLogin = useState(true);
     final backCount = useState(false);
-    final isFirstLoaded = useState(0);
+    final LoadCount = useState(0);
     final url = useState('');
     final _controller = useRef<InAppWebViewController?>(null);
+    final isMustUpdate = useState(false);
 
     useEffect(() {
-      var initializationSettingsAndroid =
-          const AndroidInitializationSettings('@mipmap/ic_launcher');
+      const initializationSettingsAndroid =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
 
-      var initializationSettingsIOS = const DarwinInitializationSettings(
+      const initializationSettingsIOS = DarwinInitializationSettings(
         requestAlertPermission: true,
         requestBadgePermission: true,
         requestSoundPermission: true,
       );
 
-      var initializationSettings = InitializationSettings(
+      const initializationSettings = InitializationSettings(
         android: initializationSettingsAndroid,
         iOS: initializationSettingsIOS,
       );
@@ -70,7 +70,7 @@ class TaxiView extends HookWidget {
           if (details.payload != null) {
             String address = dotenv.get("FRONT_ADDRESS");
             url.value = address + details.payload!;
-            isFirstLoaded.value += 1;
+            LoadCount.value += 1;
           }
         },
       );
@@ -83,7 +83,7 @@ class TaxiView extends HookWidget {
               details.notificationResponse?.payload != null) {
             String address = dotenv.get("FRONT_ADDRESS");
             url.value = address + details.notificationResponse!.payload!;
-            isFirstLoaded.value != 1;
+            LoadCount.value != 1;
           }
         }
       });
@@ -95,8 +95,7 @@ class TaxiView extends HookWidget {
             .loadUrl(urlRequest: URLRequest(url: Uri.parse(url.value)))
             .then((value) {});
       }
-    }, [isFirstLoaded.value]);
-
+    }, [LoadCount.value]);
 
     final AnimationController aniController = useAnimationController(
       duration: const Duration(milliseconds: 500),
