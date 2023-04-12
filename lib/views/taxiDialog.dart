@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:launch_review/launch_review.dart';
+import 'package:open_store/open_store.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class TaxiDialog extends StatelessWidget {
@@ -28,7 +28,7 @@ class TaxiDialog extends StatelessWidget {
                   style: GoogleFonts.roboto(
                       textStyle: const TextStyle(
                           color: Color(0xFF323232),
-                          fontSize: 16,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold)),
                   children: <TextSpan>[
                     TextSpan(text: "버전"),
@@ -47,7 +47,7 @@ class TaxiDialog extends StatelessWidget {
                 style: GoogleFonts.roboto(
                     textStyle: const TextStyle(
                         color: Color(0xFF888888),
-                        fontSize: 8,
+                        fontSize: 12,
                         fontWeight: FontWeight.bold))),
             const Padding(
               padding: EdgeInsets.all(15),
@@ -69,7 +69,7 @@ class TaxiDialog extends StatelessWidget {
                         style: GoogleFonts.roboto(
                             textStyle: const TextStyle(
                                 color: Color(0xFFC8C8C8),
-                                fontSize: 15,
+                                fontSize: 13,
                                 fontWeight: FontWeight.normal))),
                     onPressed: () async {
                       if (Platform.isIOS) {
@@ -97,12 +97,12 @@ class TaxiDialog extends StatelessWidget {
                         style: GoogleFonts.roboto(
                             textStyle: const TextStyle(
                                 color: Color(0xFFEEEEEE),
-                                fontSize: 15,
+                                fontSize: 13,
                                 fontWeight: FontWeight.bold))),
                     onPressed: () async {
-                      LaunchReview.launch(
-                          androidAppId: dotenv.get("ANDROID_APPID"),
-                          iOSAppId: dotenv.get("IOS_APPID"));
+                      OpenStore.instance.open(
+                          androidAppBundleId: dotenv.get("ANDROID_APPID"),
+                          appStoreId: dotenv.get("IOS_APPID"));
                     }),
               ],
             )
