@@ -172,49 +172,58 @@ class TaxiView extends HookWidget {
                 initialUrlRequest: URLRequest(url: Uri.parse(address)),
                 onWebViewCreated: (InAppWebViewController webcontroller) async {
                   _controller.value = webcontroller;
-                },
-                // React Link는 Page를 로드하는 것이 아니라 history를 바꾸는 것이기 때문에 history 변화로 링크 변화를 감지해야함.
-                onUpdateVisitedHistory:
-                    (controller, url, androidIsReload) async {
-                  // 세션이 만료되어 로그인 페이지로 돌아갈 시 자동으로 세션 갱신
-                  if (url.toString().contains("login") &&
-                      isLogin.value &&
-                      isAuthLogin.value) {
-                    try {
-                      String? session = await Token().getSession();
-                      if (session == null) {
-                        isLogin.value = false;
-                        isAuthLogin.value = false;
-                      } else {
-                        sessionToken.value = session;
-                        await _controller.value!.loadUrl(
-                            urlRequest: URLRequest(url: Uri.parse(address)));
-                      }
-                    } catch (e) {
-                      // TODO handle error
-                      Fluttertoast.showToast(
-                        msg: "서버와의 연결에 실패했습니다.",
-                        toastLength: Toast.LENGTH_SHORT,
-                      );
-                      isAuthLogin.value = false;
-                    }
-                  }
-                  // 로그아웃 감지 시 토큰 지우고 처음 로그인 페이지로 돌아가기
-                  if (url.toString().contains("logout") && isLogin.value) {
-                    try {
-                      await FcmToken().removeToken(Token().getAccessToken());
-                      await Token().deleteAll();
-                      isLogin.value = false;
-                      isAuthLogin.value = false;
-                    } catch (e) {
-                      // TODO
-                      Fluttertoast.showToast(
-                        msg: "서버와의 연결에 실패했습니다.",
-                        toastLength: Toast.LENGTH_SHORT,
-                      );
-                      isAuthLogin.value = false;
-                    }
-                  }
+                  _controller.value?.addJavaScriptHandler(
+                      handlerName: "logout",
+                      callback: (args) async {
+                        try {
+                          String? session = await Token().getSession();
+                          if (session == null) {
+                            isLogin.value = false;
+                            isAuthLogin.value = false;
+                          } else {
+                            sessionToken.value = session;
+                            await _controller.value!.loadUrl(
+                                urlRequest:
+                                    URLRequest(url: Uri.parse(address)));
+                          }
+                        } catch (e) {
+                          // TODO handle error
+                          Fluttertoast.showToast(
+                            msg: "서버와의 연결에 실패했습니다.",
+                            toastLength: Toast.LENGTH_SHORT,
+                          );
+                          isAuthLogin.value = false;
+                        }
+                      });
+                  _controller.value?.addJavaScriptHandler(
+                      handlerName: "auth_logout",
+                      callback: (args) async {
+                        try {
+                          await FcmToken()
+                              .removeToken(Token().getAccessToken());
+                          await Token().deleteAll();
+                          isLogin.value = false;
+                          isAuthLogin.value = false;
+                        } catch (e) {
+                          // TODO
+                          Fluttertoast.showToast(
+                            msg: "서버와의 연결에 실패했습니다.",
+                            toastLength: Toast.LENGTH_SHORT,
+                          );
+                          isAuthLogin.value = false;
+                        }
+                      });
+                  _controller.value?.addJavaScriptHandler(
+                    handlerName: "auth_update",
+                    callback: (arguments) async {
+                      await Token().setAccessToken(accessToken: arguments[0]!);
+                      await Token()
+                          .setRefreshToken(refreshToken: arguments[1]!);
+                      await FcmToken().registerToken(arguments[0]!);
+
+                      isAuthLogin.value = true;
+                    },
+                  );
                 },
                 onLoadStart: (controller, uri) async {
                   _controller.value = controller;
@@ -249,8 +258,8 @@ class TaxiView extends HookWidget {
               body: FadeTransition(opacity: animation, child: loadingView())),
       isMustUpdate.value
           ? Container(
-              color: Color(0x66C8C8C8),
-              child: Center(child: TaxiDialog()),
+              color: const Color(0x66C8C8C8),
+              child: const Center(child: TaxiDialog()),
             )
           : Stack()
     ]));
