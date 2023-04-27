@@ -9,7 +9,6 @@ import 'package:package_info/package_info.dart';
 import 'package:taxiapp/utils/fcmToken.dart';
 import 'package:taxiapp/utils/pushHandler.dart';
 import 'package:taxiapp/views/loadingView.dart';
-import 'package:taxiapp/views/loginView.dart';
 import 'package:taxiapp/utils/token.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -139,8 +138,9 @@ class TaxiView extends HookWidget {
               await _controller.value!
                   .loadUrl(urlRequest: URLRequest(url: Uri.parse(address)));
             } catch (e) {
+              print(e);
               Fluttertoast.showToast(
-                msg: "초기 페이지 로딩에 실패했습니다.",
+                msg: "로그인에 실패했습니다.",
                 backgroundColor: Colors.white,
                 toastLength: Toast.LENGTH_SHORT,
               );
@@ -243,7 +243,6 @@ class TaxiView extends HookWidget {
                 },
                 onLoadStop: (finish, uri) async {}),
           )),
-      isAuthLogin.value ? Stack() : LoginView(isAuthLogin),
       isLoaded.value
           ? Stack()
           : Scaffold(
