@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:package_info/package_info.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:taxiapp/utils/fcmToken.dart';
@@ -35,6 +36,8 @@ class TaxiView extends HookWidget {
     final url = useState('');
     final _controller = useRef<InAppWebViewController?>(null);
     final isMustUpdate = useState(false);
+    final isTimerUp = useState(false);
+    final isServerError = useState(false);
 
     useEffect(() {
       const initializationSettingsAndroid =
@@ -154,7 +157,7 @@ class TaxiView extends HookWidget {
 
     useEffect(() {
       Timer(const Duration(seconds: 2), () {
-        isLoaded.value = true;
+        isTimerUp.value = true;
       });
       return;
     }, []);
@@ -192,6 +195,7 @@ class TaxiView extends HookWidget {
                       return;
                     },
                   );
+
                   _controller.value?.addJavaScriptHandler(
                       handlerName: "auth_logout",
                       callback: (args) async {
@@ -242,16 +246,106 @@ class TaxiView extends HookWidget {
                         }
                       });
                 },
-                onLoadStop: (finish, uri) async {}),
+                onLoadError: (controller, url, code, message) {
+                  if (code == -2) {
+                    Fluttertoast.showToast(
+                      msg: "서버와의 연결에 실패했습니다.",
+                      toastLength: Toast.LENGTH_SHORT,
+                    );
+                    isServerError.value = true;
+                  }
+                },
+                onLoadStop: (finish, uri) async {
+                  if (!isServerError.value) {
+                    isLoaded.value = true;
+                  }
+                }),
           )),
-      isLoaded.value
+      isTimerUp.value && isLoaded.value
           ? Stack()
           : Scaffold(
               body: FadeTransition(opacity: animation, child: loadingView())),
       isMustUpdate.value
           ? Container(
               color: const Color(0x66C8C8C8),
-              child: const Center(child: TaxiDialog()),
+              child: Center(
+                  child: TaxiDialog(
+                boxContent: {
+                  RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                        text: "새로운 ",
+                        style: GoogleFonts.roboto(
+                            textStyle: const TextStyle(
+                                color: Color(0xFF323232),
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold)),
+                        children: const <TextSpan>[
+                          TextSpan(text: "버전"),
+                          TextSpan(
+                              text: "이 ",
+                              style: TextStyle(fontWeight: FontWeight.normal)),
+                          TextSpan(
+                              text: "출시",
+                              style: TextStyle(color: Color(0xFF6E3678))),
+                          TextSpan(
+                              text: "되었습니다!",
+                              style: TextStyle(fontWeight: FontWeight.normal))
+                        ]),
+                  ),
+                  Text("정상적인 사용을 위해 앱을 업데이트 해주세요.",
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.roboto(
+                          textStyle: const TextStyle(
+                              color: Color(0xFF888888),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold))),
+                },
+                rightButtonContent: "업데이트 하러가기",
+                leftButtonContent: "앱 종료하기",
+              )),
+            )
+          : Stack(),
+      isServerError.value
+          ? Container(
+              color: const Color(0x66C8C8C8),
+              child: Center(
+                  child: TaxiDialog(
+                boxContent: {
+                  RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                        text: "서버",
+                        style: GoogleFonts.roboto(
+                            textStyle: const TextStyle(
+                                color: Color(0xFF323232),
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold)),
+                        children: const <TextSpan>[
+                          TextSpan(text: "와의 "),
+                          TextSpan(
+                              text: "연결에 ",
+                              style: TextStyle(fontWeight: FontWeight.normal)),
+                          TextSpan(
+                              text: "실패",
+                              style: TextStyle(color: Color(0xFF6E3678))),
+                          TextSpan(
+                              text: "했습니다.",
+                              style: TextStyle(fontWeight: FontWeight.normal))
+                        ]),
+                  ),
+                  Padding(padding: EdgeInsets.only(top: 5)),
+                  Text("일시적인 오류일 수 있습니다.",
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.roboto(
+                          textStyle: const TextStyle(
+                              color: Color(0xFF888888),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold))),
+                },
+                rightButtonContent: "스토어로 가기",
+                leftButtonContent: "앱 종료하기",
+              )),
             )
           : Stack()
     ]));

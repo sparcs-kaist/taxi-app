@@ -7,7 +7,14 @@ import 'package:open_store/open_store.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class TaxiDialog extends StatelessWidget {
-  const TaxiDialog({super.key});
+  late Set<Widget> boxContent;
+  late String leftButtonContent;
+  late String rightButtonContent;
+  TaxiDialog(
+      {super.key,
+      required this.boxContent,
+      required this.leftButtonContent,
+      required this.rightButtonContent});
 
   @override
   Widget build(BuildContext context) {
@@ -21,34 +28,7 @@ class TaxiDialog extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const Padding(padding: EdgeInsets.all(15)),
-            RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                  text: "새로운 ",
-                  style: GoogleFonts.roboto(
-                      textStyle: const TextStyle(
-                          color: Color(0xFF323232),
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold)),
-                  children: <TextSpan>[
-                    TextSpan(text: "버전"),
-                    TextSpan(
-                        text: "이 ",
-                        style: TextStyle(fontWeight: FontWeight.normal)),
-                    TextSpan(
-                        text: "출시", style: TextStyle(color: Color(0xFF6E3678))),
-                    TextSpan(
-                        text: "되었습니다!",
-                        style: TextStyle(fontWeight: FontWeight.normal))
-                  ]),
-            ),
-            Text("정상적인 사용을 위해 앱을 업데이트 해주세요.",
-                textAlign: TextAlign.center,
-                style: GoogleFonts.roboto(
-                    textStyle: const TextStyle(
-                        color: Color(0xFF888888),
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold))),
+            ...boxContent,
             const Padding(
               padding: EdgeInsets.all(15),
             ),
@@ -65,7 +45,7 @@ class TaxiDialog extends StatelessWidget {
                         side: const BorderSide(color: Colors.white),
                       ),
                     ),
-                    child: Text("앱 종료하기",
+                    child: Text(leftButtonContent,
                         style: GoogleFonts.roboto(
                             textStyle: const TextStyle(
                                 color: Color(0xFFC8C8C8),
@@ -93,7 +73,7 @@ class TaxiDialog extends StatelessWidget {
                         ),
                       ),
                     ),
-                    child: Text("업데이트 하러가기",
+                    child: Text(rightButtonContent,
                         style: GoogleFonts.roboto(
                             textStyle: const TextStyle(
                                 color: Color(0xFFEEEEEE),
