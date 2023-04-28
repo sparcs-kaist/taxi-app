@@ -27,6 +27,8 @@ class TaxiView extends HookWidget {
 
   TaxiView({url});
 
+  TaxiView({url});
+
   @override
   Widget build(BuildContext context) {
     final isLoaded = useState(false);
