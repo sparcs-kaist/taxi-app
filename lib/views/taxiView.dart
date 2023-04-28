@@ -130,7 +130,11 @@ class TaxiView extends HookWidget {
     }, []);
 
     useEffect(() {
+      print("일로옴");
+      print(isLogin.value);
+      print(isAuthLogin.value);
       if (isAuthLogin.value && !isLogin.value) {
+        print("새로 등록 가보자고");
         Token().getSession().then((value) async {
           if (value == null) {
             isLogin.value = false;
@@ -139,6 +143,7 @@ class TaxiView extends HookWidget {
             sessionToken.value = value;
             isLogin.value = true;
             try {
+              print("새로 세션 생성되어버림");
               await _controller.value!
                   .loadUrl(urlRequest: URLRequest(url: Uri.parse(address)));
             } catch (e) {
@@ -179,6 +184,7 @@ class TaxiView extends HookWidget {
                   _controller.value?.addJavaScriptHandler(
                     handlerName: "auth_update",
                     callback: (arguments) async {
+                      print(arguments);
                       if (arguments == [{}]) {
                         isLogin.value = false;
                         return;
@@ -218,33 +224,57 @@ class TaxiView extends HookWidget {
                   _controller.value?.addJavaScriptHandler(
                       handlerName: "try_notification",
                       callback: (args) async {
+                        print("이거호출댐");
                         if (await Permission.notification.isGranted) {
                           return true;
-                        } else if (await Permission
-                            .notification.isPermanentlyDenied) {
+                        } else {
                           openAppSettings();
                           Fluttertoast.showToast(
                             msg: "알림 권한을 허용해주세요.",
                             toastLength: Toast.LENGTH_SHORT,
                           );
                           return false;
-                        } else {
-                          await FirebaseMessaging.instance.requestPermission(
-                            alert: true,
-                            announcement: false,
-                            badge: true,
-                            carPlay: false,
-                            criticalAlert: false,
-                            provisional: false,
-                            sound: true,
-                          );
-                          if (await Permission.notification.isGranted) {
-                            return true;
-                          } else {
-                            return false;
-                          }
                         }
                       });
+                },
+                onLoadStart: (controller, uri) async {
+                  if (isLogin.value &&
+                      sessionToken.value != '' &&
+                      (await controller.getUrl())?.origin ==
+                          Uri.parse(address).origin &&
+                      (await _cookieManager.getCookie(
+                                  url: Uri.parse(address), name: "connect.sid"))
+                              ?.value !=
+                          sessionToken.value) {
+                    print("호출되버림");
+                    print((await _cookieManager.getCookie(
+                            url: Uri.parse(address), name: "connect.sid"))
+                        ?.value);
+                    print("세션토큰 : " + sessionToken.value);
+                    try {
+                      await _cookieManager.deleteCookie(
+                          url: Uri.parse(address), name: "connect.sid");
+                      await _cookieManager.setCookie(
+                        url: Uri.parse(address),
+                        name: "connect.sid",
+                        value: sessionToken.value,
+                      );
+                      await _cookieManager.setCookie(
+                        url: Uri.parse(address),
+                        name: "deviceToken",
+                        value: FcmToken().fcmToken,
+                      );
+                      await _controller.value?.stopLoading();
+                      await _controller.value?.reload();
+                    } catch (e) {
+                      // TODO : handle error
+                      Fluttertoast.showToast(
+                        msg: "서버와의 연결에 실패했습니다.",
+                        toastLength: Toast.LENGTH_SHORT,
+                      );
+                      isAuthLogin.value = false;
+                    }
+                  }
                 },
                 onLoadError: (controller, url, code, message) {
                   if (code == -2) {
