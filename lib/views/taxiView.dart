@@ -357,10 +357,16 @@ class TaxiView extends HookWidget {
       ValueNotifier<bool> isAuthLogin,
       InAppWebViewController? _controller) async {
     Uri? current_uri = await _controller!.getUrl();
+    String address = dotenv.get("FRONT_ADDRESS");
     if (await _controller.canGoBack() &&
         (current_uri?.path != '/') &&
         (current_uri?.path != '/home')) {
       _controller.goBack();
+      backCount.value = false;
+      return false;
+    } else if (Uri.parse(address).origin != current_uri?.origin) {
+      await _controller.loadUrl(
+          urlRequest: URLRequest(url: Uri.parse(address)));
       backCount.value = false;
       return false;
     } else if (backCount.value) {
