@@ -6,6 +6,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:package_info/package_info.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:taxiapp/utils/fcmToken.dart';
 import 'package:taxiapp/utils/pushHandler.dart';
 import 'package:taxiapp/views/loadingView.dart';
@@ -173,28 +174,24 @@ class TaxiView extends HookWidget {
                 onWebViewCreated: (InAppWebViewController webcontroller) async {
                   _controller.value = webcontroller;
                   _controller.value?.addJavaScriptHandler(
-                      handlerName: "logout",
-                      callback: (args) async {
-                        try {
-                          String? session = await Token().getSession();
-                          if (session == null) {
-                            isLogin.value = false;
-                            isAuthLogin.value = false;
-                          } else {
-                            sessionToken.value = session;
-                            await _controller.value!.loadUrl(
-                                urlRequest:
-                                    URLRequest(url: Uri.parse(address)));
-                          }
-                        } catch (e) {
-                          // TODO handle error
-                          Fluttertoast.showToast(
-                            msg: "서버와의 연결에 실패했습니다.",
-                            toastLength: Toast.LENGTH_SHORT,
-                          );
-                          isAuthLogin.value = false;
-                        }
-                      });
+                    handlerName: "auth_update",
+                    callback: (arguments) async {
+                      if (arguments == [{}]) {
+                        isLogin.value = false;
+                        return;
+                      }
+                      if (!isAuthLogin.value) {
+                        await Token().setAccessToken(
+                            accessToken: arguments[0]['accessToken']);
+                        await Token().setRefreshToken(
+                            refreshToken: arguments[0]['refreshToken']);
+                        await FcmToken()
+                            .registerToken(arguments[0]['accessToken']);
+                        isAuthLogin.value = true;
+                      }
+                      return;
+                    },
+                  );
                   _controller.value?.addJavaScriptHandler(
                       handlerName: "auth_logout",
                       callback: (args) async {
@@ -213,42 +210,37 @@ class TaxiView extends HookWidget {
                           isAuthLogin.value = false;
                         }
                       });
-                  _controller.value?.addJavaScriptHandler(
-                    handlerName: "auth_update",
-                    callback: (arguments) async {
-                      await Token().setAccessToken(accessToken: arguments[0]!);
-                      await Token()
-                          .setRefreshToken(refreshToken: arguments[1]!);
-                      await FcmToken().registerToken(arguments[0]!);
 
-                      isAuthLogin.value = true;
-                    },
-                  );
-                },
-                onLoadStart: (controller, uri) async {
-                  _controller.value = controller;
-                  if (sessionToken.value != '') {
-                    try {
-                      await _cookieManager.deleteAllCookies();
-                      await _cookieManager.setCookie(
-                        url: Uri.parse(address),
-                        name: "connect.sid",
-                        value: sessionToken.value,
-                      );
-                      await _cookieManager.setCookie(
-                        url: Uri.parse(address),
-                        name: "deviceToken",
-                        value: FcmToken().fcmToken,
-                      );
-                    } catch (e) {
-                      // TODO : handle error
-                      Fluttertoast.showToast(
-                        msg: "서버와의 연결에 실패했습니다.",
-                        toastLength: Toast.LENGTH_SHORT,
-                      );
-                      isAuthLogin.value = false;
-                    }
-                  }
+                  _controller.value?.addJavaScriptHandler(
+                      handlerName: "try_notification",
+                      callback: (args) async {
+                        if (await Permission.notification.isGranted) {
+                          return true;
+                        } else if (await Permission
+                            .notification.isPermanentlyDenied) {
+                          openAppSettings();
+                          Fluttertoast.showToast(
+                            msg: "알림 권한을 허용해주세요.",
+                            toastLength: Toast.LENGTH_SHORT,
+                          );
+                          return false;
+                        } else {
+                          await FirebaseMessaging.instance.requestPermission(
+                            alert: true,
+                            announcement: false,
+                            badge: true,
+                            carPlay: false,
+                            criticalAlert: false,
+                            provisional: false,
+                            sound: true,
+                          );
+                          if (await Permission.notification.isGranted) {
+                            return true;
+                          } else {
+                            return false;
+                          }
+                        }
+                      });
                 },
                 onLoadStop: (finish, uri) async {}),
           )),
@@ -273,7 +265,6 @@ class TaxiView extends HookWidget {
     Uri? current_uri = await _controller!.getUrl();
     if (await _controller.canGoBack() &&
         (current_uri?.path != '/') &&
-        isAuthLogin.value &&
         (current_uri?.path != '/home')) {
       _controller.goBack();
       backCount.value = false;
