@@ -100,8 +100,6 @@ class TaxiView extends HookWidget {
       });
 
       FirebaseDynamicLinks.instance.onLink.listen((event) {
-        print(event);
-        print("DEEP LINK 호툴됨");
         if (event != null) {
           url.value = event.link.toString();
           LoadCount.value += 1;
@@ -193,8 +191,10 @@ class TaxiView extends HookWidget {
                 initialOptions: InAppWebViewGroupOptions(
                     crossPlatform:
                         InAppWebViewOptions(useShouldOverrideUrlLoading: true),
-                    android:
-                        AndroidInAppWebViewOptions(useHybridComposition: true)),
+                    android: AndroidInAppWebViewOptions(
+                        useHybridComposition: true,
+                        overScrollMode:
+                            AndroidOverScrollMode.OVER_SCROLL_NEVER)),
                 initialUrlRequest: URLRequest(url: Uri.parse(address)),
                 onWebViewCreated: (InAppWebViewController webcontroller) async {
                   _controller.value = webcontroller;
@@ -222,11 +222,13 @@ class TaxiView extends HookWidget {
                       handlerName: "auth_logout",
                       callback: (args) async {
                         try {
+                          print("일로옴");
                           await FcmToken()
                               .removeToken(Token().getAccessToken());
                           await Token().deleteAll();
                           isLogin.value = false;
                           isAuthLogin.value = false;
+                          await _cookieManager.deleteAllCookies();
                           await _controller.value!.loadUrl(
                               urlRequest: URLRequest(url: Uri.parse(address)));
                         } catch (e) {
