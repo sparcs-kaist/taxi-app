@@ -50,6 +50,7 @@ dependencies:
   firebase_remote_config: ^3.0.14
   open_store: ^0.5.0
   permission_handler: ^10.2.0
+  firebase_dynamic_links: ^5.1.1
 
 dev_dependencies:
   flutter_test:

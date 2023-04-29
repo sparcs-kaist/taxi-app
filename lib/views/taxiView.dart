@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -88,6 +89,22 @@ class TaxiView extends HookWidget {
             url.value = address + details.notificationResponse!.payload!;
             LoadCount.value != 1;
           }
+        }
+      });
+
+      FirebaseDynamicLinks.instance.getInitialLink().then((initalLink) {
+        if (initalLink != null) {
+          url.value = initalLink.link.toString();
+          LoadCount.value += 1;
+        }
+      });
+
+      FirebaseDynamicLinks.instance.onLink.listen((event) {
+        print(event);
+        print("DEEP LINK 호툴됨");
+        if (event != null) {
+          url.value = event.link.toString();
+          LoadCount.value += 1;
         }
       });
     }, []);

@@ -32,8 +32,8 @@
 	<string>Main</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
-			<string>itms-beta</string>
-			<string>itms</string>
+		<string>itms-beta</string>
+		<string>itms</string>
 	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
@@ -62,6 +62,10 @@
 				<string>org.sparcs.taxi_app</string>
 			</array>
 		</dict>
+	</array>
+	<key>FirebaseDynamicLinksCustomDomains</key>
+	<array>
+		<string>https://sparcstaxi.page.link</string>
 	</array>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
