@@ -184,7 +184,6 @@ class TaxiView extends HookWidget {
                   _controller.value?.addJavaScriptHandler(
                     handlerName: "auth_update",
                     callback: (arguments) async {
-                      print(arguments);
                       if (arguments == [{}]) {
                         isLogin.value = false;
                         return;
@@ -211,6 +210,8 @@ class TaxiView extends HookWidget {
                           await Token().deleteAll();
                           isLogin.value = false;
                           isAuthLogin.value = false;
+                          await _controller.value!.loadUrl(
+                              urlRequest: URLRequest(url: Uri.parse(address)));
                         } catch (e) {
                           // TODO
                           Fluttertoast.showToast(
@@ -224,7 +225,6 @@ class TaxiView extends HookWidget {
                   _controller.value?.addJavaScriptHandler(
                       handlerName: "try_notification",
                       callback: (args) async {
-                        print("이거호출댐");
                         if (await Permission.notification.isGranted) {
                           return true;
                         } else {
@@ -246,11 +246,6 @@ class TaxiView extends HookWidget {
                                   url: Uri.parse(address), name: "connect.sid"))
                               ?.value !=
                           sessionToken.value) {
-                    print("호출되버림");
-                    print((await _cookieManager.getCookie(
-                            url: Uri.parse(address), name: "connect.sid"))
-                        ?.value);
-                    print("세션토큰 : " + sessionToken.value);
                     try {
                       await _cookieManager.deleteCookie(
                           url: Uri.parse(address), name: "connect.sid");
