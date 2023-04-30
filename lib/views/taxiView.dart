@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
@@ -86,7 +87,10 @@ class TaxiView extends HookWidget {
           if (details.didNotificationLaunchApp &&
               details.notificationResponse?.payload != null) {
             String address = dotenv.get("FRONT_ADDRESS");
-            url.value = address + details.notificationResponse!.payload!;
+            print(details.notificationResponse!.payload!);
+            Uri new_uri = Uri.parse(address)
+                .replace(path: details.notificationResponse!.payload!);
+            url.value = new_uri.toString();
             LoadCount.value != 1;
           }
         }
@@ -133,36 +137,48 @@ class TaxiView extends HookWidget {
             fetchTimeout: const Duration(seconds: 10),
             minimumFetchInterval: Duration.zero,
           ));
-          await remoteConfig.setDefaults({"version": value.version});
+          await remoteConfig.setDefaults(
+              {"version": value.version, "ios_version": value.version});
           await remoteConfig.fetchAndActivate();
-          if (remoteConfig.getString("version") != value.version) {
-            isMustUpdate.value = true;
+          if (Platform.isIOS) {
+            if (int.parse(
+                    remoteConfig.getString("ios_version").replaceAll(".", "")) >
+                int.parse(value.version.replaceAll(".", ""))) {
+              isMustUpdate.value = true;
+            }
+          } else {
+            if (int.parse(
+                    remoteConfig.getString("version").replaceAll(".", "")) >
+                int.parse(value.version.replaceAll(".", ""))) {
+              isMustUpdate.value = true;
+            }
           }
         } catch (e) {
-          print(e);
+          Fluttertoast.showToast(
+            msg: "버전 체크에 실패했습니다.",
+            backgroundColor: Colors.white,
+            toastLength: Toast.LENGTH_SHORT,
+          );
         }
       });
     }, []);
 
     useEffect(() {
-      print("일로옴");
-      print(isLogin.value);
-      print(isAuthLogin.value);
       if (isAuthLogin.value && !isLogin.value) {
-        print("새로 등록 가보자고");
         Token().getSession().then((value) async {
           if (value == null) {
+            if (Token().accessToken != '') {
+              await Token().deleteAll();
+            }
             isLogin.value = false;
             isAuthLogin.value = false;
           } else {
             sessionToken.value = value;
             isLogin.value = true;
             try {
-              print("새로 세션 생성되어버림");
               await _controller.value!
                   .loadUrl(urlRequest: URLRequest(url: Uri.parse(address)));
             } catch (e) {
-              print(e);
               Fluttertoast.showToast(
                 msg: "로그인에 실패했습니다.",
                 backgroundColor: Colors.white,
@@ -189,8 +205,9 @@ class TaxiView extends HookWidget {
           child: Scaffold(
             body: InAppWebView(
                 initialOptions: InAppWebViewGroupOptions(
-                    crossPlatform:
-                        InAppWebViewOptions(useShouldOverrideUrlLoading: true),
+                    crossPlatform: InAppWebViewOptions(
+                        useShouldOverrideUrlLoading: true,
+                        resourceCustomSchemes: ['intent']),
                     android: AndroidInAppWebViewOptions(
                         useHybridComposition: true,
                         overScrollMode:
@@ -222,7 +239,6 @@ class TaxiView extends HookWidget {
                       handlerName: "auth_logout",
                       callback: (args) async {
                         try {
-                          print("일로옴");
                           await FcmToken()
                               .removeToken(Token().getAccessToken());
                           await Token().deleteAll();
@@ -259,8 +275,7 @@ class TaxiView extends HookWidget {
                 onLoadStart: (controller, uri) async {
                   if (isLogin.value &&
                       sessionToken.value != '' &&
-                      (await controller.getUrl())?.origin ==
-                          Uri.parse(address).origin &&
+                      uri?.origin == Uri.parse(address).origin &&
                       (await _cookieManager.getCookie(
                                   url: Uri.parse(address), name: "connect.sid"))
                               ?.value !=
@@ -290,6 +305,41 @@ class TaxiView extends HookWidget {
                     }
                   }
                 },
+                onUpdateVisitedHistory:
+                    (controller, url, androidIsReload) async {
+                  // 로그아웃 링크 감지
+                  if (url.toString().contains("logout") && isAuthLogin.value) {
+                    await controller.stopLoading();
+                    try {
+                      await FcmToken().removeToken(Token().getAccessToken());
+                      await Token().deleteAll();
+                      isLogin.value = false;
+                      isAuthLogin.value = false;
+                      await _cookieManager.deleteAllCookies();
+                      await _controller.value!.loadUrl(
+                          urlRequest: URLRequest(url: Uri.parse(address)));
+                    } catch (e) {
+                      // TODO
+                      Fluttertoast.showToast(
+                        msg: "서버와의 연결에 실패했습니다.",
+                        toastLength: Toast.LENGTH_SHORT,
+                      );
+                      isAuthLogin.value = false;
+                    }
+                  }
+                },
+                onLoadResourceCustomScheme: (controller, url) {
+                  if (Platform.isAndroid) {
+                    if (url.scheme == 'intent') {
+                      try {
+                        Intent intent = Intent.parseUri(url.toString(), 0);
+                        intent.launch();
+                      } catch (e) {
+                        // TODO
+                      }
+                    }
+                  }
+                },
                 onLoadError: (controller, url, code, message) {
                   if (code == -2) {
                     Fluttertoast.showToast(
@@ -302,6 +352,13 @@ class TaxiView extends HookWidget {
                 onLoadStop: (finish, uri) async {
                   if (!isServerError.value) {
                     isLoaded.value = true;
+                  }
+                  if (uri
+                      .toString()
+                      .contains("sparcssso.kaist.ac.kr/account/login")) {
+                    await _controller.value!.evaluateJavascript(
+                        source:
+                            "document.getElementsByClassName('btn-kaist')?.[0]?.click()");
                   }
                 }),
           )),

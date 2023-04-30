@@ -9,7 +9,9 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />  
     
-    
+    <queries>
+        <package android:name="com.kakao.talk" />
+    </queries>
     <application
         android:label="Taxi"
         android:name="${applicationName}"
