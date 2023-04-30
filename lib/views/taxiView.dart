@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -87,7 +88,6 @@ class TaxiView extends HookWidget {
           if (details.didNotificationLaunchApp &&
               details.notificationResponse?.payload != null) {
             String address = dotenv.get("FRONT_ADDRESS");
-            print(details.notificationResponse!.payload!);
             Uri new_uri = Uri.parse(address)
                 .replace(path: details.notificationResponse!.payload!);
             url.value = new_uri.toString();
@@ -176,8 +176,7 @@ class TaxiView extends HookWidget {
             sessionToken.value = value;
             isLogin.value = true;
             try {
-              await _controller.value!
-                  .loadUrl(urlRequest: URLRequest(url: Uri.parse(address)));
+              await _controller.value!.reload();
             } catch (e) {
               Fluttertoast.showToast(
                 msg: "로그인에 실패했습니다.",
@@ -192,7 +191,7 @@ class TaxiView extends HookWidget {
     }, [isAuthLogin.value]);
 
     useEffect(() {
-      Timer(const Duration(seconds: 2), () {
+      Timer(const Duration(seconds: 1), () {
         isTimerUp.value = true;
       });
       return;
@@ -271,6 +270,18 @@ class TaxiView extends HookWidget {
                           return false;
                         }
                       });
+
+                  _controller.value?.addJavaScriptHandler(
+                      handlerName: "clipboard_copy",
+                      callback: (args) async {
+                        if (Platform.isAndroid) {
+                          await Clipboard.setData(ClipboardData(text: args[0]));
+                          Fluttertoast.showToast(
+                            msg: "클립보드에 복사되었습니다.",
+                            toastLength: Toast.LENGTH_SHORT,
+                          );
+                        }
+                      });
                 },
                 onLoadStart: (controller, uri) async {
                   if (isLogin.value &&
@@ -281,6 +292,7 @@ class TaxiView extends HookWidget {
                               ?.value !=
                           sessionToken.value) {
                     try {
+                      await _controller.value?.stopLoading();
                       await _cookieManager.deleteCookie(
                           url: Uri.parse(address), name: "connect.sid");
                       await _cookieManager.setCookie(
@@ -293,7 +305,6 @@ class TaxiView extends HookWidget {
                         name: "deviceToken",
                         value: FcmToken().fcmToken,
                       );
-                      await _controller.value?.stopLoading();
                       await _controller.value?.reload();
                     } catch (e) {
                       // TODO : handle error
@@ -328,17 +339,29 @@ class TaxiView extends HookWidget {
                     }
                   }
                 },
-                onLoadResourceCustomScheme: (controller, url) {
+                onLoadResourceCustomScheme: (controller, url) async {
                   if (Platform.isAndroid) {
                     if (url.scheme == 'intent') {
                       try {
-                        Intent intent = Intent.parseUri(url.toString(), 0);
-                        intent.launch();
+                        await controller.stopLoading();
+                        const MethodChannel channel =
+                            MethodChannel('org.sparcs.taxi_app/taxi_only');
+                        final result = await channel.invokeMethod(
+                            "launchURI", url.toString());
+                        if (result != null) {
+                          await _controller.value?.loadUrl(
+                              urlRequest: URLRequest(url: Uri.parse(result)));
+                        }
                       } catch (e) {
                         // TODO
+                        await Fluttertoast.showToast(
+                          msg: "카카오톡을 실행할 수 없습니다.",
+                          toastLength: Toast.LENGTH_SHORT,
+                        );
                       }
                     }
                   }
+                  return null;
                 },
                 onLoadError: (controller, url, code, message) {
                   if (code == -2) {
@@ -354,8 +377,9 @@ class TaxiView extends HookWidget {
                     isLoaded.value = true;
                   }
                   if (uri
-                      .toString()
-                      .contains("sparcssso.kaist.ac.kr/account/login")) {
+                          .toString()
+                          .contains("sparcssso.kaist.ac.kr/account/login") &&
+                      !address.contains("dev")) {
                     await _controller.value!.evaluateJavascript(
                         source:
                             "document.getElementsByClassName('btn-kaist')?.[0]?.click()");

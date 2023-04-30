@@ -1,36 +1,40 @@
 package org.sparcs.taxi_app
 
 import io.flutter.embedding.android.FlutterActivity
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
+import android.content.IntentFilter
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
+import androidx.annotation.NonNull
+
 
 class MainActivity: FlutterActivity() {
-    private val CHANNEL = "org.sparcs.taxi_app"
+    private val CHANNEL = "org.sparcs.taxi_app/taxi_only"
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        GeneratedPluginRegistrant.registerWith(this)
+    override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
 
-        MethodChannel(flutterView, CHANNEL).setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             if (call.method == "launchURI") {
                 try {
                     val intent = Intent.parseUri(call.arguments as String, Intent.URI_INTENT_SCHEME)
 
                     if (intent.resolveActivity(packageManager) != null) {
                         startActivity(intent)
-                        Log.d(TAG, "Intent launched!")
-                        result.success("Intent launched!")
-                        return;
-                    }
+                        result.success(null)
+                    } else {
                     
                     val fallbackUrl = intent.getStringExtra("browser_fallback_url")
                     if(fallbackUrl != null){
-                        result.error("UNAVAILABLE", "No activity found to handle intent", fallbackUrl)
+                        result.success(fallbackUrl)
                     } else{
                         result.error("UNAVAILABLE", "No activity found to handle intent", null)
                     }
+                }
 
-                } catch (e: URISyntaxException) {
-                    Log.e(TAG, "URISyntaxException: $e")
+                } catch (e: Exception) {
                     result.error("URISyntaxException", "URISyntaxException: $e", null)
                 }
             } else {
