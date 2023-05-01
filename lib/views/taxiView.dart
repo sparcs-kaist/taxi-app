@@ -30,17 +30,20 @@ class TaxiView extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    String address = dotenv.get("FRONT_ADDRESS");
+
     final isLoaded = useState(false);
     final sessionToken = useState('');
     final isLogin = useState(false);
     final isAuthLogin = useState(true);
     final backCount = useState(false);
     final LoadCount = useState(0);
-    final url = useState('');
+    final url = useState(address);
     final _controller = useRef<InAppWebViewController?>(null);
     final isMustUpdate = useState(false);
     final isTimerUp = useState(false);
     final isServerError = useState(false);
+    final isFirstLogin = useState(true);
 
     useEffect(() {
       const initializationSettingsAndroid =
@@ -112,7 +115,7 @@ class TaxiView extends HookWidget {
     }, []);
 
     useEffect(() {
-      if (url.value != '') {
+      if (url.value != '' && _controller.value != null) {
         _controller.value!
             .loadUrl(urlRequest: URLRequest(url: Uri.parse(url.value)))
             .then((value) {});
@@ -127,7 +130,6 @@ class TaxiView extends HookWidget {
       parent: aniController,
       curve: Curves.easeIn,
     );
-    String address = dotenv.get("FRONT_ADDRESS");
 
     useEffect(() {
       PackageInfo.fromPlatform().then((value) async {
@@ -158,6 +160,7 @@ class TaxiView extends HookWidget {
             msg: "버전 체크에 실패했습니다.",
             backgroundColor: Colors.white,
             toastLength: Toast.LENGTH_SHORT,
+            textColor: Colors.black,
           );
         }
       });
@@ -176,12 +179,20 @@ class TaxiView extends HookWidget {
             sessionToken.value = value;
             isLogin.value = true;
             try {
-              await _controller.value!.reload();
+              if (isFirstLogin.value) {
+                LoadCount.value += 1;
+                isFirstLogin.value = false;
+              } else {
+                url.value = address;
+                LoadCount.value += 1;
+              }
             } catch (e) {
+              print(e);
               Fluttertoast.showToast(
                 msg: "로그인에 실패했습니다.",
                 backgroundColor: Colors.white,
                 toastLength: Toast.LENGTH_SHORT,
+                textColor: Colors.black,
               );
             }
           }
@@ -249,9 +260,10 @@ class TaxiView extends HookWidget {
                         } catch (e) {
                           // TODO
                           Fluttertoast.showToast(
-                            msg: "서버와의 연결에 실패했습니다.",
-                            toastLength: Toast.LENGTH_SHORT,
-                          );
+                              msg: "서버와의 연결에 실패했습니다.",
+                              toastLength: Toast.LENGTH_SHORT,
+                              textColor: Colors.black,
+                              backgroundColor: Colors.white);
                           isAuthLogin.value = false;
                         }
                       });
@@ -264,9 +276,10 @@ class TaxiView extends HookWidget {
                         } else {
                           openAppSettings();
                           Fluttertoast.showToast(
-                            msg: "알림 권한을 허용해주세요.",
-                            toastLength: Toast.LENGTH_SHORT,
-                          );
+                              msg: "알림 권한을 허용해주세요.",
+                              toastLength: Toast.LENGTH_SHORT,
+                              textColor: Colors.black,
+                              backgroundColor: Colors.white);
                           return false;
                         }
                       });
@@ -277,9 +290,10 @@ class TaxiView extends HookWidget {
                         if (Platform.isAndroid) {
                           await Clipboard.setData(ClipboardData(text: args[0]));
                           Fluttertoast.showToast(
-                            msg: "클립보드에 복사되었습니다.",
-                            toastLength: Toast.LENGTH_SHORT,
-                          );
+                              msg: "클립보드에 복사되었습니다.",
+                              toastLength: Toast.LENGTH_SHORT,
+                              textColor: Colors.black,
+                              backgroundColor: Colors.white);
                         }
                       });
                 },
@@ -309,9 +323,10 @@ class TaxiView extends HookWidget {
                     } catch (e) {
                       // TODO : handle error
                       Fluttertoast.showToast(
-                        msg: "서버와의 연결에 실패했습니다.",
-                        toastLength: Toast.LENGTH_SHORT,
-                      );
+                          msg: "서버와의 연결에 실패했습니다.",
+                          toastLength: Toast.LENGTH_SHORT,
+                          textColor: Colors.black,
+                          backgroundColor: Colors.white);
                       isAuthLogin.value = false;
                     }
                   }
@@ -332,9 +347,10 @@ class TaxiView extends HookWidget {
                     } catch (e) {
                       // TODO
                       Fluttertoast.showToast(
-                        msg: "서버와의 연결에 실패했습니다.",
-                        toastLength: Toast.LENGTH_SHORT,
-                      );
+                          msg: "서버와의 연결에 실패했습니다.",
+                          toastLength: Toast.LENGTH_SHORT,
+                          textColor: Colors.black,
+                          backgroundColor: Colors.white);
                       isAuthLogin.value = false;
                     }
                   }
@@ -355,20 +371,27 @@ class TaxiView extends HookWidget {
                       } catch (e) {
                         // TODO
                         await Fluttertoast.showToast(
-                          msg: "카카오톡을 실행할 수 없습니다.",
-                          toastLength: Toast.LENGTH_SHORT,
-                        );
+                            msg: "카카오톡을 실행할 수 없습니다.",
+                            toastLength: Toast.LENGTH_SHORT,
+                            textColor: Colors.black,
+                            backgroundColor: Colors.white);
                       }
                     }
                   }
                   return null;
                 },
                 onLoadError: (controller, url, code, message) {
+                  Fluttertoast.showToast(
+                      msg: "서버와의 연결에 실패했습니다. $message $code ${url.toString()}",
+                      toastLength: Toast.LENGTH_SHORT,
+                      textColor: Colors.black,
+                      backgroundColor: Colors.white);
                   if (code == -2) {
                     Fluttertoast.showToast(
-                      msg: "서버와의 연결에 실패했습니다.",
-                      toastLength: Toast.LENGTH_SHORT,
-                    );
+                        msg: "서버와의 연결에 실패했습니다.",
+                        toastLength: Toast.LENGTH_SHORT,
+                        textColor: Colors.black,
+                        backgroundColor: Colors.white);
                     isServerError.value = true;
                   }
                 },
@@ -483,15 +506,15 @@ class TaxiView extends HookWidget {
       InAppWebViewController? _controller) async {
     Uri? current_uri = await _controller!.getUrl();
     String address = dotenv.get("FRONT_ADDRESS");
-    if (await _controller.canGoBack() &&
+    if (Uri.parse(address).origin != current_uri?.origin) {
+      await _controller.loadUrl(
+          urlRequest: URLRequest(url: Uri.parse(address)));
+      backCount.value = false;
+      return false;
+    } else if (await _controller.canGoBack() &&
         (current_uri?.path != '/') &&
         (current_uri?.path != '/home')) {
       _controller.goBack();
-      backCount.value = false;
-      return false;
-    } else if (Uri.parse(address).origin != current_uri?.origin) {
-      await _controller.loadUrl(
-          urlRequest: URLRequest(url: Uri.parse(address)));
       backCount.value = false;
       return false;
     } else if (backCount.value) {
@@ -501,6 +524,7 @@ class TaxiView extends HookWidget {
       Fluttertoast.showToast(
         msg: "한번 더 누르시면 앱을 종료합니다.",
         backgroundColor: Colors.white,
+        textColor: Colors.black,
         toastLength: Toast.LENGTH_SHORT,
       );
       return false;
