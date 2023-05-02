@@ -32,19 +32,33 @@ class TaxiView extends HookWidget {
   Widget build(BuildContext context) {
     String address = dotenv.get("FRONT_ADDRESS");
 
+    // States
+    // 로딩 여부 확인
     final isLoaded = useState(false);
+    // 로그인 세션 정보
     final sessionToken = useState('');
+    // 로그인 여부 확인
     final isLogin = useState(false);
+    // 자동 로그인 여부 확인
     final isAuthLogin = useState(true);
+    // 뒤로가기 2번 눌렀는 지 확인
     final backCount = useState(false);
+    // URL 로딩을 위한 더미 변수
     final LoadCount = useState(0);
+    // 최초로 로딩할 URL 값 + Firebase Dynamic Link or Messaging 통해 가져옴 / 기본 값은 홈페이지
     final url = useState(address);
+    // 웹 뷰 컨트롤러
     final _controller = useRef<InAppWebViewController?>(null);
+    // 업데이트 버전 체크 후 업데이트 창 노출 여부 확인
     final isMustUpdate = useState(false);
+    // 타이머 종료 여부 확인
     final isTimerUp = useState(false);
+    // 서버 에러 발생 여부 확인
     final isServerError = useState(false);
+    // 로그인 페이지에서 로그인 성공 여부 확인 최초에만 실행
     final isFirstLogin = useState(true);
 
+    // Firebase Messaging 설정 / Firebase Dynamic Link 설정
     useEffect(() {
       const initializationSettingsAndroid =
           AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -114,6 +128,7 @@ class TaxiView extends HookWidget {
       });
     }, []);
 
+    // URL 로딩 부분 / LoadCount 값이 바뀔 때마다 실행
     useEffect(() {
       if (url.value != '' && _controller.value != null) {
         _controller.value!
@@ -122,6 +137,7 @@ class TaxiView extends HookWidget {
       }
     }, [LoadCount.value]);
 
+    // 로딩 페이지 로고 애니메이션 & 시간 타이머
     final AnimationController aniController = useAnimationController(
       duration: const Duration(milliseconds: 500),
     )..forward();
@@ -131,6 +147,14 @@ class TaxiView extends HookWidget {
       curve: Curves.easeIn,
     );
 
+    useEffect(() {
+      Timer(const Duration(seconds: 1), () {
+        isTimerUp.value = true;
+      });
+      return;
+    }, []);
+
+    // 버전 업데이트 체크
     useEffect(() {
       PackageInfo.fromPlatform().then((value) async {
         final remoteConfig = FirebaseRemoteConfig.instance;
@@ -166,6 +190,7 @@ class TaxiView extends HookWidget {
       });
     }, []);
 
+    // 로그인 정보 갱신
     useEffect(() {
       if (isAuthLogin.value && !isLogin.value) {
         Token().getSession().then((value) async {
@@ -201,12 +226,6 @@ class TaxiView extends HookWidget {
       return;
     }, [isAuthLogin.value]);
 
-    useEffect(() {
-      Timer(const Duration(seconds: 1), () {
-        isTimerUp.value = true;
-      });
-      return;
-    }, []);
     return SafeArea(
         child: Stack(children: [
       WillPopScope(
@@ -228,10 +247,12 @@ class TaxiView extends HookWidget {
                   _controller.value?.addJavaScriptHandler(
                     handlerName: "auth_update",
                     callback: (arguments) async {
+                      // 로그인 해제 시 로그인 State 변경
                       if (arguments == [{}]) {
                         isLogin.value = false;
                         return;
                       }
+                      // 로그인 성공 시 / 기존 토큰 삭제 후 새로운 토큰 저장
                       if (!isAuthLogin.value) {
                         await Token().setAccessToken(
                             accessToken: arguments[0]['accessToken']);
@@ -381,11 +402,11 @@ class TaxiView extends HookWidget {
                   return null;
                 },
                 onLoadError: (controller, url, code, message) {
-                  Fluttertoast.showToast(
-                      msg: "서버와의 연결에 실패했습니다. $message $code ${url.toString()}",
-                      toastLength: Toast.LENGTH_SHORT,
-                      textColor: Colors.black,
-                      backgroundColor: Colors.white);
+                  // 될 때까지 리로드
+                  if (!isLoaded.value && LoadCount.value < 10) {
+                    LoadCount.value++;
+                  }
+
                   if (code == -2) {
                     Fluttertoast.showToast(
                         msg: "서버와의 연결에 실패했습니다.",
