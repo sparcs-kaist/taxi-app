@@ -45,15 +45,12 @@
               <data
                   android:host="taxi.sparcs.org"
                   android:scheme="https"/>
-<<<<<<< Updated upstream
-=======
             <data
                   android:host="taxi.kaist.ac.kr"
                   android:scheme="https"/>
                 <data
                         android:host="taxi.dev.sparcs.org"
                         android:scheme="https"/>
->>>>>>> Stashed changes
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

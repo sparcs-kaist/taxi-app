@@ -24,10 +24,8 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
-<<<<<<< Updated upstream
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-=======
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<string>NO</string>
 	<key>FirebaseDynamicLinksCustomDomains</key>
@@ -54,7 +52,6 @@
 		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>
->>>>>>> Stashed changes
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
