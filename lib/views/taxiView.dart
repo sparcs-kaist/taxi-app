@@ -18,8 +18,8 @@ import 'package:taxiapp/utils/token.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-
 import 'package:taxiapp/views/taxiDialog.dart';
+import 'package:app_links/app_links.dart';
 
 class TaxiView extends HookWidget {
   final CookieManager _cookieManager = CookieManager.instance();
@@ -60,6 +60,8 @@ class TaxiView extends HookWidget {
 
     // Firebase Messaging 설정 / Firebase Dynamic Link 설정
     useEffect(() {
+      FcmToken().init();
+
       const initializationSettingsAndroid =
           AndroidInitializationSettings('@mipmap/ic_launcher');
 
@@ -87,6 +89,28 @@ class TaxiView extends HookWidget {
         }
       });
 
+      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+        if (message.data['url'] != null) {
+          String address = dotenv.get("FRONT_ADDRESS");
+          Uri newUri = Uri.parse(address).replace(path: message.data['url']);
+          url.value = newUri.toString();
+          LoadCount.value += 1;
+        }
+      });
+
+      FirebaseMessaging.instance
+          .getInitialMessage()
+          .then((RemoteMessage? message) {
+        if (message != null) {
+          if (message.data['url'] != null) {
+            String address = dotenv.get("FRONT_ADDRESS");
+            Uri newUri = Uri.parse(address).replace(path: message.data['url']);
+            url.value = newUri.toString();
+            LoadCount.value += 1;
+          }
+        }
+      });
+
       flutterLocalNotificationsPlugin.initialize(
         initializationSettings,
         onDidReceiveNotificationResponse: (details) {
@@ -108,15 +132,8 @@ class TaxiView extends HookWidget {
             Uri new_uri = Uri.parse(address)
                 .replace(path: details.notificationResponse!.payload!);
             url.value = new_uri.toString();
-            LoadCount.value != 1;
+            LoadCount.value += 1;
           }
-        }
-      });
-
-      FirebaseDynamicLinks.instance.getInitialLink().then((initalLink) {
-        if (initalLink != null) {
-          url.value = initalLink.link.toString();
-          LoadCount.value += 1;
         }
       });
 
@@ -124,6 +141,24 @@ class TaxiView extends HookWidget {
         if (event != null) {
           url.value = event.link.toString();
           LoadCount.value += 1;
+        }
+      });
+
+      FirebaseDynamicLinks.instance.getInitialLink().then((initalLink) async {
+        if (initalLink != null) {
+          url.value = initalLink.link.toString();
+          LoadCount.value += 1;
+        } else {
+          final _appLinks = AppLinks();
+          final Uri? uri = await _appLinks.getInitialAppLink();
+          if (uri != null) {
+            final PendingDynamicLinkData? appLinkData =
+                await FirebaseDynamicLinks.instance.getDynamicLink(uri);
+            if (appLinkData != null) {
+              url.value = appLinkData.link.toString();
+              LoadCount.value += 1;
+            }
+          }
         }
       });
     }, []);
@@ -327,6 +362,9 @@ class TaxiView extends HookWidget {
                               ?.value !=
                           sessionToken.value) {
                     try {
+                      if (FcmToken().token == '') {
+                        await FcmToken().init();
+                      }
                       await _controller.value?.stopLoading();
                       await _cookieManager.deleteCookie(
                           url: Uri.parse(address), name: "connect.sid");

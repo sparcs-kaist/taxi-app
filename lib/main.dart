@@ -19,8 +19,6 @@ late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // GET CAMERA PERMISSON FOR IOS
-  await Permission.camera.request();
   await dotenv.load(fileName: ".env");
 
   if (Platform.isAndroid) {
@@ -29,7 +27,6 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
   channel = const AndroidNotificationChannel(
     'taxi_channel',
     'taxi_notification',
@@ -47,9 +44,9 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(handleMessage);
 
   await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-    alert: true,
-    badge: true,
-    sound: true,
+    alert: false,
+    badge: false,
+    sound: false,
   );
 
   // 사용자가 푸시 알림을 허용했는지 확인 후 권한요청
@@ -59,14 +56,10 @@ void main() async {
     badge: true,
     carPlay: false,
     criticalAlert: false,
-    provisional: false,
+    provisional: true,
     sound: true,
   );
-
   await Token().init();
-
-  await FcmToken().init();
-
   runApp(MyHome());
 }
 
