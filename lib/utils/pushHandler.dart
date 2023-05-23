@@ -1,13 +1,5 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:taxiapp/utils/fcmToken.dart';
-import 'package:taxiapp/utils/token.dart';
-import 'package:taxiapp/views/taxiView.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:taxiapp/firebase_options.dart';
 import 'package:http/http.dart' as http;
 import 'dart:typed_data';
 import 'dart:math';
