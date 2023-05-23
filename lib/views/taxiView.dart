@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -28,18 +30,35 @@ class TaxiView extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isLoaded = useState(false);
-    final sessionToken = useState('');
-    final isLogin = useState(false);
-    final isAuthLogin = useState(true);
-    final backCount = useState(false);
-    final LoadCount = useState(0);
-    final url = useState('');
-    final _controller = useRef<InAppWebViewController?>(null);
-    final isMustUpdate = useState(false);
-    final isTimerUp = useState(false);
-    final isServerError = useState(false);
+    String address = dotenv.get("FRONT_ADDRESS");
 
+    // States
+    // 로딩 여부 확인
+    final isLoaded = useState(false);
+    // 로그인 세션 정보
+    final sessionToken = useState('');
+    // 로그인 여부 확인
+    final isLogin = useState(false);
+    // 자동 로그인 여부 확인
+    final isAuthLogin = useState(true);
+    // 뒤로가기 2번 눌렀는 지 확인
+    final backCount = useState(false);
+    // URL 로딩을 위한 더미 변수
+    final LoadCount = useState(0);
+    // 최초로 로딩할 URL 값 + Firebase Dynamic Link or Messaging 통해 가져옴 / 기본 값은 홈페이지
+    final url = useState(address);
+    // 웹 뷰 컨트롤러
+    final _controller = useRef<InAppWebViewController?>(null);
+    // 업데이트 버전 체크 후 업데이트 창 노출 여부 확인
+    final isMustUpdate = useState(false);
+    // 타이머 종료 여부 확인
+    final isTimerUp = useState(false);
+    // 서버 에러 발생 여부 확인
+    final isServerError = useState(false);
+    // 로그인 페이지에서 로그인 성공 여부 확인 최초에만 실행
+    final isFirstLogin = useState(true);
+
+    // Firebase Messaging 설정 / Firebase Dynamic Link 설정
     useEffect(() {
       FcmToken().init();
 
@@ -110,15 +129,10 @@ class TaxiView extends HookWidget {
           if (details.didNotificationLaunchApp &&
               details.notificationResponse?.payload != null) {
             String address = dotenv.get("FRONT_ADDRESS");
-<<<<<<< Updated upstream
-            url.value = address + details.notificationResponse!.payload!;
-            LoadCount.value != 1;
-=======
             Uri new_uri = Uri.parse(address)
                 .replace(path: details.notificationResponse!.payload!);
             url.value = new_uri.toString();
             LoadCount.value += 1;
->>>>>>> Stashed changes
           }
         }
       });
@@ -149,14 +163,16 @@ class TaxiView extends HookWidget {
       });
     }, []);
 
+    // URL 로딩 부분 / LoadCount 값이 바뀔 때마다 실행
     useEffect(() {
-      if (url.value != '') {
+      if (url.value != '' && _controller.value != null) {
         _controller.value!
             .loadUrl(urlRequest: URLRequest(url: Uri.parse(url.value)))
             .then((value) {});
       }
     }, [LoadCount.value]);
 
+    // 로딩 페이지 로고 애니메이션 & 시간 타이머
     final AnimationController aniController = useAnimationController(
       duration: const Duration(milliseconds: 500),
     )..forward();
@@ -165,8 +181,15 @@ class TaxiView extends HookWidget {
       parent: aniController,
       curve: Curves.easeIn,
     );
-    String address = dotenv.get("FRONT_ADDRESS");
 
+    useEffect(() {
+      Timer(const Duration(seconds: 1), () {
+        isTimerUp.value = true;
+      });
+      return;
+    }, []);
+
+    // 버전 업데이트 체크
     useEffect(() {
       PackageInfo.fromPlatform().then((value) async {
         final remoteConfig = FirebaseRemoteConfig.instance;
@@ -175,40 +198,61 @@ class TaxiView extends HookWidget {
             fetchTimeout: const Duration(seconds: 10),
             minimumFetchInterval: Duration.zero,
           ));
-          await remoteConfig.setDefaults({"version": value.version});
+          await remoteConfig.setDefaults(
+              {"version": value.version, "ios_version": value.version});
           await remoteConfig.fetchAndActivate();
-          if (remoteConfig.getString("version") != value.version) {
-            isMustUpdate.value = true;
+          if (Platform.isIOS) {
+            if (int.parse(
+                    remoteConfig.getString("ios_version").replaceAll(".", "")) >
+                int.parse(value.version.replaceAll(".", ""))) {
+              isMustUpdate.value = true;
+            }
+          } else {
+            if (int.parse(
+                    remoteConfig.getString("version").replaceAll(".", "")) >
+                int.parse(value.version.replaceAll(".", ""))) {
+              isMustUpdate.value = true;
+            }
           }
         } catch (e) {
-          print(e);
+          Fluttertoast.showToast(
+            msg: "버전 체크에 실패했습니다.",
+            backgroundColor: Colors.white,
+            toastLength: Toast.LENGTH_SHORT,
+            textColor: Colors.black,
+          );
         }
       });
     }, []);
 
+    // 로그인 정보 갱신
     useEffect(() {
-      print("일로옴");
-      print(isLogin.value);
-      print(isAuthLogin.value);
       if (isAuthLogin.value && !isLogin.value) {
-        print("새로 등록 가보자고");
         Token().getSession().then((value) async {
           if (value == null) {
+            if (Token().accessToken != '') {
+              await Token().deleteAll();
+            }
             isLogin.value = false;
             isAuthLogin.value = false;
           } else {
             sessionToken.value = value;
             isLogin.value = true;
             try {
-              print("새로 세션 생성되어버림");
-              await _controller.value!
-                  .loadUrl(urlRequest: URLRequest(url: Uri.parse(address)));
+              if (isFirstLogin.value) {
+                LoadCount.value += 1;
+                isFirstLogin.value = false;
+              } else {
+                url.value = address;
+                LoadCount.value += 1;
+              }
             } catch (e) {
               print(e);
               Fluttertoast.showToast(
                 msg: "로그인에 실패했습니다.",
                 backgroundColor: Colors.white,
                 toastLength: Toast.LENGTH_SHORT,
+                textColor: Colors.black,
               );
             }
           }
@@ -217,12 +261,6 @@ class TaxiView extends HookWidget {
       return;
     }, [isAuthLogin.value]);
 
-    useEffect(() {
-      Timer(const Duration(seconds: 2), () {
-        isTimerUp.value = true;
-      });
-      return;
-    }, []);
     return SafeArea(
         child: Stack(children: [
       WillPopScope(
@@ -231,8 +269,9 @@ class TaxiView extends HookWidget {
           child: Scaffold(
             body: InAppWebView(
                 initialOptions: InAppWebViewGroupOptions(
-                    crossPlatform:
-                        InAppWebViewOptions(useShouldOverrideUrlLoading: true),
+                    crossPlatform: InAppWebViewOptions(
+                        useShouldOverrideUrlLoading: true,
+                        resourceCustomSchemes: ['intent', '']),
                     android: AndroidInAppWebViewOptions(
                         useHybridComposition: true,
                         overScrollMode:
@@ -243,10 +282,12 @@ class TaxiView extends HookWidget {
                   _controller.value?.addJavaScriptHandler(
                     handlerName: "auth_update",
                     callback: (arguments) async {
+                      // 로그인 해제 시 로그인 State 변경
                       if (arguments == [{}]) {
                         isLogin.value = false;
                         return;
                       }
+                      // 로그인 성공 시 / 기존 토큰 삭제 후 새로운 토큰 저장
                       if (!isAuthLogin.value) {
                         await Token().setAccessToken(
                             accessToken: arguments[0]['accessToken']);
@@ -264,7 +305,6 @@ class TaxiView extends HookWidget {
                       handlerName: "auth_logout",
                       callback: (args) async {
                         try {
-                          print("일로옴");
                           await FcmToken()
                               .removeToken(Token().getAccessToken());
                           await Token().deleteAll();
@@ -276,9 +316,10 @@ class TaxiView extends HookWidget {
                         } catch (e) {
                           // TODO
                           Fluttertoast.showToast(
-                            msg: "서버와의 연결에 실패했습니다.",
-                            toastLength: Toast.LENGTH_SHORT,
-                          );
+                              msg: "서버와의 연결에 실패했습니다.",
+                              toastLength: Toast.LENGTH_SHORT,
+                              textColor: Colors.black,
+                              backgroundColor: Colors.white);
                           isAuthLogin.value = false;
                         }
                       });
@@ -291,30 +332,40 @@ class TaxiView extends HookWidget {
                         } else {
                           openAppSettings();
                           Fluttertoast.showToast(
-                            msg: "알림 권한을 허용해주세요.",
-                            toastLength: Toast.LENGTH_SHORT,
-                          );
+                              msg: "알림 권한을 허용해주세요.",
+                              toastLength: Toast.LENGTH_SHORT,
+                              textColor: Colors.black,
+                              backgroundColor: Colors.white);
                           return false;
+                        }
+                      });
+
+                  _controller.value?.addJavaScriptHandler(
+                      handlerName: "clipboard_copy",
+                      callback: (args) async {
+                        if (Platform.isAndroid) {
+                          await Clipboard.setData(ClipboardData(text: args[0]));
+                          Fluttertoast.showToast(
+                              msg: "클립보드에 복사되었습니다.",
+                              toastLength: Toast.LENGTH_SHORT,
+                              textColor: Colors.black,
+                              backgroundColor: Colors.white);
                         }
                       });
                 },
                 onLoadStart: (controller, uri) async {
                   if (isLogin.value &&
                       sessionToken.value != '' &&
-                      (await controller.getUrl())?.origin ==
-                          Uri.parse(address).origin &&
+                      uri?.origin == Uri.parse(address).origin &&
                       (await _cookieManager.getCookie(
                                   url: Uri.parse(address), name: "connect.sid"))
                               ?.value !=
                           sessionToken.value) {
                     try {
-<<<<<<< Updated upstream
-=======
                       if (FcmToken().token == '') {
                         await FcmToken().init();
                       }
                       await _controller.value?.stopLoading();
->>>>>>> Stashed changes
                       await _cookieManager.deleteCookie(
                           url: Uri.parse(address), name: "connect.sid");
                       await _cookieManager.setCookie(
@@ -327,24 +378,79 @@ class TaxiView extends HookWidget {
                         name: "deviceToken",
                         value: FcmToken().fcmToken,
                       );
-                      await _controller.value?.stopLoading();
                       await _controller.value?.reload();
                     } catch (e) {
                       // TODO : handle error
                       Fluttertoast.showToast(
-                        msg: "서버와의 연결에 실패했습니다.",
-                        toastLength: Toast.LENGTH_SHORT,
-                      );
+                          msg: "서버와의 연결에 실패했습니다.",
+                          toastLength: Toast.LENGTH_SHORT,
+                          textColor: Colors.black,
+                          backgroundColor: Colors.white);
                       isAuthLogin.value = false;
                     }
                   }
                 },
+                onUpdateVisitedHistory:
+                    (controller, url, androidIsReload) async {
+                  // 로그아웃 링크 감지
+                  if (url.toString().contains("logout") && isAuthLogin.value) {
+                    await controller.stopLoading();
+                    try {
+                      await FcmToken().removeToken(Token().getAccessToken());
+                      await Token().deleteAll();
+                      isLogin.value = false;
+                      isAuthLogin.value = false;
+                      await _cookieManager.deleteAllCookies();
+                      await _controller.value!.loadUrl(
+                          urlRequest: URLRequest(url: Uri.parse(address)));
+                    } catch (e) {
+                      // TODO
+                      Fluttertoast.showToast(
+                          msg: "서버와의 연결에 실패했습니다.",
+                          toastLength: Toast.LENGTH_SHORT,
+                          textColor: Colors.black,
+                          backgroundColor: Colors.white);
+                      isAuthLogin.value = false;
+                    }
+                  }
+                },
+                onLoadResourceCustomScheme: (controller, url) async {
+                  if (Platform.isAndroid) {
+                    if (url.scheme == 'intent') {
+                      try {
+                        await controller.stopLoading();
+                        const MethodChannel channel =
+                            MethodChannel('org.sparcs.taxi_app/taxi_only');
+                        final result = await channel.invokeMethod(
+                            "launchURI", url.toString());
+                        if (result != null) {
+                          await _controller.value?.loadUrl(
+                              urlRequest: URLRequest(url: Uri.parse(result)));
+                        }
+                      } catch (e) {
+                        // TODO
+                        await Fluttertoast.showToast(
+                            msg: "카카오톡을 실행할 수 없습니다.",
+                            toastLength: Toast.LENGTH_SHORT,
+                            textColor: Colors.black,
+                            backgroundColor: Colors.white);
+                      }
+                    }
+                  }
+                  return null;
+                },
                 onLoadError: (controller, url, code, message) {
+                  // 될 때까지 리로드
+                  if (!isLoaded.value && LoadCount.value < 10) {
+                    LoadCount.value++;
+                  }
+
                   if (code == -2) {
                     Fluttertoast.showToast(
-                      msg: "서버와의 연결에 실패했습니다.",
-                      toastLength: Toast.LENGTH_SHORT,
-                    );
+                        msg: "서버와의 연결에 실패했습니다.",
+                        toastLength: Toast.LENGTH_SHORT,
+                        textColor: Colors.black,
+                        backgroundColor: Colors.white);
                     isServerError.value = true;
                   }
                 },
@@ -451,15 +557,15 @@ class TaxiView extends HookWidget {
       InAppWebViewController? _controller) async {
     Uri? current_uri = await _controller!.getUrl();
     String address = dotenv.get("FRONT_ADDRESS");
-    if (await _controller.canGoBack() &&
+    if (Uri.parse(address).origin != current_uri?.origin) {
+      await _controller.loadUrl(
+          urlRequest: URLRequest(url: Uri.parse(address)));
+      backCount.value = false;
+      return false;
+    } else if (await _controller.canGoBack() &&
         (current_uri?.path != '/') &&
         (current_uri?.path != '/home')) {
       _controller.goBack();
-      backCount.value = false;
-      return false;
-    } else if (Uri.parse(address).origin != current_uri?.origin) {
-      await _controller.loadUrl(
-          urlRequest: URLRequest(url: Uri.parse(address)));
       backCount.value = false;
       return false;
     } else if (backCount.value) {
@@ -469,6 +575,7 @@ class TaxiView extends HookWidget {
       Fluttertoast.showToast(
         msg: "한번 더 누르시면 앱을 종료합니다.",
         backgroundColor: Colors.white,
+        textColor: Colors.black,
         toastLength: Toast.LENGTH_SHORT,
       );
       return false;
