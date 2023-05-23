@@ -33,7 +33,10 @@ Future<void> handleMessage(RemoteMessage message) async {
   var androidNotiDetails = AndroidNotificationDetails(channel.id, channel.name,
       channelDescription: channel.description, largeIcon: largeIcon);
 
-  var iOSNotiDetails = const DarwinNotificationDetails();
+  var iOSNotiDetails = const DarwinNotificationDetails(
+    presentAlert: true,
+    presentSound: true,
+  );
 
   var details =
       NotificationDetails(android: androidNotiDetails, iOS: iOSNotiDetails);
