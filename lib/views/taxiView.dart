@@ -271,7 +271,7 @@ class TaxiView extends HookWidget {
                 initialOptions: InAppWebViewGroupOptions(
                     crossPlatform: InAppWebViewOptions(
                         useShouldOverrideUrlLoading: true,
-                        resourceCustomSchemes: ['intent', '']),
+                        resourceCustomSchemes: ['intent']),
                     android: AndroidInAppWebViewOptions(
                         useHybridComposition: true,
                         overScrollMode:
@@ -457,6 +457,14 @@ class TaxiView extends HookWidget {
                 onLoadStop: (finish, uri) async {
                   if (!isServerError.value) {
                     isLoaded.value = true;
+                  }
+                  if (uri
+                          .toString()
+                          .contains("sparcssso.kaist.ac.kr/account/login") &&
+                      !address.contains("dev")) {
+                    await _controller.value!.evaluateJavascript(
+                        source:
+                            "document.getElementsByClassName('btn-kaist')?.[0]?.click()");
                   }
                 }),
           )),
