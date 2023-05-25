@@ -57,7 +57,9 @@ class Token {
 
   Future<String?> getSession() async {
     _dio.interceptors.add(CookieManager(_cookieJar));
-
+    if (FcmToken().token == '') {
+      await FcmToken().init();
+    }
     return _dio.get("/auth/app/token/login", queryParameters: {
       "accessToken": accessToken,
       "deviceToken": FcmToken().fcmToken

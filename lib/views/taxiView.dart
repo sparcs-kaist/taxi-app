@@ -60,8 +60,6 @@ class TaxiView extends HookWidget {
 
     // Firebase Messaging 설정 / Firebase Dynamic Link 설정
     useEffect(() {
-      FcmToken().init();
-
       const initializationSettingsAndroid =
           AndroidInitializationSettings('@mipmap/ic_launcher');
 
@@ -183,7 +181,7 @@ class TaxiView extends HookWidget {
     );
 
     useEffect(() {
-      Timer(const Duration(seconds: 1), () {
+      Timer(const Duration(seconds: 1, milliseconds: 600), () {
         isTimerUp.value = true;
       });
       return;
@@ -235,6 +233,7 @@ class TaxiView extends HookWidget {
             }
             isLogin.value = false;
             isAuthLogin.value = false;
+            isFirstLogin.value = false;
           } else {
             sessionToken.value = value;
             isLogin.value = true;
@@ -345,11 +344,6 @@ class TaxiView extends HookWidget {
                       callback: (args) async {
                         if (Platform.isAndroid) {
                           await Clipboard.setData(ClipboardData(text: args[0]));
-                          Fluttertoast.showToast(
-                              msg: "클립보드에 복사되었습니다.",
-                              toastLength: Toast.LENGTH_SHORT,
-                              textColor: Colors.black,
-                              backgroundColor: Colors.white);
                         }
                       });
                 },
@@ -457,14 +451,6 @@ class TaxiView extends HookWidget {
                 onLoadStop: (finish, uri) async {
                   if (!isServerError.value) {
                     isLoaded.value = true;
-                  }
-                  if (uri
-                          .toString()
-                          .contains("sparcssso.kaist.ac.kr/account/login") &&
-                      !address.contains("dev")) {
-                    await _controller.value!.evaluateJavascript(
-                        source:
-                            "document.getElementsByClassName('btn-kaist')?.[0]?.click()");
                   }
                 }),
           )),
