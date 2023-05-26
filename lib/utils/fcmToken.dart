@@ -31,7 +31,7 @@ class FcmToken {
 
   String get fcmToken => token;
 
-  Future<bool> registerToken(String accessToken) {
+  Future<bool> registerToken(String accessToken) async {
     return _dio.post("auth/app/device", data: {
       "accessToken": accessToken,
       "deviceToken": token,
@@ -42,7 +42,7 @@ class FcmToken {
     });
   }
 
-  Future<bool> removeToken(String accessToken) {
+  Future<bool> removeToken(String accessToken) async {
     return _dio.delete("auth/app/device", data: {
       "accessToken": accessToken,
       "deviceToken": token,
