@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:taxiapp/utils/fcmToken.dart';
 import 'package:taxiapp/utils/pushHandler.dart';
 import 'package:taxiapp/utils/token.dart';
 import 'package:taxiapp/views/taxiView.dart';
@@ -22,9 +24,11 @@ void main() async {
   if (Platform.isAndroid) {
     await AndroidInAppWebViewController.setWebContentsDebuggingEnabled(true);
   }
+  // await Future.delayed(Duration(seconds: 5));
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   channel = const AndroidNotificationChannel(
     'taxi_channel',
     'taxi_notification',
@@ -47,7 +51,8 @@ void main() async {
     sound: false,
   );
 
-  // 사용자가 푸시 알림을 허용했는지 확인 후 권한요청
+  await Token().init();
+
   await FirebaseMessaging.instance.requestPermission(
     alert: true,
     announcement: false,
@@ -57,7 +62,7 @@ void main() async {
     provisional: true,
     sound: true,
   );
-  await Token().init();
+
   runApp(MyHome());
 }
 
