@@ -57,6 +57,23 @@ class TaxiView extends HookWidget {
     final isServerError = useState(false);
     // 로그인 페이지에서 로그인 성공 여부 확인 최초에만 실행
     final isFirstLogin = useState(true);
+    // FCM init 여부 확인
+    final isFcmInit = useState(false);
+
+    useEffect(() {
+      if (isTimerUp.value) {
+        FcmToken().init().then((value) {
+          isFcmInit.value = true;
+        }).onError((error, stackTrace) async {
+          await Future.delayed(Duration(seconds: 5));
+          FcmToken().init().then((value) {
+            isFcmInit.value = true;
+          }).onError((error, stackTrace) {
+            isServerError.value = true;
+          });
+        });
+      }
+    }, [isTimerUp.value]);
 
     // Firebase Messaging 설정 / Firebase Dynamic Link 설정
     useEffect(() {
@@ -214,7 +231,7 @@ class TaxiView extends HookWidget {
           }
         } catch (e) {
           Fluttertoast.showToast(
-            msg: "버전 체크에 실패했습니다.",
+            msg: "버전 체크에 실패했습니다. " + e.toString(),
             backgroundColor: Colors.white,
             toastLength: Toast.LENGTH_SHORT,
             textColor: Colors.black,
@@ -225,7 +242,7 @@ class TaxiView extends HookWidget {
 
     // 로그인 정보 갱신
     useEffect(() {
-      if (isAuthLogin.value && !isLogin.value) {
+      if (isAuthLogin.value && !isLogin.value && isFcmInit.value) {
         Token().getSession().then((value) async {
           if (value == null) {
             if (Token().accessToken != '') {
@@ -234,7 +251,9 @@ class TaxiView extends HookWidget {
             isLogin.value = false;
             isAuthLogin.value = false;
             isFirstLogin.value = false;
+            LoadCount.value += 1;
           } else {
+            FcmToken().registerToken(Token().accessToken);
             sessionToken.value = value;
             isLogin.value = true;
             try {
@@ -258,7 +277,7 @@ class TaxiView extends HookWidget {
         });
       }
       return;
-    }, [isAuthLogin.value]);
+    }, [isAuthLogin.value, isFcmInit.value]);
 
     return SafeArea(
         child: Stack(children: [
@@ -275,7 +294,7 @@ class TaxiView extends HookWidget {
                         useHybridComposition: true,
                         overScrollMode:
                             AndroidOverScrollMode.OVER_SCROLL_NEVER)),
-                initialUrlRequest: URLRequest(url: Uri.parse(address)),
+                // initialUrlRequest: URLRequest(url: Uri.parse(address)),
                 onWebViewCreated: (InAppWebViewController webcontroller) async {
                   _controller.value = webcontroller;
                   _controller.value?.addJavaScriptHandler(
@@ -288,6 +307,7 @@ class TaxiView extends HookWidget {
                       }
                       // 로그인 성공 시 / 기존 토큰 삭제 후 새로운 토큰 저장
                       if (!isAuthLogin.value) {
+                        print("IS AUTH 변경됨");
                         await Token().setAccessToken(
                             accessToken: arguments[0]['accessToken']);
                         await Token().setRefreshToken(
@@ -348,7 +368,8 @@ class TaxiView extends HookWidget {
                       });
                 },
                 onLoadStart: (controller, uri) async {
-                  if (isLogin.value &&
+                  if (isFcmInit.value &&
+                      isLogin.value &&
                       sessionToken.value != '' &&
                       uri?.origin == Uri.parse(address).origin &&
                       (await _cookieManager.getCookie(
@@ -356,9 +377,6 @@ class TaxiView extends HookWidget {
                               ?.value !=
                           sessionToken.value) {
                     try {
-                      if (FcmToken().token == '') {
-                        await FcmToken().init();
-                      }
                       await _controller.value?.stopLoading();
                       await _cookieManager.deleteCookie(
                           url: Uri.parse(address), name: "connect.sid");
@@ -454,7 +472,7 @@ class TaxiView extends HookWidget {
                   }
                 }),
           )),
-      isTimerUp.value && isLoaded.value
+      isTimerUp.value && isLoaded.value && isFcmInit.value
           ? Stack()
           : Scaffold(
               body: FadeTransition(opacity: animation, child: loadingView())),
