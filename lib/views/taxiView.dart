@@ -22,11 +22,16 @@ import 'package:taxiapp/views/taxiDialog.dart';
 import 'package:app_links/app_links.dart';
 
 class TaxiView extends HookWidget {
+  Uri? url = null;
   final CookieManager _cookieManager = CookieManager.instance();
   // late InAppWebViewController _controller;
 
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
+
+  TaxiView({url});
+
+  TaxiView({url});
 
   @override
   Widget build(BuildContext context) {
