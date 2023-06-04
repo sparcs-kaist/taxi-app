@@ -31,10 +31,10 @@ jobs:
           echo "BACK_ADDRESS=https://taxi.sparcs.org" >> .env
       - name: Create key.properties
         run: |
-          echo "storeFile=../ci.jks" > android/key.properties
-          echo "storePassword=123456" >> android/key.properties
-          echo "keyPassword=123456" >> android/key.properties
-          echo "keyAlias=ci" >> android/key.properties
+          echo "UPLOAD_STORE_FILE=../ci.jks" > android/key.properties
+          echo "UPLOAD_STORE_PASSWORD=123456" >> android/key.properties
+          echo "UPLOAD_KEY_PASSWORD=123456" >> android/key.properties
+          echo "UPLOAD_KEY_ALIAS=ci" >> android/key.properties
       - name: Create google-services.json
         run: echo '${{ secrets.GOOGLE_SERVICES_JSON }}' | base64 --decode > android/app/google-services.json
       - name: Install dependencies
