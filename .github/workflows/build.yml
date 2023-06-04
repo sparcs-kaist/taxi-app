@@ -27,7 +27,7 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
       - name: Create key.properties
         run: |
-          echo "storeFile=./ci.jks" > android/key.properties
+          echo "storeFile=../ci.jks" > android/key.properties
           echo "storePassword=123456" >> android/key.properties
           echo "keyPassword=123456" >> android/key.properties
           echo "keyAlias=ci" >> android/key.properties
