@@ -25,6 +25,10 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
+      - name: Create .env
+        run: |
+          echo "FRONT_ADDRESS=https://taxi.sparcs.org" > .env
+          echo "BACK_ADDRESS=https://taxi.sparcs.org" >> .env
       - name: Create key.properties
         run: |
           echo "storeFile=../ci.jks" > android/key.properties
@@ -47,6 +51,10 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
+      - name: Create .env
+        run: |
+          echo "FRONT_ADDRESS=https://taxi.sparcs.org" > .env
+          echo "BACK_ADDRESS=https://taxi.sparcs.org" >> .env
       - name: Create GoogleService-Info.plist
         run: echo '${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}' | base64 --decode > ios/Runner/GoogleService-Info.plist
       - name: Install dependencies
