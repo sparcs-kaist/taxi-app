@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:taxiapp/utils/address.dart';
 import 'package:taxiapp/utils/pushHandler.dart';
 import 'package:taxiapp/utils/token.dart';
 import 'package:taxiapp/views/taxiView.dart';
@@ -69,6 +70,8 @@ void main() async {
     provisional: true,
     sound: true,
   );
+
+  await RemoteConfigController().init();
 
   runApp(MyHome());
 }
