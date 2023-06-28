@@ -152,10 +152,8 @@ class TaxiView extends HookWidget {
       });
 
       FirebaseDynamicLinks.instance.onLink.listen((event) {
-        if (event != null) {
-          url.value = event.link.toString();
-          LoadCount.value += 1;
-        }
+        url.value = event.link.toString();
+        LoadCount.value += 1;
       });
 
       FirebaseDynamicLinks.instance.getInitialLink().then((initalLink) async {
