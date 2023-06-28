@@ -13,6 +13,7 @@ import 'package:package_info/package_info.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:taxiapp/utils/fcmToken.dart';
 import 'package:taxiapp/utils/pushHandler.dart';
+import 'package:taxiapp/utils/remoteConfigController.dart';
 import 'package:taxiapp/views/loadingView.dart';
 import 'package:taxiapp/utils/token.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -30,7 +31,7 @@ class TaxiView extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    String address = dotenv.get("FRONT_ADDRESS");
+    String address = RemoteConfigController().frontUrl;
 
     // States
     // 로딩 여부 확인
@@ -106,8 +107,8 @@ class TaxiView extends HookWidget {
 
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
         if (message.data['url'] != null) {
-          String address = dotenv.get("FRONT_ADDRESS");
-          Uri newUri = Uri.parse(address).replace(path: message.data['url']);
+          Uri newUri = Uri.parse(RemoteConfigController().frontUrl)
+              .replace(path: message.data['url']);
           url.value = newUri.toString();
           LoadCount.value += 1;
         }
@@ -118,8 +119,8 @@ class TaxiView extends HookWidget {
           .then((RemoteMessage? message) {
         if (message != null) {
           if (message.data['url'] != null) {
-            String address = dotenv.get("FRONT_ADDRESS");
-            Uri newUri = Uri.parse(address).replace(path: message.data['url']);
+            Uri newUri = Uri.parse(RemoteConfigController().frontUrl)
+                .replace(path: message.data['url']);
             url.value = newUri.toString();
             LoadCount.value += 1;
           }
@@ -130,8 +131,7 @@ class TaxiView extends HookWidget {
         initializationSettings,
         onDidReceiveNotificationResponse: (details) {
           if (details.payload != null) {
-            String address = dotenv.get("FRONT_ADDRESS");
-            url.value = address + details.payload!;
+            url.value = RemoteConfigController().frontUrl + details.payload!;
             LoadCount.value += 1;
           }
         },
@@ -143,7 +143,6 @@ class TaxiView extends HookWidget {
         if (details != null) {
           if (details.didNotificationLaunchApp &&
               details.notificationResponse?.payload != null) {
-            String address = dotenv.get("FRONT_ADDRESS");
             Uri new_uri = Uri.parse(address)
                 .replace(path: details.notificationResponse!.payload!);
             url.value = new_uri.toString();
@@ -207,24 +206,17 @@ class TaxiView extends HookWidget {
     // 버전 업데이트 체크
     useEffect(() {
       PackageInfo.fromPlatform().then((value) async {
-        final remoteConfig = FirebaseRemoteConfig.instance;
         try {
-          await remoteConfig.setConfigSettings(RemoteConfigSettings(
-            fetchTimeout: const Duration(seconds: 10),
-            minimumFetchInterval: Duration.zero,
-          ));
-          await remoteConfig.setDefaults(
-              {"version": value.version, "ios_version": value.version});
-          await remoteConfig.fetchAndActivate();
           if (Platform.isIOS) {
             if (int.parse(
-                    remoteConfig.getString("ios_version").replaceAll(".", "")) >
+                    RemoteConfigController().ios_version.replaceAll(".", "")) >
                 int.parse(value.version.replaceAll(".", ""))) {
               isMustUpdate.value = true;
             }
           } else {
-            if (int.parse(
-                    remoteConfig.getString("version").replaceAll(".", "")) >
+            if (int.parse(RemoteConfigController()
+                    .android_version
+                    .replaceAll(".", "")) >
                 int.parse(value.version.replaceAll(".", ""))) {
               isMustUpdate.value = true;
             }
@@ -568,7 +560,7 @@ class TaxiView extends HookWidget {
       ValueNotifier<bool> isAuthLogin,
       InAppWebViewController? _controller) async {
     Uri? current_uri = await _controller!.getUrl();
-    String address = dotenv.get("FRONT_ADDRESS");
+    final address = RemoteConfigController().frontUrl;
     if (Uri.parse(address).origin != current_uri?.origin) {
       await _controller.loadUrl(
           urlRequest: URLRequest(url: Uri.parse(address)));
