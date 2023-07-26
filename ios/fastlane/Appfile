@@ -1,0 +1,8 @@
+app_identifier("org.sparcs.taxi-app") # The bundle identifier of your app
+apple_id("soungmin114@gmail.com") # Your Apple Developer Portal username
+
+itc_team_id("126249022") # App Store Connect Team ID
+team_id("N5V8W52U3U") # Developer Portal Team ID
+
+# For more information about the Appfile, see:
+#     https://docs.fastlane.tools/advanced/#appfile
