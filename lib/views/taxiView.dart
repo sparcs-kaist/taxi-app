@@ -234,7 +234,6 @@ class TaxiView extends HookWidget {
     useEffect(() {
       if (isAuthLogin.value && !isLogin.value && isFcmInit.value) {
         Token().getSession().then((value) async {
-          print("세션 수정" + value.toString());
           if (value == null) {
             if (Token().accessToken != '') {
               await Token().deleteAll();
@@ -256,7 +255,6 @@ class TaxiView extends HookWidget {
                 LoadCount.value += 1;
               }
             } catch (e) {
-              print(e);
               Fluttertoast.showToast(
                 msg: "로그인에 실패했습니다.",
                 backgroundColor: Colors.white,
