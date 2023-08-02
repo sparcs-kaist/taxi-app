@@ -375,11 +375,6 @@ class TaxiView extends HookWidget {
                         name: "connect.sid",
                         value: sessionToken.value,
                       );
-                      await _cookieManager.setCookie(
-                        url: Uri.parse(address),
-                        name: "deviceToken",
-                        value: FcmToken().fcmToken,
-                      );
                       await _controller.value?.reload();
                     } catch (e) {
                       // TODO : handle error
