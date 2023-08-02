@@ -234,6 +234,7 @@ class TaxiView extends HookWidget {
     useEffect(() {
       if (isAuthLogin.value && !isLogin.value && isFcmInit.value) {
         Token().getSession().then((value) async {
+          print("세션 수정" + value.toString());
           if (value == null) {
             if (Token().accessToken != '') {
               await Token().deleteAll();
@@ -279,6 +280,8 @@ class TaxiView extends HookWidget {
                 initialOptions: InAppWebViewGroupOptions(
                     crossPlatform: InAppWebViewOptions(
                         useShouldOverrideUrlLoading: true,
+                        applicationNameForUserAgent: "taxi-app-webview/" +
+                            (Platform.isAndroid ? "android" : "ios"),
                         resourceCustomSchemes: ['intent']),
                     android: AndroidInAppWebViewOptions(
                         useHybridComposition: true,
@@ -297,7 +300,6 @@ class TaxiView extends HookWidget {
                       }
                       // 로그인 성공 시 / 기존 토큰 삭제 후 새로운 토큰 저장
                       if (!isAuthLogin.value) {
-                        print("IS AUTH 변경됨");
                         await Token().setAccessToken(
                             accessToken: arguments[0]['accessToken']);
                         await Token().setRefreshToken(
