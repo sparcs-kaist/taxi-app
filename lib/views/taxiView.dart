@@ -255,7 +255,6 @@ class TaxiView extends HookWidget {
                 LoadCount.value += 1;
               }
             } catch (e) {
-              print(e);
               Fluttertoast.showToast(
                 msg: "로그인에 실패했습니다.",
                 backgroundColor: Colors.white,
@@ -279,6 +278,8 @@ class TaxiView extends HookWidget {
                 initialOptions: InAppWebViewGroupOptions(
                     crossPlatform: InAppWebViewOptions(
                         useShouldOverrideUrlLoading: true,
+                        applicationNameForUserAgent: "taxi-app-webview/" +
+                            (Platform.isAndroid ? "android" : "ios"),
                         resourceCustomSchemes: ['intent']),
                     android: AndroidInAppWebViewOptions(
                         useHybridComposition: true,
@@ -297,7 +298,6 @@ class TaxiView extends HookWidget {
                       }
                       // 로그인 성공 시 / 기존 토큰 삭제 후 새로운 토큰 저장
                       if (!isAuthLogin.value) {
-                        print("IS AUTH 변경됨");
                         await Token().setAccessToken(
                             accessToken: arguments[0]['accessToken']);
                         await Token().setRefreshToken(
@@ -374,11 +374,6 @@ class TaxiView extends HookWidget {
                         url: Uri.parse(address),
                         name: "connect.sid",
                         value: sessionToken.value,
-                      );
-                      await _cookieManager.setCookie(
-                        url: Uri.parse(address),
-                        name: "deviceToken",
-                        value: FcmToken().fcmToken,
                       );
                       await _controller.value?.reload();
                     } catch (e) {
