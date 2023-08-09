@@ -284,7 +284,8 @@ class TaxiView extends HookWidget {
                     android: AndroidInAppWebViewOptions(
                         useHybridComposition: true,
                         overScrollMode:
-                            AndroidOverScrollMode.OVER_SCROLL_NEVER)),
+                            AndroidOverScrollMode.OVER_SCROLL_NEVER),
+                    ios: IOSInAppWebViewOptions(disallowOverScroll: true)),
                 // initialUrlRequest: URLRequest(url: Uri.parse(address)),
                 onWebViewCreated: (InAppWebViewController webcontroller) async {
                   _controller.value = webcontroller;
