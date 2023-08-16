@@ -79,7 +79,7 @@ class TaxiView extends HookWidget {
     // Firebase Messaging 설정 / Firebase Dynamic Link 설정
     useEffect(() {
       const initializationSettingsAndroid =
-          AndroidInitializationSettings('@mipmap/ic_launcher');
+          AndroidInitializationSettings('@drawable/android12splash');
 
       const initializationSettingsIOS = DarwinInitializationSettings(
         requestAlertPermission: true,
