@@ -94,11 +94,12 @@ flutter:
           weight: 800
           
 flutter_native_splash:
+  # 안드로이드는 라이브러리 이상으로 수동으로 추가함.
   color: "#FFFFFF"
-  image:  assets/img/TaxiLogoText.png #4x 이미지 교체 필요
+  image:  assets/img/TaxiSplashImage.png
   android_12: 
     color: "#FFFFFF"
-    image:  assets/img/TaxiLogoText.png #4x 이미지 교체 필요
+    image:  assets/img/TaxiSplashImage.png 
   android: true
   ios: true
 
