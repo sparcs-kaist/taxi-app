@@ -14,13 +14,13 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:taxiapp/utils/fcmToken.dart';
 import 'package:taxiapp/utils/pushHandler.dart';
 import 'package:taxiapp/utils/remoteConfigController.dart';
-import 'package:taxiapp/views/loadingView.dart';
 import 'package:taxiapp/utils/token.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:taxiapp/views/taxiDialog.dart';
 import 'package:app_links/app_links.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 class TaxiView extends HookWidget {
   final CookieManager _cookieManager = CookieManager.instance();
@@ -184,22 +184,21 @@ class TaxiView extends HookWidget {
       }
     }, [LoadCount.value]);
 
-    // 로딩 페이지 로고 애니메이션 & 시간 타이머
-    final AnimationController aniController = useAnimationController(
-      duration: const Duration(milliseconds: 500),
-    )..forward();
-
-    final Animation<double> animation = CurvedAnimation(
-      parent: aniController,
-      curve: Curves.easeIn,
-    );
-
+    // 시간 타이머
     useEffect(() {
       Timer(const Duration(seconds: 1, milliseconds: 600), () {
         isTimerUp.value = true;
       });
       return;
     }, []);
+
+    // 로딩 완료 체크 & 스플래시 이미지 삭제
+    useEffect(() {
+      if (isTimerUp.value && isLoaded.value && isFcmInit.value) {
+        FlutterNativeSplash.remove();
+      }
+      return;
+    }, [isTimerUp.value, isLoaded.value, isFcmInit.value]);
 
     // 버전 업데이트 체크
     useEffect(() {
@@ -458,10 +457,6 @@ class TaxiView extends HookWidget {
                   }
                 }),
           )),
-      isTimerUp.value && isLoaded.value && isFcmInit.value
-          ? Stack()
-          : Scaffold(
-              body: FadeTransition(opacity: animation, child: loadingView())),
       isMustUpdate.value
           ? Container(
               color: const Color(0x66C8C8C8),

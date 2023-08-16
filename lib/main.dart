@@ -14,12 +14,14 @@ import 'package:taxiapp/utils/token.dart';
 import 'package:taxiapp/views/taxiView.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:taxiapp/firebase_options.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 late AndroidNotificationChannel channel;
 late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await dotenv.load(fileName: ".env");
 
   await Firebase.initializeApp(

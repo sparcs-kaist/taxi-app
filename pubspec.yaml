@@ -92,6 +92,15 @@ flutter:
           weight: 700
         - asset: assets/font/NanumSquare_acEB.ttf
           weight: 800
+          
+flutter_native_splash:
+  color: "#FFFFFF"
+  image:  assets/img/TaxiLogoText.png #4x 이미지 교체 필요
+  android_12: 
+    color: "#FFFFFF"
+    image:  assets/img/TaxiLogoText.png #4x 이미지 교체 필요
+  android: true
+  ios: true
 
   # To add assets to your application, add an assets section, like this:
   # assets:
