@@ -97,10 +97,7 @@ flutter_native_splash:
   # 안드로이드는 라이브러리 이상(문제)으로 수동으로 추가함.
   color: "#FFFFFF"
   image:  assets/img/TaxiSplashImage.png
-  android_12: 
-    color: "#FFFFFF"
-    image:  assets/img/TaxiSplashImage.png 
-  android: true
+  android: false
   ios: true
 
   # To add assets to your application, add an assets section, like this:
