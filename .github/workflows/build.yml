@@ -1,0 +1,63 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  FLUTTER_VERSION: "3"
+  JAVA_VERSION: "11"
+
+jobs:
+  build-android:
+    name: Build Android
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "adopt"
+          java-version: ${{ env.JAVA_VERSION }}
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+      - name: Create .env
+        run: |
+          echo "FRONT_ADDRESS=https://taxi.sparcs.org" > .env
+          echo "BACK_ADDRESS=https://taxi.sparcs.org" >> .env
+      - name: Create key.properties
+        run: |
+          echo "UPLOAD_STORE_FILE=../ci.jks" > android/key.properties
+          echo "UPLOAD_STORE_PASSWORD=123456" >> android/key.properties
+          echo "UPLOAD_KEY_PASSWORD=123456" >> android/key.properties
+          echo "UPLOAD_KEY_ALIAS=ci" >> android/key.properties
+      - name: Create google-services.json
+        run: echo '${{ secrets.GOOGLE_SERVICES_JSON }}' | base64 --decode > android/app/google-services.json
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Build APK
+        run: flutter build apk --release
+
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+      - name: Create .env
+        run: |
+          echo "FRONT_ADDRESS=https://taxi.sparcs.org" > .env
+          echo "BACK_ADDRESS=https://taxi.sparcs.org" >> .env
+      - name: Create GoogleService-Info.plist
+        run: echo '${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}' | base64 --decode > ios/Runner/GoogleService-Info.plist
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Build iOS
+        run: flutter build ios --release --no-codesign
