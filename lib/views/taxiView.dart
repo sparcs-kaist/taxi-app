@@ -472,11 +472,7 @@ class TaxiView extends HookWidget {
                     textAlign: TextAlign.center,
                     text: TextSpan(
                         text: "새로운 ",
-                        style: GoogleFonts.roboto(
-                            textStyle: const TextStyle(
-                                color: Color(0xFF323232),
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold)),
+                        style: Theme.of(context).textTheme.bodyLarge,
                         children: const <TextSpan>[
                           TextSpan(text: "버전"),
                           TextSpan(
@@ -492,11 +488,7 @@ class TaxiView extends HookWidget {
                   ),
                   Text("정상적인 사용을 위해 앱을 업데이트 해주세요.",
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.roboto(
-                          textStyle: const TextStyle(
-                              color: Color(0xFF888888),
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold))),
+                      style: Theme.of(context).textTheme.bodySmall),
                 },
                 rightButtonContent: "업데이트 하러가기",
                 leftButtonContent: "앱 종료하기",
@@ -513,11 +505,7 @@ class TaxiView extends HookWidget {
                     textAlign: TextAlign.center,
                     text: TextSpan(
                         text: "서버",
-                        style: GoogleFonts.roboto(
-                            textStyle: const TextStyle(
-                                color: Color(0xFF323232),
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold)),
+                        style: Theme.of(context).textTheme.bodyLarge,
                         children: const <TextSpan>[
                           TextSpan(text: "와의 "),
                           TextSpan(
@@ -534,11 +522,7 @@ class TaxiView extends HookWidget {
                   Padding(padding: EdgeInsets.only(top: 5)),
                   Text("일시적인 오류일 수 있습니다.",
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.roboto(
-                          textStyle: const TextStyle(
-                              color: Color(0xFF888888),
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold))),
+                      style: Theme.of(context).textTheme.bodySmall),
                 },
                 rightButtonContent: "스토어로 가기",
                 leftButtonContent: "앱 종료하기",
