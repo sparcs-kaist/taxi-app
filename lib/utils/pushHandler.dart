@@ -33,11 +33,9 @@ Future<void> handleMessage(RemoteMessage message) async {
   var details =
       NotificationDetails(android: androidNotiDetails, iOS: iOSNotiDetails);
 
-  if (message.data != null) {
-    flutterLocalNotificationsPlugin.show(Random().nextInt(100000000),
-        message.data['title'], message.data['body'], details,
-        payload: message.data['url']);
-  }
+  flutterLocalNotificationsPlugin.show(Random().nextInt(100000000),
+      message.data['title'], message.data['body'], details,
+      payload: message.data['url']);
 }
 
 Future<Uint8List> _getByteArrayFromUrl(String url) async {
