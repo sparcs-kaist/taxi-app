@@ -85,7 +85,7 @@ class MyHome extends HookWidget {
       title: 'Taxi App',
       theme: buildTheme(),
       home: Container(
-        color: const Color(0xFF6E3647),
+        color: Theme.of(context).primaryColor,
         child: Container(
           color: Colors.white,
           child: TaxiView(),

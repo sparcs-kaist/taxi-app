@@ -507,18 +507,19 @@ class TaxiView extends HookWidget {
                         style: Theme.of(context).textTheme.titleMedium,
                         children: const <TextSpan>[
                           TextSpan(
-                            text: "서버",
+                            text: "서버와의 ",
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          TextSpan(text: "와의 "),
                           TextSpan(text: "연결에 "),
                           TextSpan(
                               text: "실패",
-                              style: TextStyle(color: Color(0xFF6E3678))),
+                              style: TextStyle(
+                                  color: Color(0xFF6E3678),
+                                  fontWeight: FontWeight.bold)),
                           TextSpan(text: "했습니다.")
                         ]),
                   ),
-                  Padding(padding: EdgeInsets.only(top: 5)),
+                  const Padding(padding: EdgeInsets.only(top: 5)),
                   Text("일시적인 오류일 수 있습니다.",
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodySmall),

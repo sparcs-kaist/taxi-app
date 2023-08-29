@@ -1,9 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+final Map<int, Color> primaryColor1 = {
+  50: const Color.fromRGBO(110, 54, 71, .1),
+  100: const Color.fromRGBO(110, 54, 71, .2),
+  200: const Color.fromRGBO(110, 54, 71, .3),
+  300: const Color.fromRGBO(110, 54, 71, .4),
+  400: const Color.fromRGBO(110, 54, 71, .5),
+  500: const Color.fromRGBO(110, 54, 71, .6),
+  600: const Color.fromRGBO(110, 54, 71, .7),
+  700: const Color.fromRGBO(110, 54, 71, .8),
+  800: const Color.fromRGBO(110, 54, 71, .9),
+  900: const Color.fromRGBO(110, 54, 71, 1),
+};
+MaterialColor taxiPrimaryColor = MaterialColor(0xFF6E3647, primaryColor1);
+
 ThemeData buildTheme() {
   final base = ThemeData(
-    primarySwatch: Colors.blue,
+    primarySwatch: taxiPrimaryColor,
     textTheme: TextTheme(
       //Dialog 제목 강조
       titleMedium: GoogleFonts.roboto(
