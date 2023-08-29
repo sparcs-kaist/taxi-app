@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:open_store/open_store.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:taxiapp/constants/constants.dart';
 
 class TaxiDialog extends StatelessWidget {
   late Set<Widget> boxContent;
@@ -27,30 +28,24 @@ class TaxiDialog extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Padding(padding: EdgeInsets.all(15)),
+            defaultDialogPadding,
             ...boxContent,
-            const Padding(
-              padding: EdgeInsets.all(15),
-            ),
+            defaultDialogPadding,
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       elevation: 0.5,
-                      fixedSize: const Size(150, 45),
+                      fixedSize: defaultDialogButtonSize,
                       backgroundColor: const Color(0xFFFAF8FB),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.0),
+                        borderRadius: defaultDialogButtonBorderRadius,
                         side: const BorderSide(color: Colors.white),
                       ),
                     ),
                     child: Text(leftButtonContent,
-                        style: GoogleFonts.roboto(
-                            textStyle: const TextStyle(
-                                color: Color(0xFFC8C8C8),
-                                fontSize: 13,
-                                fontWeight: FontWeight.normal))),
+                        style: Theme.of(context).textTheme.labelMedium),
                     onPressed: () async {
                       if (Platform.isIOS) {
                         exit(0);
@@ -63,22 +58,19 @@ class TaxiDialog extends StatelessWidget {
                 ),
                 OutlinedButton(
                     style: ButtonStyle(
-                      fixedSize: MaterialStateProperty.all(const Size(150, 45)),
+                      fixedSize:
+                          MaterialStateProperty.all(defaultDialogButtonSize),
                       backgroundColor: MaterialStateProperty.all<Color>(
-                          const Color(0xFF6E3678)),
+                          Theme.of(context).primaryColor),
                       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                         RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.0),
+                          borderRadius: defaultDialogButtonBorderRadius,
                           side: const BorderSide(color: Colors.black),
                         ),
                       ),
                     ),
                     child: Text(rightButtonContent,
-                        style: GoogleFonts.roboto(
-                            textStyle: const TextStyle(
-                                color: Color(0xFFEEEEEE),
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold))),
+                        style: Theme.of(context).textTheme.labelLarge),
                     onPressed: () async {
                       OpenStore.instance.open(
                           androidAppBundleId: dotenv.get("ANDROID_APPID"),
@@ -86,6 +78,7 @@ class TaxiDialog extends StatelessWidget {
                     }),
               ],
             ),
+            //하단 패딩
             const Padding(padding: EdgeInsets.only(bottom: 15)),
           ]),
     );
