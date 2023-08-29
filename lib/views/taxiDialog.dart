@@ -20,7 +20,7 @@ class TaxiDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 350,
-      height: 165,
+      height: 172,
       decoration: BoxDecoration(
           color: Colors.white, borderRadius: BorderRadius.circular(15)),
       child: Column(
@@ -85,7 +85,8 @@ class TaxiDialog extends StatelessWidget {
                           appStoreId: dotenv.get("IOS_APPID"));
                     }),
               ],
-            )
+            ),
+            const Padding(padding: EdgeInsets.only(bottom: 15)),
           ]),
     );
   }

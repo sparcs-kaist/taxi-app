@@ -471,19 +471,19 @@ class TaxiView extends HookWidget {
                   RichText(
                     textAlign: TextAlign.center,
                     text: TextSpan(
-                        text: "새로운 ",
-                        style: Theme.of(context).textTheme.bodyLarge,
+                        style: Theme.of(context).textTheme.titleMedium,
                         children: const <TextSpan>[
-                          TextSpan(text: "버전"),
                           TextSpan(
-                              text: "이 ",
-                              style: TextStyle(fontWeight: FontWeight.normal)),
+                            text: "새로운 버전",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          TextSpan(text: "이 "),
                           TextSpan(
                               text: "출시",
-                              style: TextStyle(color: Color(0xFF6E3678))),
-                          TextSpan(
-                              text: "되었습니다!",
-                              style: TextStyle(fontWeight: FontWeight.normal))
+                              style: TextStyle(
+                                  color: Color(0xFF6E3678),
+                                  fontWeight: FontWeight.bold)),
+                          TextSpan(text: "되었습니다!")
                         ]),
                   ),
                   Text("정상적인 사용을 위해 앱을 업데이트 해주세요.",
@@ -504,19 +504,18 @@ class TaxiView extends HookWidget {
                   RichText(
                     textAlign: TextAlign.center,
                     text: TextSpan(
-                        text: "서버",
-                        style: Theme.of(context).textTheme.bodyLarge,
+                        style: Theme.of(context).textTheme.titleMedium,
                         children: const <TextSpan>[
-                          TextSpan(text: "와의 "),
                           TextSpan(
-                              text: "연결에 ",
-                              style: TextStyle(fontWeight: FontWeight.normal)),
+                            text: "서버",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          TextSpan(text: "와의 "),
+                          TextSpan(text: "연결에 "),
                           TextSpan(
                               text: "실패",
                               style: TextStyle(color: Color(0xFF6E3678))),
-                          TextSpan(
-                              text: "했습니다.",
-                              style: TextStyle(fontWeight: FontWeight.normal))
+                          TextSpan(text: "했습니다.")
                         ]),
                   ),
                   Padding(padding: EdgeInsets.only(top: 5)),
