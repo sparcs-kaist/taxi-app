@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+//primaryColor 지정 (색상코드: #6E3647)
 final Map<int, Color> primaryColor1 = {
   50: const Color.fromRGBO(110, 54, 71, .1),
   100: const Color.fromRGBO(110, 54, 71, .2),
@@ -18,6 +19,7 @@ MaterialColor taxiPrimaryColor = MaterialColor(0xFF6E3647, primaryColor1);
 ThemeData buildTheme() {
   final base = ThemeData(
     primarySwatch: taxiPrimaryColor,
+    primaryColor: const Color(0xFF6E3647),
     textTheme: TextTheme(
       //Dialog 제목 강조
       titleMedium: GoogleFonts.roboto(

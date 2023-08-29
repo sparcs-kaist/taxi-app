@@ -2,13 +2,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
-import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:package_info/package_info.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:taxiapp/utils/fcmToken.dart';
@@ -459,7 +456,7 @@ class TaxiView extends HookWidget {
                 }),
           )),
       isTimerUp.value && isLoaded.value && isFcmInit.value
-          ? Stack()
+          ? const Stack()
           : Scaffold(
               body: FadeTransition(opacity: animation, child: loadingView())),
       isMustUpdate.value
@@ -481,7 +478,8 @@ class TaxiView extends HookWidget {
                           TextSpan(
                               text: "출시",
                               style: TextStyle(
-                                  color: Color(0xFF6E3678),
+                                  color: Color(
+                                      0xFF6E3678), // TODO: primaryColor로 지정
                                   fontWeight: FontWeight.bold)),
                           TextSpan(text: "되었습니다!")
                         ]),
@@ -494,7 +492,7 @@ class TaxiView extends HookWidget {
                 leftButtonContent: "앱 종료하기",
               )),
             )
-          : Stack(),
+          : const Stack(),
       isServerError.value
           ? Container(
               color: const Color(0x66C8C8C8),
@@ -514,7 +512,8 @@ class TaxiView extends HookWidget {
                           TextSpan(
                               text: "실패",
                               style: TextStyle(
-                                  color: Color(0xFF6E3678),
+                                  color: Color(
+                                      0xFF6E3678), // TODO: primaryColor로 지정
                                   fontWeight: FontWeight.bold)),
                           TextSpan(text: "했습니다.")
                         ]),
@@ -528,7 +527,7 @@ class TaxiView extends HookWidget {
                 leftButtonContent: "앱 종료하기",
               )),
             )
-          : Stack()
+          : const Stack()
     ]));
   }
 
