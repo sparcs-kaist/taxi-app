@@ -20,7 +20,7 @@ class TaxiDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 350,
-      height: 172,
+      height: 155,
       decoration: BoxDecoration(
           color: Colors.white, borderRadius: BorderRadius.circular(15)),
       child: Column(
@@ -37,10 +37,11 @@ class TaxiDialog extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       elevation: 0.5,
                       fixedSize: defaultDialogButtonSize,
-                      backgroundColor: const Color(0xFFFAF8FB),
+                      backgroundColor: Color.fromARGB(255, 238, 238, 238),
                       shape: RoundedRectangleBorder(
                         borderRadius: defaultDialogButtonBorderRadius,
-                        side: const BorderSide(color: Colors.white),
+                        side: const BorderSide(
+                            color: Color.fromARGB(255, 238, 238, 238)),
                       ),
                     ),
                     child: Text(leftButtonContent,
@@ -53,7 +54,8 @@ class TaxiDialog extends StatelessWidget {
                       }
                     }),
                 const Padding(
-                  padding: EdgeInsets.all(10),
+                  padding: EdgeInsets.all(
+                      7), //피그마 기준 상으로 버튼 간의 간격은 10px이나 모바일 환경상 웹뷰와 같은 간격을 제시하기 위해 7로 설정
                 ),
                 OutlinedButton(
                     style: ButtonStyle(
@@ -78,7 +80,7 @@ class TaxiDialog extends StatelessWidget {
               ],
             ),
             //하단 패딩
-            const Padding(padding: EdgeInsets.only(bottom: 15)),
+            const Padding(padding: EdgeInsets.only(bottom: 10)),
           ]),
     );
   }

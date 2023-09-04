@@ -11,7 +11,7 @@ final BaseOptions connectionOptions = BaseOptions(
   receiveTimeout: Duration(seconds: 130),
 );
 
-const defaultDialogPadding = Padding(padding: EdgeInsets.all(15));
+const defaultDialogPadding = Padding(padding: EdgeInsets.all(10));
 
 const defaultDialogButtonSize = Size(150, 45);
 
