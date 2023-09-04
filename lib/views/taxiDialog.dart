@@ -46,7 +46,7 @@ class TaxiDialog extends StatelessWidget {
                     }),
                 const Padding(
                   padding: EdgeInsets.all(
-                      7), //피그마 기준 상으로 버튼 간의 간격은 10px이나 모바일 환경상 웹뷰와 같은 간격을 제시하기 위해 7로 설정
+                      7), //피그마 기준 상, 버튼 간의 간격은 10px이나 모바일 환경상 웹뷰와 같은 간격을 제시하기 위해 7로 설정
                 ),
                 OutlinedButton(
                     style: Theme.of(context).outlinedButtonTheme.style,
