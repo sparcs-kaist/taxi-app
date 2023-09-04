@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'constants.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 //primaryColor 지정 (색상코드: #6E3647)
@@ -20,6 +21,29 @@ ThemeData buildTheme() {
   final base = ThemeData(
     primarySwatch: taxiPrimaryColor,
     primaryColor: const Color(0xFF6E3678),
+    //dialog 버튼
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        elevation: 0.5,
+        fixedSize: defaultDialogButtonSize,
+        backgroundColor: Color.fromARGB(255, 238, 238, 238),
+        shape: RoundedRectangleBorder(
+          borderRadius: defaultDialogButtonBorderRadius,
+        ),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        fixedSize: defaultDialogButtonSize,
+        backgroundColor: taxiPrimaryColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: defaultDialogButtonBorderRadius,
+          side: const BorderSide(color: Colors.black),
+        ),
+      ),
+    ),
+
+    //텍스트 테마
     textTheme: TextTheme(
         //Dialog 제목
         titleMedium: GoogleFonts.roboto(

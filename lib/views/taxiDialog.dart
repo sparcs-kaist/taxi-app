@@ -34,16 +34,7 @@ class TaxiDialog extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0.5,
-                      fixedSize: defaultDialogButtonSize,
-                      backgroundColor: Color.fromARGB(255, 238, 238, 238),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: defaultDialogButtonBorderRadius,
-                        side: const BorderSide(
-                            color: Color.fromARGB(255, 238, 238, 238)),
-                      ),
-                    ),
+                    style: Theme.of(context).elevatedButtonTheme.style,
                     child: Text(leftButtonContent,
                         style: Theme.of(context).textTheme.labelMedium),
                     onPressed: () async {
@@ -58,18 +49,7 @@ class TaxiDialog extends StatelessWidget {
                       7), //피그마 기준 상으로 버튼 간의 간격은 10px이나 모바일 환경상 웹뷰와 같은 간격을 제시하기 위해 7로 설정
                 ),
                 OutlinedButton(
-                    style: ButtonStyle(
-                      fixedSize:
-                          MaterialStateProperty.all(defaultDialogButtonSize),
-                      backgroundColor: MaterialStateProperty.all<Color>(
-                          Theme.of(context).primaryColor),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                          borderRadius: defaultDialogButtonBorderRadius,
-                          side: const BorderSide(color: Colors.black),
-                        ),
-                      ),
-                    ),
+                    style: Theme.of(context).outlinedButtonTheme.style,
                     child: Text(rightButtonContent,
                         style: Theme.of(context).textTheme.labelLarge),
                     onPressed: () async {
