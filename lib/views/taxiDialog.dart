@@ -7,29 +7,32 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:taxiapp/constants/constants.dart';
 
 class TaxiDialog extends StatelessWidget {
-  late Set<Widget> boxContent;
+  late Set<Widget> boxMainContent;
+  late Set<Widget> boxSecondaryContent;
   late String leftButtonContent;
   late String rightButtonContent;
   TaxiDialog(
       {super.key,
-      required this.boxContent,
+      required this.boxMainContent,
+      required this.boxSecondaryContent,
       required this.leftButtonContent,
       required this.rightButtonContent});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 340,
-      height: 155,
-      decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(15)),
+    return Dialog(
+      alignment: Alignment.center,
+      shape: Theme.of(context).dialogTheme.shape,
       child: Column(
+          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            defaultDialogPadding,
-            ...boxContent,
-            defaultDialogPadding,
+            defaultDialogUpperTitlePadding,
+            ...boxMainContent,
+            defaultDialogMedianTitlePadding,
+            ...boxSecondaryContent,
+            defaultDialogLowerTitlePadding,
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -46,7 +49,7 @@ class TaxiDialog extends StatelessWidget {
                     }),
                 const Padding(
                   padding: EdgeInsets.all(
-                      7), //피그마 기준 상, 버튼 간의 간격은 10px이나 모바일 환경상 웹뷰와 같은 간격을 제시하기 위해 7로 설정
+                      5), //피그마 기준 상, 버튼 간의 간격은 10px이나 모바일 환경상 웹뷰와 같은 간격을 제시하기 위해 5로 설정
                 ),
                 OutlinedButton(
                     style: Theme.of(context).outlinedButtonTheme.style,

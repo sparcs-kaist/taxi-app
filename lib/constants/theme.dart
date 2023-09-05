@@ -21,6 +21,14 @@ ThemeData buildTheme() {
   final base = ThemeData(
     primarySwatch: taxiPrimaryColor,
     primaryColor: const Color(0xFF6E3678),
+    //dialog 테마
+    dialogTheme: DialogTheme(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      backgroundColor: Colors.white,
+      actionsPadding: EdgeInsets.all(10.0),
+      surfaceTintColor: Colors.black,
+    ),
+    dialogBackgroundColor: Colors.white,
     //dialog 버튼
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -46,17 +54,17 @@ ThemeData buildTheme() {
     //텍스트 테마
     textTheme: TextTheme(
         //Dialog 제목
-        titleMedium: GoogleFonts.roboto(
+        titleSmall: GoogleFonts.roboto(
             textStyle: const TextStyle(
                 color: Color(0xFF323232),
-                fontSize: 22,
+                fontSize: 16,
                 fontWeight: FontWeight.normal)),
 
         //Dialog 상세 설명
         bodySmall: GoogleFonts.roboto(
             textStyle: const TextStyle(
                 color: Color(0xFF888888),
-                fontSize: 12,
+                fontSize: 10,
                 fontWeight: FontWeight.bold)),
 
         //Dialog Elevated 버튼 텍스트

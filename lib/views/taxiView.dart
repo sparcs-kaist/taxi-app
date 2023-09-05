@@ -18,6 +18,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:taxiapp/views/taxiDialog.dart';
 import 'package:app_links/app_links.dart';
+import 'package:taxiapp/constants/constants.dart';
 
 class TaxiView extends HookWidget {
   final CookieManager _cookieManager = CookieManager.instance();
@@ -464,11 +465,11 @@ class TaxiView extends HookWidget {
               color: const Color(0x66C8C8C8),
               child: Center(
                   child: TaxiDialog(
-                boxContent: {
+                boxMainContent: {
                   RichText(
                     textAlign: TextAlign.center,
                     text: TextSpan(
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: Theme.of(context).textTheme.titleSmall,
                         children: const <TextSpan>[
                           TextSpan(
                             text: "새로운 버전",
@@ -484,6 +485,8 @@ class TaxiView extends HookWidget {
                           TextSpan(text: "되었습니다!")
                         ]),
                   ),
+                },
+                boxSecondaryContent: {
                   Text("정상적인 사용을 위해 앱을 업데이트 해주세요.",
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodySmall),
@@ -498,11 +501,11 @@ class TaxiView extends HookWidget {
               color: const Color(0x66C8C8C8),
               child: Center(
                   child: TaxiDialog(
-                boxContent: {
+                boxMainContent: {
                   RichText(
                     textAlign: TextAlign.center,
                     text: TextSpan(
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: Theme.of(context).textTheme.titleSmall,
                         children: const <TextSpan>[
                           TextSpan(
                             text: "서버와의 ",
@@ -518,7 +521,8 @@ class TaxiView extends HookWidget {
                           TextSpan(text: "했습니다.")
                         ]),
                   ),
-                  const Padding(padding: EdgeInsets.only(top: 5)),
+                },
+                boxSecondaryContent: {
                   Text("일시적인 오류일 수 있습니다.",
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodySmall),
