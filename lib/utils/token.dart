@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:taxiapp/utils/fcmToken.dart';
+import 'package:taxiapp/utils/remoteConfigController.dart';
 
 class Token {
   String accessToken;
@@ -30,6 +31,16 @@ class Token {
   Future<void> init() async {
     accessToken = (await getAccessTokenFromStorage()) ?? '';
     refreshToken = (await getRefreshTokenFromStorage()) ?? '';
+    _dio.interceptors.add(CookieManager(_cookieJar));
+    _dio.interceptors
+        .add(InterceptorsWrapper(onRequest: (options, handler) async {
+      options.headers["Origin"] = options.uri.origin;
+      return handler.next(options);
+    }, onResponse: (response, handler) async {
+      return handler.next(response);
+    }, onError: (error, handler) async {
+      return handler.next(error);
+    }));
   }
 
   Future<void> setAccessToken({required String accessToken}) async {
@@ -56,13 +67,15 @@ class Token {
   }
 
   Future<String?> getSession() async {
-    _dio.interceptors.add(CookieManager(_cookieJar));
     return _dio.get("/auth/app/token/login", queryParameters: {
       "accessToken": accessToken,
       "deviceToken": FcmToken().fcmToken
     }, options: Options(validateStatus: ((status) {
       return (status ?? 200) < 500;
     }))).then((response) async {
+      print(accessToken);
+      print(response.statusCode);
+      print(response.data);
       if (response.statusCode == 403) {
         return null;
       }

@@ -235,11 +235,13 @@ class TaxiView extends HookWidget {
       if (isAuthLogin.value && !isLogin.value && isFcmInit.value) {
         Token().getSession().then((value) async {
           if (value == null) {
+            print(value);
+            print("왜 이게 문제야.....");
             if (Token().accessToken != '') {
               await Token().deleteAll();
             }
-            isLogin.value = false;
             isAuthLogin.value = false;
+            isLogin.value = false;
             isFirstLogin.value = false;
             LoadCount.value += 1;
           } else {
@@ -287,6 +289,27 @@ class TaxiView extends HookWidget {
                             AndroidOverScrollMode.OVER_SCROLL_NEVER),
                     ios: IOSInAppWebViewOptions(disallowOverScroll: true)),
                 // initialUrlRequest: URLRequest(url: Uri.parse(address)),
+                shouldOverrideUrlLoading: (controller, navigationAction) async {
+                  var newHeaders = Map<String, String>.from(
+                      navigationAction.request.headers ?? {});
+                  print("HERE");
+                  if (!newHeaders.containsKey("Referer") &&
+                      navigationAction.request.url.toString() !=
+                          'about:blank') {
+                    print(newHeaders.toString());
+                    print(navigationAction.request.url.toString());
+                    newHeaders['Referer'] =
+                        navigationAction.request.url.toString();
+                    print(newHeaders.toString());
+                    var newRequest = navigationAction.request;
+                    newRequest.headers = newHeaders;
+                    await controller.loadUrl(urlRequest: newRequest);
+
+                    return NavigationActionPolicy.CANCEL;
+                  }
+
+                  return NavigationActionPolicy.ALLOW;
+                },
                 onWebViewCreated: (InAppWebViewController webcontroller) async {
                   _controller.value = webcontroller;
                   _controller.value?.addJavaScriptHandler(
