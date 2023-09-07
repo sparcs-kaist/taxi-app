@@ -22,6 +22,7 @@ const Color taxiMainBackgroundColor = Colors.white;
 const Color toastBackgroundColor = Colors.white;
 const Color toastTextColor = Colors.black;
 const Color notiColor = Color(0x66C8C8C8);
+final Color dialogBarrierColor = Colors.black.withOpacity(0.6);
 
 ThemeData buildTheme() {
   final base = ThemeData(
