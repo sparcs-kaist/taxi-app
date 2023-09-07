@@ -78,14 +78,14 @@ ThemeData buildTheme() {
         labelLarge: GoogleFonts.roboto(
             textStyle: const TextStyle(
                 color: Color(0xFFEEEEEE),
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: FontWeight.bold)),
 
         //Dialog Elevated 버튼 텍스트
         labelMedium: GoogleFonts.roboto(
             textStyle: const TextStyle(
                 color: Color.fromARGB(255, 129, 129, 129),
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: FontWeight.normal))),
   );
   return base;
