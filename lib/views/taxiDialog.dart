@@ -21,7 +21,7 @@ class TaxiDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      //TODO:barrier Color를 Colors.black.withOpacity(0.5)로 설정해야 피그마 기준에 부합합니다.
+      //TODO: barrier Color를 Colors.black.withOpacity(0.5)로 설정해야 피그마 기준에 부합합니다.
       alignment: Alignment.center,
       backgroundColor: Theme.of(context).dialogBackgroundColor,
       shape: Theme.of(context).dialogTheme.shape,

@@ -36,6 +36,7 @@ ThemeData buildTheme() {
       surfaceTintColor: Colors.black,
     ),
     dialogBackgroundColor: Colors.white,
+
     //dialog 버튼
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(

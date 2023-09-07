@@ -7,8 +7,8 @@ String address = RemoteConfigController().backUrl;
 
 final BaseOptions connectionOptions = BaseOptions(
   baseUrl: address,
-  connectTimeout: Duration(seconds: 150),
-  receiveTimeout: Duration(seconds: 130),
+  connectTimeout: const Duration(seconds: 150),
+  receiveTimeout: const Duration(seconds: 130),
 );
 
 //아래의 상수들은 피그마 기준 상의 패딩 픽셀과는 차이를 두고 있지만,
