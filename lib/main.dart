@@ -87,7 +87,7 @@ class MyHome extends HookWidget {
       home: Container(
         color: Theme.of(context).primaryColor,
         child: Container(
-          color: Colors.white,
+          color: taxiMainBackgroundColor,
           child: TaxiView(),
         ),
       ),

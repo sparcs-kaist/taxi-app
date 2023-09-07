@@ -15,17 +15,24 @@ final Map<int, Color> primaryColor1 = {
   800: const Color.fromRGBO(110, 54, 120, .9),
   900: const Color.fromRGBO(110, 54, 120, 1),
 };
-MaterialColor taxiPrimaryColor = MaterialColor(0xFF6E3678, primaryColor1);
+final MaterialColor taxiPrimaryMaterialColor =
+    MaterialColor(0xFF6E3678, primaryColor1);
+const Color taxiPrimaryColor = Color(0xFF6E3678);
+const Color taxiMainBackgroundColor = Colors.white;
+const Color toastBackgroundColor = Colors.white;
+const Color toastTextColor = Colors.black;
+const Color notiColor = Color(0x66C8C8C8);
 
 ThemeData buildTheme() {
   final base = ThemeData(
-    primarySwatch: taxiPrimaryColor,
+    primarySwatch: taxiPrimaryMaterialColor,
     primaryColor: const Color(0xFF6E3678),
+
     //dialog 테마
     dialogTheme: DialogTheme(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       backgroundColor: Colors.white,
-      actionsPadding: EdgeInsets.all(10.0),
+      actionsPadding: const EdgeInsets.all(10.0),
       surfaceTintColor: Colors.black,
     ),
     dialogBackgroundColor: Colors.white,
@@ -34,7 +41,7 @@ ThemeData buildTheme() {
       style: ElevatedButton.styleFrom(
         elevation: 0.5,
         fixedSize: defaultDialogButtonSize,
-        backgroundColor: Color.fromARGB(255, 238, 238, 238),
+        backgroundColor: const Color.fromARGB(255, 238, 238, 238),
         shape: RoundedRectangleBorder(
           borderRadius: defaultDialogButtonBorderRadius,
         ),
@@ -43,7 +50,7 @@ ThemeData buildTheme() {
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         fixedSize: defaultDialogButtonSize,
-        backgroundColor: taxiPrimaryColor,
+        backgroundColor: taxiPrimaryMaterialColor,
         shape: RoundedRectangleBorder(
           borderRadius: defaultDialogButtonBorderRadius,
           side: const BorderSide(color: Colors.black),
