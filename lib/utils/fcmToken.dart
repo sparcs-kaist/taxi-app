@@ -1,13 +1,13 @@
 import "package:dio/dio.dart";
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:taxiapp/constants/constants.dart';
+import 'package:taxiapp/utils/remoteConfigController.dart';
 
 class FcmToken {
   String token;
 
   static FcmToken? _instance;
 
-  final Dio _dio = Dio(connectionOptions);
+  final Dio _dio = Dio();
 
   FcmToken._internal({required this.token});
 
@@ -32,6 +32,7 @@ class FcmToken {
   String get fcmToken => token;
 
   Future<bool> registerToken(String accessToken) async {
+    _dio.options.baseUrl = RemoteConfigController().backUrl;
     return _dio.post("auth/app/device", data: {
       "accessToken": accessToken,
       "deviceToken": token,
@@ -43,6 +44,7 @@ class FcmToken {
   }
 
   Future<bool> removeToken(String accessToken) async {
+    _dio.options.baseUrl = RemoteConfigController().backUrl;
     return _dio.delete("auth/app/device", data: {
       "accessToken": accessToken,
       "deviceToken": token,

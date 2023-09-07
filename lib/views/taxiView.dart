@@ -388,30 +388,6 @@ class TaxiView extends HookWidget {
                     }
                   }
                 },
-                onUpdateVisitedHistory:
-                    (controller, url, androidIsReload) async {
-                  // 로그아웃 링크 감지
-                  if (url.toString().contains("logout") && isAuthLogin.value) {
-                    await controller.stopLoading();
-                    try {
-                      await FcmToken().removeToken(Token().getAccessToken());
-                      await Token().deleteAll();
-                      isLogin.value = false;
-                      isAuthLogin.value = false;
-                      await _cookieManager.deleteAllCookies();
-                      await _controller.value!.loadUrl(
-                          urlRequest: URLRequest(url: Uri.parse(address)));
-                    } catch (e) {
-                      // TODO
-                      Fluttertoast.showToast(
-                          msg: "서버와의 연결에 실패했습니다.",
-                          toastLength: Toast.LENGTH_SHORT,
-                          textColor: Colors.black,
-                          backgroundColor: Colors.white);
-                      isAuthLogin.value = false;
-                    }
-                  }
-                },
                 onLoadResourceCustomScheme: (controller, url) async {
                   if (Platform.isAndroid) {
                     if (url.scheme == 'intent') {
