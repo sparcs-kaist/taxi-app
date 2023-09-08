@@ -36,9 +36,11 @@ const defaultDialogVerticalMedianButtonPadding =
 
 const defaultDialogLowerButtonPadding = Padding(padding: EdgeInsets.all(3));
 
-const defaultDialogButtonSize = Size(150, 35);
+const defaultDialogButtonSize = Size(147.50, 35);
 
-final defaultDialogButtonBorderRadius = BorderRadius.circular(10.0);
+const defaultDialogButtonInnerPadding = EdgeInsets.only(top: 9, bottom: 10);
+
+final defaultDialogButtonBorderRadius = BorderRadius.circular(8.0);
 
 ThemeData buildTheme() {
   final base = ThemeData(
@@ -59,6 +61,7 @@ ThemeData buildTheme() {
       style: ElevatedButton.styleFrom(
         elevation: 0.5,
         fixedSize: defaultDialogButtonSize,
+        padding: defaultDialogButtonInnerPadding,
         backgroundColor: const Color.fromARGB(255, 238, 238, 238),
         shape: RoundedRectangleBorder(
           borderRadius: defaultDialogButtonBorderRadius,
@@ -68,6 +71,7 @@ ThemeData buildTheme() {
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         fixedSize: defaultDialogButtonSize,
+        padding: defaultDialogButtonInnerPadding,
         backgroundColor: taxiPrimaryMaterialColor,
         shape: RoundedRectangleBorder(
           borderRadius: defaultDialogButtonBorderRadius,
@@ -96,14 +100,14 @@ ThemeData buildTheme() {
         labelLarge: GoogleFonts.roboto(
             textStyle: const TextStyle(
                 color: Color(0xFFEEEEEE),
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.bold)),
 
         //Dialog Elevated 버튼 텍스트
         labelMedium: GoogleFonts.roboto(
             textStyle: const TextStyle(
                 color: Color.fromARGB(255, 129, 129, 129),
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.normal))),
   );
   return base;
