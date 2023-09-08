@@ -299,29 +299,19 @@ class TaxiView extends HookWidget {
                     "chrome",
                     "data",
                     "javascript",
+                    "intent",
                     "about"
                   ].contains(uri.scheme)) {
                     if (await canLaunchUrlString(url)) {
-                      await launchUrlString(
-                        url,
-                      );
+                      await launchUrlString(url,
+                          mode: LaunchMode.externalApplication);
                       return NavigationActionPolicy.CANCEL;
                     }
-                  }
-
-                  var newHeaders = Map<String, String>.from(
-                      navigationAction.request.headers ?? {});
-                  if (!newHeaders.containsKey("Referer") &&
-                      navigationAction.request.url.toString() !=
-                          'about:blank') {
-                    newHeaders['Referer'] =
-                        navigationAction.request.url.toString();
-                    newHeaders['Origin'] =
-                        "https://taxi.sparcs.org/"; //TODO: remove hardcoding
-                    var newRequest = navigationAction.request;
-                    newRequest.headers = newHeaders;
-                    await controller.loadUrl(urlRequest: newRequest);
-
+                    Fluttertoast.showToast(
+                        msg: "앱이 설치되어 있지 않아 실행에 실패했습니다",
+                        toastLength: Toast.LENGTH_SHORT,
+                        textColor: Colors.black,
+                        backgroundColor: Colors.white);
                     return NavigationActionPolicy.CANCEL;
                   }
 
