@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'constants.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 //primaryColor 지정 (색상코드: #6E3647)
@@ -23,6 +22,23 @@ const Color toastBackgroundColor = Colors.white;
 const Color toastTextColor = Colors.black;
 const Color notiColor = Color(0x66C8C8C8);
 final Color dialogBarrierColor = Colors.black.withOpacity(0.6);
+
+//아래의 상수들은 피그마 기준 상의 패딩 픽셀과는 차이를 두고 있지만,
+//이는 모바일 환경상 웹뷰와 같은 간격을 제시하기 위해 설정한 값들입니다.
+const defaultDialogUpperTitlePadding = Padding(padding: EdgeInsets.all(15));
+
+const defaultDialogMedianTitlePadding = Padding(padding: EdgeInsets.all(2));
+
+const defaultDialogLowerTitlePadding = Padding(padding: EdgeInsets.all(10));
+
+const defaultDialogVerticalMedianButtonPadding =
+    Padding(padding: EdgeInsets.all(5));
+
+const defaultDialogLowerButtonPadding = Padding(padding: EdgeInsets.all(3));
+
+const defaultDialogButtonSize = Size(150, 35);
+
+final defaultDialogButtonBorderRadius = BorderRadius.circular(10.0);
 
 ThemeData buildTheme() {
   final base = ThemeData(
