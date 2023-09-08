@@ -1,3 +1,4 @@
+import 'dart:io';
 import "package:dio/dio.dart";
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:taxiapp/utils/remoteConfigController.dart';
@@ -23,7 +24,6 @@ class FcmToken {
     final token = await FirebaseMessaging.instance.getToken();
     _dio.interceptors
         .add(InterceptorsWrapper(onRequest: (options, handler) async {
-      options.baseUrl = RemoteConfigController().frontUrl;
       options.headers["Origin"] = options.uri.origin;
       return handler.next(options);
     }, onResponse: (response, handler) async {

@@ -33,7 +33,6 @@ class Token {
     _dio.interceptors.add(CookieManager(_cookieJar));
     _dio.interceptors
         .add(InterceptorsWrapper(onRequest: (options, handler) async {
-      options.baseUrl = RemoteConfigController().frontUrl;
       options.headers["Origin"] = options.uri.origin;
       return handler.next(options);
     }, onResponse: (response, handler) async {

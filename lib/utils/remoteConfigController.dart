@@ -46,7 +46,7 @@ class RemoteConfigController {
       minimumFetchInterval: Duration.zero,
     ));
     await remoteConfig.setDefaults({
-      "back_url": "https://taxi.sparcs.org/api/",
+      "back_url": "https://taxi.sparcs.org/",
       "front_url": "https://taxi.sparcs.org/",
       "version": value.version,
       "ios_version": value.version,
@@ -54,10 +54,8 @@ class RemoteConfigController {
 
     await remoteConfig.fetchAndActivate();
 
-    this.backUrl =
-        "https://taxi.sparcs.org/api/"; // remoteConfig.getString("back_url");
-    this.frontUrl =
-        "https://taxi.sparcs.org/"; // remoteConfig.getString("front_url");
+    this.backUrl = remoteConfig.getString("back_url");
+    this.frontUrl = remoteConfig.getString("front_url");
     this.android_version = remoteConfig.getString("version");
     this.ios_version = remoteConfig.getString("ios_version");
 
