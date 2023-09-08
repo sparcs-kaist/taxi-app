@@ -23,7 +23,7 @@ class FcmToken {
     final token = await FirebaseMessaging.instance.getToken();
     _dio.interceptors
         .add(InterceptorsWrapper(onRequest: (options, handler) async {
-      options.baseUrl = "https://taxi.sparcs.org/"; //TODO: remove hardcoding
+      options.baseUrl = RemoteConfigController().frontUrl;
       options.headers["Origin"] = options.uri.origin;
       return handler.next(options);
     }, onResponse: (response, handler) async {
