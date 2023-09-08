@@ -409,7 +409,6 @@ class TaxiView extends HookWidget {
                 onLoadResourceCustomScheme: (controller, url) async {
                   if (Platform.isAndroid) {
                     if (url.scheme == 'intent') {
-                      print("살려줘.. 카톡만 작동해");
                       try {
                         await controller.stopLoading();
                         const MethodChannel channel =
