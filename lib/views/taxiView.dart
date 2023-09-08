@@ -21,6 +21,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:taxiapp/views/taxiDialog.dart';
 import 'package:app_links/app_links.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class TaxiView extends HookWidget {
   final CookieManager _cookieManager = CookieManager.instance();
@@ -287,6 +289,44 @@ class TaxiView extends HookWidget {
                             AndroidOverScrollMode.OVER_SCROLL_NEVER),
                     ios: IOSInAppWebViewOptions(disallowOverScroll: true)),
                 // initialUrlRequest: URLRequest(url: Uri.parse(address)),
+                shouldOverrideUrlLoading: (controller, navigationAction) async {
+                  var url = navigationAction.request.url.toString();
+                  var uri = Uri.parse(url);
+                  if (![
+                    "http",
+                    "https",
+                    "file",
+                    "chrome",
+                    "data",
+                    "javascript",
+                    "about"
+                  ].contains(uri.scheme)) {
+                    if (await canLaunchUrlString(url)) {
+                      await launchUrlString(
+                        url,
+                      );
+                      return NavigationActionPolicy.CANCEL;
+                    }
+                  }
+
+                  var newHeaders = Map<String, String>.from(
+                      navigationAction.request.headers ?? {});
+                  if (!newHeaders.containsKey("Referer") &&
+                      navigationAction.request.url.toString() !=
+                          'about:blank') {
+                    newHeaders['Referer'] =
+                        navigationAction.request.url.toString();
+                    newHeaders['Origin'] =
+                        "https://taxi.sparcs.org/"; //TODO: remove hardcoding
+                    var newRequest = navigationAction.request;
+                    newRequest.headers = newHeaders;
+                    await controller.loadUrl(urlRequest: newRequest);
+
+                    return NavigationActionPolicy.CANCEL;
+                  }
+
+                  return NavigationActionPolicy.ALLOW;
+                },
                 onWebViewCreated: (InAppWebViewController webcontroller) async {
                   _controller.value = webcontroller;
                   _controller.value?.addJavaScriptHandler(
