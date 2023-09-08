@@ -1,5 +1,6 @@
 import "package:dio/dio.dart";
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:taxiapp/utils/remoteConfigController.dart';
 
 class FcmToken {
   String token;
@@ -22,8 +23,7 @@ class FcmToken {
     final token = await FirebaseMessaging.instance.getToken();
     _dio.interceptors
         .add(InterceptorsWrapper(onRequest: (options, handler) async {
-      options.baseUrl =
-          "https://taxi.dev.sparcs.org/"; //TODO: remove hardcoding
+      options.baseUrl = "https://taxi.sparcs.org/"; //TODO: remove hardcoding
       options.headers["Origin"] = options.uri.origin;
       return handler.next(options);
     }, onResponse: (response, handler) async {
@@ -42,6 +42,7 @@ class FcmToken {
   String get fcmToken => token;
 
   Future<bool> registerToken(String accessToken) async {
+    _dio.options.baseUrl = RemoteConfigController().backUrl;
     return _dio.post("auth/app/device", data: {
       "accessToken": accessToken,
       "deviceToken": token,
@@ -53,6 +54,7 @@ class FcmToken {
   }
 
   Future<bool> removeToken(String accessToken) async {
+    _dio.options.baseUrl = RemoteConfigController().backUrl;
     return _dio.delete("auth/app/device", data: {
       "accessToken": accessToken,
       "deviceToken": token,
