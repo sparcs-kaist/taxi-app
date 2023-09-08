@@ -1,5 +1,3 @@
-import "package:dio/dio.dart";
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:package_info/package_info.dart';
 
@@ -29,10 +27,7 @@ class RemoteConfigController {
         ios_version == null ||
         android_version == null) {
       return _instance ??= RemoteConfigController._internal(
-          backUrl: 'https://taxi.sparcs.org/api/',
-          frontUrl: 'https://taxi.sparcs.org',
-          ios_version: '',
-          android_version: '');
+          backUrl: '', frontUrl: '', ios_version: '', android_version: '');
     }
     _instance = RemoteConfigController._internal(
         backUrl: backUrl,
@@ -40,10 +35,7 @@ class RemoteConfigController {
         ios_version: ios_version,
         android_version: android_version);
     return _instance ??= RemoteConfigController._internal(
-        backUrl: 'https://taxi.sparcs.org/api/',
-        frontUrl: 'https://taxi.sparcs.org',
-        ios_version: '',
-        android_version: '');
+        backUrl: '', frontUrl: '', ios_version: '', android_version: '');
   }
 
   Future<void> init() async {
