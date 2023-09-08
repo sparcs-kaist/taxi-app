@@ -296,7 +296,7 @@ class TaxiView extends HookWidget {
                     newHeaders['Referer'] =
                         navigationAction.request.url.toString();
                     newHeaders['Origin'] =
-                        "https://taxi.dev.sparcs.org/"; //TODO: remove hardcoding
+                        "https://taxi.sparcs.org/"; //TODO: remove hardcoding
                     var newRequest = navigationAction.request;
                     newRequest.headers = newHeaders;
                     await controller.loadUrl(urlRequest: newRequest);
