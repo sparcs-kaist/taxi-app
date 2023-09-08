@@ -11,6 +11,11 @@
     
     <queries>
         <package android:name="com.kakao.talk" />
+        <package android:name="com.kakaopay.app" />
+        <package android:name="viva.republica.toss" />
+        <package android:name="com.kakao.taxi" />
+        <package android:name="com.ubercab" />
+        <package android:name="kr.co.orangetaxi.passenger" />
     </queries>
     <application
         android:label="Taxi"
