@@ -1,13 +1,12 @@
 import "package:dio/dio.dart";
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:taxiapp/constants/constants.dart';
 
 class FcmToken {
   String token;
 
   static FcmToken? _instance;
 
-  final Dio _dio = Dio(connectionOptions);
+  final Dio _dio = Dio();
 
   FcmToken._internal({required this.token});
 
@@ -23,7 +22,9 @@ class FcmToken {
     final token = await FirebaseMessaging.instance.getToken();
     _dio.interceptors
         .add(InterceptorsWrapper(onRequest: (options, handler) async {
-      options.headers["origin"] = options.uri.origin;
+      options.baseUrl =
+          "https://taxi.dev.sparcs.org/"; //TODO: remove hardcoding
+      options.headers["Origin"] = options.uri.origin;
       return handler.next(options);
     }, onResponse: (response, handler) async {
       return handler.next(response);

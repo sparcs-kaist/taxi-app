@@ -235,8 +235,6 @@ class TaxiView extends HookWidget {
       if (isAuthLogin.value && !isLogin.value && isFcmInit.value) {
         Token().getSession().then((value) async {
           if (value == null) {
-            print(value);
-            print("왜 이게 문제야.....");
             if (Token().accessToken != '') {
               await Token().deleteAll();
             }
@@ -292,15 +290,13 @@ class TaxiView extends HookWidget {
                 shouldOverrideUrlLoading: (controller, navigationAction) async {
                   var newHeaders = Map<String, String>.from(
                       navigationAction.request.headers ?? {});
-                  print("HERE");
                   if (!newHeaders.containsKey("Referer") &&
                       navigationAction.request.url.toString() !=
                           'about:blank') {
-                    print(newHeaders.toString());
-                    print(navigationAction.request.url.toString());
                     newHeaders['Referer'] =
                         navigationAction.request.url.toString();
-                    print(newHeaders.toString());
+                    newHeaders['Origin'] =
+                        "https://taxi.dev.sparcs.org/"; //TODO: remove hardcoding
                     var newRequest = navigationAction.request;
                     newRequest.headers = newHeaders;
                     await controller.loadUrl(urlRequest: newRequest);
@@ -438,6 +434,7 @@ class TaxiView extends HookWidget {
                 onLoadResourceCustomScheme: (controller, url) async {
                   if (Platform.isAndroid) {
                     if (url.scheme == 'intent') {
+                      print("살려줘.. 카톡만 작동해");
                       try {
                         await controller.stopLoading();
                         const MethodChannel channel =

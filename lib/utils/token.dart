@@ -6,7 +6,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:taxiapp/utils/fcmToken.dart';
-import 'package:taxiapp/utils/remoteConfigController.dart';
 
 class Token {
   String accessToken;
@@ -14,7 +13,7 @@ class Token {
   static Token? _instance;
   static final _storage = FlutterSecureStorage();
 
-  final Dio _dio = Dio(connectionOptions);
+  final Dio _dio = Dio();
   final CookieJar _cookieJar = CookieJar();
 
   Token._internal({required this.accessToken, required this.refreshToken});
@@ -34,6 +33,8 @@ class Token {
     _dio.interceptors.add(CookieManager(_cookieJar));
     _dio.interceptors
         .add(InterceptorsWrapper(onRequest: (options, handler) async {
+      options.baseUrl =
+          "https://taxi.dev.sparcs.org/"; //TODO: remove hardcoding
       options.headers["Origin"] = options.uri.origin;
       return handler.next(options);
     }, onResponse: (response, handler) async {
@@ -73,9 +74,6 @@ class Token {
     }, options: Options(validateStatus: ((status) {
       return (status ?? 200) < 500;
     }))).then((response) async {
-      print(accessToken);
-      print(response.statusCode);
-      print(response.data);
       if (response.statusCode == 403) {
         return null;
       }
@@ -88,7 +86,7 @@ class Token {
       }
       if (response.statusCode == 200) {
         List<Cookie> cookies = await _cookieJar.loadForRequest(
-            Uri.parse(connectionOptions.baseUrl + "auth/app/token/login"));
+            Uri.parse(connectionOptions.baseUrl + "/auth/app/token/login"));
         for (Cookie cookie in cookies) {
           if (cookie.name == "connect.sid") {
             return cookie.value;
