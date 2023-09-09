@@ -238,6 +238,7 @@ class TaxiView extends HookWidget {
             if (Token().accessToken != '') {
               await Token().deleteAll();
             }
+            _cookieManager.deleteAllCookies();
             isAuthLogin.value = false;
             isLogin.value = false;
             isFirstLogin.value = false;
@@ -317,13 +318,17 @@ class TaxiView extends HookWidget {
                       }
                       // 로그인 성공 시 / 기존 토큰 삭제 후 새로운 토큰 저장
                       if (!isAuthLogin.value) {
-                        await Token().setAccessToken(
-                            accessToken: arguments[0]['accessToken']);
-                        await Token().setRefreshToken(
-                            refreshToken: arguments[0]['refreshToken']);
-                        await FcmToken()
-                            .registerToken(arguments[0]['accessToken']);
-                        isAuthLogin.value = true;
+                        if (arguments[0]['accessToken'] != null &&
+                            arguments[0]['refreshToken'] != null) {
+                          await Token().deleteAll();
+                          await Token().setAccessToken(
+                              accessToken: arguments[0]['accessToken']);
+                          await Token().setRefreshToken(
+                              refreshToken: arguments[0]['refreshToken']);
+                          await FcmToken()
+                              .registerToken(arguments[0]['accessToken']);
+                          isAuthLogin.value = true;
+                        }
                       }
                       return;
                     },
@@ -435,7 +440,7 @@ class TaxiView extends HookWidget {
                   // 될 때까지 리로드
                   if (!isLoaded.value && LoadCount.value < 10) {
                     LoadCount.value++;
-                  } else if (isServerError.value == false) {
+                  } else if (isServerError.value == false && code != 102) {
                     Fluttertoast.showToast(
                         msg: "서버와의 연결에 실패했습니다.",
                         toastLength: Toast.LENGTH_SHORT,

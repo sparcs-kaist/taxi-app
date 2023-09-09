@@ -54,8 +54,10 @@ class RemoteConfigController {
 
     await remoteConfig.fetchAndActivate();
 
-    this.backUrl = remoteConfig.getString("back_url");
-    this.frontUrl = remoteConfig.getString("front_url");
+    // this.backUrl = remoteConfig.getString("back_url");
+    // this.frontUrl = remoteConfig.getString("front_url");
+    this.backUrl = "http://192.168.0.85:9000/";
+    this.frontUrl = "http://192.168.0.85:3000";
     this.android_version = remoteConfig.getString("version");
     this.ios_version = remoteConfig.getString("ios_version");
 
