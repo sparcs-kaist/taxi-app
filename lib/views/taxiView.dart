@@ -59,6 +59,8 @@ class TaxiView extends HookWidget {
     // FCM init 여부 확인
     final isFcmInit = useState(false);
 
+    devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+
     useEffect(() {
       if (isTimerUp.value) {
         FcmToken().init().then((value) {
@@ -447,14 +449,17 @@ class TaxiView extends HookWidget {
                         children: const <TextSpan>[
                           TextSpan(
                             text: "새로운 버전",
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                fontFamily: 'NanumSquare_acB',
+                                fontWeight: FontWeight.w700),
                           ),
                           TextSpan(text: "이 "),
                           TextSpan(
                               text: "출시",
                               style: TextStyle(
+                                  fontFamily: 'NanumSquare_acB',
                                   color: taxiPrimaryColor,
-                                  fontWeight: FontWeight.bold)),
+                                  fontWeight: FontWeight.w700)),
                           TextSpan(text: "되었습니다!")
                         ]),
                   ),

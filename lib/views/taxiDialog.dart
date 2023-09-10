@@ -39,8 +39,11 @@ class TaxiDialog extends StatelessWidget {
               ...boxSecondaryContent,
               defaultDialogLowerTitlePadding,
               Row(
+                mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  defaultDialogPadding,
                   ElevatedButton(
                       style: Theme.of(context).elevatedButtonTheme.style,
                       child: Text(leftButtonContent,
@@ -62,9 +65,10 @@ class TaxiDialog extends StatelessWidget {
                             androidAppBundleId: dotenv.get("ANDROID_APPID"),
                             appStoreId: dotenv.get("IOS_APPID"));
                       }),
+                  defaultDialogPadding,
                 ],
               ),
-              defaultDialogLowerButtonPadding,
+              defaultDialogLowerButtonPadding
             ]),
       ),
     );

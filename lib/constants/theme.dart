@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 //primaryColor 지정 (색상코드: #6E3647)
 final Map<int, Color> primaryColor1 = {
@@ -25,20 +24,30 @@ final Color dialogBarrierColor = Colors.black.withOpacity(0.6);
 
 //아래의 상수들은 피그마 기준 상의 패딩 픽셀과는 차이를 두고 있지만,
 //이는 모바일 환경상 웹뷰와 같은 간격을 제시하기 위해 설정한 값들입니다.
-const defaultDialogUpperTitlePadding = Padding(padding: EdgeInsets.all(15));
+double devicePixelRatio = 3.0;
+const double dialogPadding = 15.0;
+final defaultDialogUpperTitlePadding =
+    Padding(padding: EdgeInsets.symmetric(vertical: 36.0 / devicePixelRatio));
 
-const defaultDialogMedianTitlePadding = Padding(padding: EdgeInsets.all(2));
+final defaultDialogMedianTitlePadding =
+    Padding(padding: EdgeInsets.all(6 / devicePixelRatio));
 
-const defaultDialogLowerTitlePadding = Padding(padding: EdgeInsets.all(10));
+final defaultDialogLowerTitlePadding =
+    Padding(padding: EdgeInsets.symmetric(vertical: 24 / devicePixelRatio));
 
-const defaultDialogVerticalMedianButtonPadding =
-    Padding(padding: EdgeInsets.all(5));
+final defaultDialogVerticalMedianButtonPadding = Padding(
+    padding:
+        EdgeInsets.symmetric(horizontal: dialogPadding / devicePixelRatio));
 
-const defaultDialogLowerButtonPadding = Padding(padding: EdgeInsets.all(3));
+final defaultDialogLowerButtonPadding = Padding(
+    padding: EdgeInsets.only(bottom: (dialogPadding / 2) / devicePixelRatio));
 
-const defaultDialogButtonSize = Size(147.50, 35);
+final defaultDialogPadding =
+    Padding(padding: EdgeInsets.all(dialogPadding / devicePixelRatio));
 
-const defaultDialogButtonInnerPadding = EdgeInsets.only(top: 9, bottom: 10);
+final defaultDialogButtonSize = Size(147.50, 35);
+
+final defaultDialogButtonInnerPadding = EdgeInsets.only(top: 9, bottom: 9);
 
 final defaultDialogButtonBorderRadius = BorderRadius.circular(8.0);
 
@@ -51,7 +60,7 @@ ThemeData buildTheme() {
     dialogTheme: DialogTheme(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       backgroundColor: Colors.white,
-      actionsPadding: const EdgeInsets.all(10.0),
+      actionsPadding: EdgeInsets.all(dialogPadding / devicePixelRatio),
       surfaceTintColor: Colors.black,
     ),
     dialogBackgroundColor: Colors.white,
@@ -81,34 +90,34 @@ ThemeData buildTheme() {
     ),
 
     //텍스트 테마
-    textTheme: TextTheme(
+    textTheme: const TextTheme(
         //Dialog 제목
-        titleSmall: GoogleFonts.roboto(
-            textStyle: const TextStyle(
-                color: Color(0xFF323232),
-                fontSize: 16,
-                fontWeight: FontWeight.normal)),
+        titleSmall: TextStyle(
+            fontFamily: 'NanumSquare',
+            color: Color(0xFF323232),
+            fontSize: 16,
+            fontWeight: FontWeight.w400),
 
         //Dialog 상세 설명
-        bodySmall: GoogleFonts.roboto(
-            textStyle: const TextStyle(
-                color: Color(0xFF888888),
-                fontSize: 10,
-                fontWeight: FontWeight.bold)),
+        bodySmall: TextStyle(
+            fontFamily: 'NanumSquare_acB',
+            color: Color(0xFF888888),
+            fontSize: 10,
+            fontWeight: FontWeight.w700),
+
+        //Dialog Outlined 버튼 텍스트
+        labelLarge: TextStyle(
+            fontFamily: 'NanumSquare_acB',
+            color: Color(0xFFEEEEEE),
+            fontSize: 14,
+            fontWeight: FontWeight.w700),
 
         //Dialog Elevated 버튼 텍스트
-        labelLarge: GoogleFonts.roboto(
-            textStyle: const TextStyle(
-                color: Color(0xFFEEEEEE),
-                fontSize: 14,
-                fontWeight: FontWeight.bold)),
-
-        //Dialog Elevated 버튼 텍스트
-        labelMedium: GoogleFonts.roboto(
-            textStyle: const TextStyle(
-                color: Color.fromARGB(255, 129, 129, 129),
-                fontSize: 14,
-                fontWeight: FontWeight.normal))),
+        labelMedium: TextStyle(
+            fontFamily: 'NanumSquare',
+            color: Color.fromARGB(255, 129, 129, 129),
+            fontSize: 14,
+            fontWeight: FontWeight.w400)),
   );
   return base;
 }
