@@ -21,8 +21,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:taxiapp/views/taxiDialog.dart';
 import 'package:app_links/app_links.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:open_store/open_store.dart';
 
 class TaxiView extends HookWidget {
   final CookieManager _cookieManager = CookieManager.instance();
@@ -282,41 +282,20 @@ class TaxiView extends HookWidget {
                         useShouldOverrideUrlLoading: true,
                         applicationNameForUserAgent: "taxi-app-webview/" +
                             (Platform.isAndroid ? "android" : "ios"),
-                        resourceCustomSchemes: ['intent']),
+                        resourceCustomSchemes: [
+                          'intent',
+                          'supertoss',
+                          'uber',
+                          'tmoneyonda',
+                          'kakaotalk',
+                          'kakaot'
+                        ]),
                     android: AndroidInAppWebViewOptions(
                         useHybridComposition: true,
                         overScrollMode:
                             AndroidOverScrollMode.OVER_SCROLL_NEVER),
                     ios: IOSInAppWebViewOptions(disallowOverScroll: true)),
                 // initialUrlRequest: URLRequest(url: Uri.parse(address)),
-                shouldOverrideUrlLoading: (controller, navigationAction) async {
-                  var url = navigationAction.request.url.toString();
-                  var uri = Uri.parse(url);
-                  if (![
-                    "http",
-                    "https",
-                    "file",
-                    "chrome",
-                    "data",
-                    "javascript",
-                    "intent",
-                    "about"
-                  ].contains(uri.scheme)) {
-                    if (await canLaunchUrlString(url)) {
-                      await launchUrlString(url,
-                          mode: LaunchMode.externalApplication);
-                      return NavigationActionPolicy.CANCEL;
-                    }
-                    Fluttertoast.showToast(
-                        msg: "앱이 설치되어 있지 않아 실행에 실패했습니다",
-                        toastLength: Toast.LENGTH_SHORT,
-                        textColor: Colors.black,
-                        backgroundColor: Colors.white);
-                    return NavigationActionPolicy.CANCEL;
-                  }
-
-                  return NavigationActionPolicy.ALLOW;
-                },
                 onWebViewCreated: (InAppWebViewController webcontroller) async {
                   _controller.value = webcontroller;
                   _controller.value?.addJavaScriptHandler(
@@ -419,6 +398,49 @@ class TaxiView extends HookWidget {
                   }
                 },
                 onLoadResourceCustomScheme: (controller, url) async {
+                  if (!['intent'].contains(url.scheme)) {
+                    await controller.stopLoading();
+                    if (await canLaunchUrlString(url.toString())) {
+                      await launchUrlString(url.toString(),
+                          mode: LaunchMode.externalApplication);
+                      return;
+                    }
+                    switch (url.scheme) {
+                      case 'supertoss':
+                        OpenStore.instance.open(
+                            androidAppBundleId: "viva.republica.toss",
+                            appStoreId: "839333328");
+                        break;
+                      case 'uber':
+                        OpenStore.instance.open(
+                            androidAppBundleId: "com.ubercab",
+                            appStoreId: "368677368");
+                        break;
+                      case 'tmoneyonda':
+                        OpenStore.instance.open(
+                            androidAppBundleId: "kr.co.orangetaxi.passenger",
+                            appStoreId: "1489918157");
+                        break;
+                      case 'kakaotalk': //카카오페이 결제시
+                        OpenStore.instance.open(
+                            androidAppBundleId: "com.kakao.talk",
+                            appStoreId: "362057947");
+                        break;
+                      case 'kakaot':
+                        OpenStore.instance.open(
+                            androidAppBundleId: "com.kakao.taxi",
+                            appStoreId: "981110422");
+                        break;
+                      default:
+                        await Fluttertoast.showToast(
+                            msg: "해당 앱을 실행할 수 없습니다.",
+                            toastLength: Toast.LENGTH_SHORT,
+                            textColor: Colors.black,
+                            backgroundColor: Colors.white);
+                        break;
+                    }
+                    return null;
+                  }
                   if (Platform.isAndroid) {
                     if (url.scheme == 'intent') {
                       try {
