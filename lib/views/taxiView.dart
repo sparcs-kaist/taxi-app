@@ -207,13 +207,13 @@ class TaxiView extends HookWidget {
         try {
           if (Platform.isIOS) {
             if (int.parse(
-                    RemoteConfigController().ios_version.replaceAll(".", "")) >
+                    RemoteConfigController().iosVersion.replaceAll(".", "")) >
                 int.parse(value.version.replaceAll(".", ""))) {
               isMustUpdate.value = true;
             }
           } else {
             if (int.parse(RemoteConfigController()
-                    .android_version
+                    .androidVersion
                     .replaceAll(".", "")) >
                 int.parse(value.version.replaceAll(".", ""))) {
               isMustUpdate.value = true;

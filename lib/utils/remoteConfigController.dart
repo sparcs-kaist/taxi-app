@@ -4,8 +4,8 @@ import 'package:package_info/package_info.dart';
 class RemoteConfigController {
   String backUrl;
   String frontUrl;
-  String ios_version;
-  String android_version;
+  String iosVersion;
+  String androidVersion;
 
   static RemoteConfigController? _instance;
 
@@ -14,28 +14,28 @@ class RemoteConfigController {
   RemoteConfigController._internal(
       {required this.backUrl,
       required this.frontUrl,
-      required this.ios_version,
-      required this.android_version});
+      required this.iosVersion,
+      required this.androidVersion});
 
   factory RemoteConfigController(
       {String? backUrl,
       String? frontUrl,
-      String? ios_version,
-      String? android_version}) {
+      String? iosVersion,
+      String? androidVersion}) {
     if (frontUrl == null ||
         backUrl == null ||
-        ios_version == null ||
-        android_version == null) {
+        iosVersion == null ||
+        androidVersion == null) {
       return _instance ??= RemoteConfigController._internal(
-          backUrl: '', frontUrl: '', ios_version: '', android_version: '');
+          backUrl: '', frontUrl: '', iosVersion: '', androidVersion: '');
     }
     _instance = RemoteConfigController._internal(
         backUrl: backUrl,
         frontUrl: frontUrl,
-        ios_version: ios_version,
-        android_version: android_version);
+        iosVersion: iosVersion,
+        androidVersion: androidVersion);
     return _instance ??= RemoteConfigController._internal(
-        backUrl: '', frontUrl: '', ios_version: '', android_version: '');
+        backUrl: '', frontUrl: '', iosVersion: '', androidVersion: '');
   }
 
   Future<void> init() async {
@@ -54,12 +54,10 @@ class RemoteConfigController {
 
     await remoteConfig.fetchAndActivate();
 
-    // this.backUrl = remoteConfig.getString("back_url");
-    // this.frontUrl = remoteConfig.getString("front_url");
-    this.backUrl = "http://192.168.0.85:9000/";
-    this.frontUrl = "http://192.168.0.85:3000";
-    this.android_version = remoteConfig.getString("version");
-    this.ios_version = remoteConfig.getString("ios_version");
+    this.backUrl = remoteConfig.getString("back_url");
+    this.frontUrl = remoteConfig.getString("front_url");
+    this.androidVersion = remoteConfig.getString("version");
+    this.iosVersion = remoteConfig.getString("ios_version");
 
     return;
   }
