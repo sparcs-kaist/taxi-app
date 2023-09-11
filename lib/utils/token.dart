@@ -30,6 +30,16 @@ class Token {
   Future<void> init() async {
     accessToken = (await getAccessTokenFromStorage()) ?? '';
     refreshToken = (await getRefreshTokenFromStorage()) ?? '';
+    _dio.interceptors.add(CookieManager(_cookieJar));
+    _dio.interceptors
+        .add(InterceptorsWrapper(onRequest: (options, handler) async {
+      options.headers["Origin"] = options.uri.origin;
+      return handler.next(options);
+    }, onResponse: (response, handler) async {
+      return handler.next(response);
+    }, onError: (error, handler) async {
+      return handler.next(error);
+    }));
   }
 
   Future<void> setAccessToken({required String accessToken}) async {
