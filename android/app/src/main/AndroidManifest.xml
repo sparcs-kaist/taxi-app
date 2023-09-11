@@ -15,7 +15,6 @@
         <package android:name="com.kakao.taxi" />
         <package android:name="com.ubercab" />
         <package android:name="kr.co.orangetaxi.passenger" />
-        <package android:name="com.instagram.android" />
     </queries>
     <application
         android:label="Taxi"

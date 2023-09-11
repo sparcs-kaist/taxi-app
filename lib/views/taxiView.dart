@@ -289,8 +289,7 @@ class TaxiView extends HookWidget {
                           'uber',
                           'tmoneyonda',
                           'kakaotalk',
-                          'kakaot',
-                          'com.instagram.share.ADD_TO_STORY'
+                          'kakaot'
                         ]),
                     android: AndroidInAppWebViewOptions(
                         useHybridComposition: true,
@@ -454,11 +453,6 @@ class TaxiView extends HookWidget {
                         OpenStore.instance.open(
                             androidAppBundleId: "com.kakao.taxi",
                             appStoreId: "981110422");
-                        break;
-                      case 'com.instagram.share.ADD_TO_STORY':
-                        OpenStore.instance.open(
-                            androidAppBundleId: "com.instagram.android",
-                            appStoreId: "389801252");
                         break;
                       default:
                         await Fluttertoast.showToast(
