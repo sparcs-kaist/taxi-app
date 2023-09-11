@@ -207,13 +207,13 @@ class TaxiView extends HookWidget {
         try {
           if (Platform.isIOS) {
             if (int.parse(
-                    RemoteConfigController().ios_version.replaceAll(".", "")) >
+                    RemoteConfigController().iosVersion.replaceAll(".", "")) >
                 int.parse(value.version.replaceAll(".", ""))) {
               isMustUpdate.value = true;
             }
           } else {
             if (int.parse(RemoteConfigController()
-                    .android_version
+                    .androidVersion
                     .replaceAll(".", "")) >
                 int.parse(value.version.replaceAll(".", ""))) {
               isMustUpdate.value = true;
@@ -238,8 +238,9 @@ class TaxiView extends HookWidget {
             if (Token().accessToken != '') {
               await Token().deleteAll();
             }
-            isLogin.value = false;
+            _cookieManager.deleteAllCookies();
             isAuthLogin.value = false;
+            isLogin.value = false;
             isFirstLogin.value = false;
             LoadCount.value += 1;
           } else {
@@ -287,6 +288,24 @@ class TaxiView extends HookWidget {
                             AndroidOverScrollMode.OVER_SCROLL_NEVER),
                     ios: IOSInAppWebViewOptions(disallowOverScroll: true)),
                 // initialUrlRequest: URLRequest(url: Uri.parse(address)),
+                shouldOverrideUrlLoading: (controller, navigationAction) async {
+                  var newHeaders = Map<String, String>.from(
+                      navigationAction.request.headers ?? {});
+                  if (!newHeaders.containsKey("Referer") &&
+                      navigationAction.request.url.toString() !=
+                          'about:blank') {
+                    newHeaders['Referer'] =
+                        navigationAction.request.url.toString();
+                    newHeaders['Origin'] = RemoteConfigController().frontUrl;
+                    var newRequest = navigationAction.request;
+                    newRequest.headers = newHeaders;
+                    await controller.loadUrl(urlRequest: newRequest);
+
+                    return NavigationActionPolicy.CANCEL;
+                  }
+
+                  return NavigationActionPolicy.ALLOW;
+                },
                 onWebViewCreated: (InAppWebViewController webcontroller) async {
                   _controller.value = webcontroller;
                   _controller.value?.addJavaScriptHandler(
@@ -299,13 +318,17 @@ class TaxiView extends HookWidget {
                       }
                       // 로그인 성공 시 / 기존 토큰 삭제 후 새로운 토큰 저장
                       if (!isAuthLogin.value) {
-                        await Token().setAccessToken(
-                            accessToken: arguments[0]['accessToken']);
-                        await Token().setRefreshToken(
-                            refreshToken: arguments[0]['refreshToken']);
-                        await FcmToken()
-                            .registerToken(arguments[0]['accessToken']);
-                        isAuthLogin.value = true;
+                        if (arguments[0]['accessToken'] != null &&
+                            arguments[0]['refreshToken'] != null) {
+                          await Token().deleteAll();
+                          await Token().setAccessToken(
+                              accessToken: arguments[0]['accessToken']);
+                          await Token().setRefreshToken(
+                              refreshToken: arguments[0]['refreshToken']);
+                          await FcmToken()
+                              .registerToken(arguments[0]['accessToken']);
+                          isAuthLogin.value = true;
+                        }
                       }
                       return;
                     },
@@ -417,7 +440,7 @@ class TaxiView extends HookWidget {
                   // 될 때까지 리로드
                   if (!isLoaded.value && LoadCount.value < 10) {
                     LoadCount.value++;
-                  } else if (isServerError.value == false) {
+                  } else if (isServerError.value == false && code != 102) {
                     Fluttertoast.showToast(
                         msg: "서버와의 연결에 실패했습니다.",
                         toastLength: Toast.LENGTH_SHORT,
