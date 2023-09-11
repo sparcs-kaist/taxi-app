@@ -63,7 +63,7 @@ class TaxiNotification extends StatelessWidget {
           ],
         ),
         leading: (imageUrl != Uri.parse(""))
-            ? const Icon(Icons.notifications, size: 40)
+            ? Image.network(imageUrl.toString(), width: 40, height: 40)
             : null, //TODO: 40x40 image
         backgroundColor: Colors.white,
         actions: <Widget>[
