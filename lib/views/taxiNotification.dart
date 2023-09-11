@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
 
-import 'package:taxi_flutter_app/constants/theme.dart';
+import 'package:taxiapp/constants/theme.dart';
 
 class TaxiNotification extends StatelessWidget {
   TaxiNotification(
@@ -20,10 +20,15 @@ class TaxiNotification extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(children: [
       MaterialBanner(
-        leadingPadding: const EdgeInsets.only(right: 20),
+        leadingPadding: EdgeInsets.symmetric(
+            horizontal: taxiNotificationPadding,
+            vertical: taxiNotificationPadding / 2),
         forceActionsBelow: true,
         padding: EdgeInsets.only(
-            left: 20, right: 20, top: MediaQuery.of(context).padding.top + 20),
+            left: taxiNotificationPadding / devicePixelRatio,
+            right: taxiNotificationPadding / devicePixelRatio,
+            bottom: taxiNotificationPadding / devicePixelRatio,
+            top: MediaQuery.of(context).padding.top + 20),
         content: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           verticalDirection: VerticalDirection.down,
@@ -35,35 +40,39 @@ class TaxiNotification extends StatelessWidget {
                 children: [
                   TextSpan(
                     text: title,
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                          fontSize: 12,
+                        ),
                   ),
                   TextSpan(
                       text: " / " + subTitle,
                       style: Theme.of(context)
                           .textTheme
                           .bodySmall!
-                          .copyWith(fontWeight: FontWeight.w400)),
+                          .copyWith(fontSize: 12, fontWeight: FontWeight.w400)),
                 ],
               ),
             ),
-            const SizedBox(height: 5),
+            const SizedBox(height: 10),
             Text(
               content,
               style: Theme.of(context).textTheme.bodySmall!.copyWith(
                   color: Colors.black,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: 0.4),
             ),
           ],
         ),
-        leading:
-            Image(image: NetworkImage("https://via.placeholder.com/40x40")),
+        leading: const Icon(Icons.notifications, size: 40), //40x40
         backgroundColor: Colors.white,
         actions: <Widget>[
           Positioned(
             bottom: 20,
+            right: 20,
             child: OutlinedButton(
                 style: OutlinedButton.styleFrom(
+                  minimumSize: Size.zero,
                   fixedSize: defaultNotificationButtonSize,
                   padding: defaultNotificationButtonInnerPadding,
                   backgroundColor: taxiPrimaryMaterialColor,
@@ -72,8 +81,13 @@ class TaxiNotification extends StatelessWidget {
                     side: const BorderSide(color: Colors.black),
                   ),
                 ),
-                child: Text(button.keys.first,
-                    style: Theme.of(context).textTheme.labelSmall),
+                child: Text(
+                  button.keys.first,
+                  style: Theme.of(context)
+                      .textTheme
+                      .labelSmall!
+                      .copyWith(fontSize: 14),
+                ),
                 onPressed: () {}),
           ),
         ],

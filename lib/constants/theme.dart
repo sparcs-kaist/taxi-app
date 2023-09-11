@@ -22,10 +22,32 @@ const Color toastBackgroundColor = Colors.white;
 const Color toastTextColor = Colors.black;
 const Color notiColor = Color(0x66C8C8C8);
 final Color dialogBarrierColor = Colors.black.withOpacity(0.6);
+double devicePixelRatio = 3.0;
+const double taxiDialogPadding = 15.0;
+const double taxiNotificationPadding = 20.0;
+final defaultDialogUpperTitlePadding =
+    Padding(padding: EdgeInsets.symmetric(vertical: 36.0 / devicePixelRatio));
 
-const defaultDialogButtonSize = Size(128, 43);
+final defaultDialogMedianTitlePadding =
+    Padding(padding: EdgeInsets.all(6 / devicePixelRatio));
 
-const defaultDialogButtonInnerPadding = EdgeInsets.only(top: 9, bottom: 10);
+final defaultDialogLowerTitlePadding =
+    Padding(padding: EdgeInsets.symmetric(vertical: 24 / devicePixelRatio));
+
+final defaultDialogVerticalMedianButtonPadding = Padding(
+    padding:
+        EdgeInsets.symmetric(horizontal: taxiDialogPadding / devicePixelRatio));
+
+final defaultDialogLowerButtonPadding = Padding(
+    padding:
+        EdgeInsets.only(bottom: (taxiDialogPadding / 2) / devicePixelRatio));
+
+final defaultDialogPadding =
+    Padding(padding: EdgeInsets.all(taxiDialogPadding / devicePixelRatio));
+
+final defaultDialogButtonSize = Size(147.50, 35);
+
+final defaultDialogButtonInnerPadding = EdgeInsets.only(top: 9, bottom: 9);
 
 final defaultDialogButtonBorderRadius = BorderRadius.circular(8.0);
 
@@ -34,7 +56,7 @@ final defaultTaxiMarginDouble = 20.0;
 final defaultTaxiMargin =
     EdgeInsets.symmetric(horizontal: defaultTaxiMarginDouble);
 
-final defaultNotificationButtonSize = const Size(88, 24);
+const defaultNotificationButtonSize = Size(90, 30);
 const defaultNotificationButtonInnerPadding =
     EdgeInsets.symmetric(horizontal: 15.0, vertical: 5.0);
 final defaultNotificationButtonBorderRadius = BorderRadius.circular(30.0);
@@ -81,47 +103,59 @@ ThemeData taxiTheme() {
     ),
 
     //텍스트 테마
-    textTheme: TextTheme(
+    textTheme: const TextTheme(
       //Dialog 제목
-      titleSmall: GoogleFonts.roboto(
-          textStyle: const TextStyle(
-              color: Color(0xFF323232),
-              fontSize: 16,
-              fontWeight: FontWeight.normal)),
+      titleSmall: TextStyle(
+          fontFamily: 'NanumSquare',
+          color: Color(0xFF323232),
+          fontSize: 16,
+          fontWeight: FontWeight.w400),
 
       //Dialog 상세 설명
-      bodySmall: GoogleFonts.roboto(
-          textStyle: const TextStyle(
-              color: Color(0xFF888888),
-              fontSize: 10,
-              fontWeight: FontWeight.bold)),
+      bodySmall: TextStyle(
+          fontFamily: 'NanumSquare_acB',
+          color: Color(0xFF888888),
+          fontSize: 10,
+          fontWeight: FontWeight.w700),
+
+      //Dialog Outlined 버튼 텍스트
+      labelLarge: TextStyle(
+          fontFamily: 'NanumSquare_acB',
+          color: Color(0xFFEEEEEE),
+          fontSize: 14,
+          fontWeight: FontWeight.w700),
 
       //Dialog Elevated 버튼 텍스트
-      labelLarge: GoogleFonts.roboto(
-          textStyle: const TextStyle(
-              color: Color(0xFFEEEEEE),
-              fontSize: 14,
-              fontWeight: FontWeight.bold)),
-
-      //Dialog Elevated 버튼 텍스트
-      labelMedium: GoogleFonts.roboto(
-          textStyle: const TextStyle(
-              color: Color.fromARGB(255, 129, 129, 129),
-              fontSize: 14,
-              fontWeight: FontWeight.normal)),
-      labelSmall: GoogleFonts.roboto(
-          textStyle: const TextStyle(
+      labelMedium: TextStyle(
+          fontFamily: 'NanumSquare',
+          color: Color.fromARGB(255, 129, 129, 129),
+          fontSize: 14,
+          fontWeight: FontWeight.w400),
+      labelSmall: TextStyle(
         color: Color(0xFFEEEEEE),
+        fontFamily: 'NanumSquare_acB',
         fontSize: 12,
         fontWeight: FontWeight.w700,
         letterSpacing: 0.4,
-      )),
+      ),
     ),
 
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       type: BottomNavigationBarType.fixed,
       backgroundColor: Colors.white,
       selectedItemColor: Color(0xFF6E3678),
+      selectedLabelStyle: TextStyle(
+        fontFamily: 'NanumSquare',
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.4,
+      ),
+      unselectedLabelStyle: TextStyle(
+        fontFamily: 'NanumSquare',
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.4,
+      ),
     ),
   );
   return base;
