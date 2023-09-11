@@ -31,8 +31,6 @@ class TaxiNotification extends StatelessWidget {
             top: MediaQuery.of(context).padding.top + 20),
         content: Column(
           mainAxisAlignment: MainAxisAlignment.start,
-          verticalDirection: VerticalDirection.down,
-          textBaseline: TextBaseline.alphabetic,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text.rich(
@@ -45,7 +43,7 @@ class TaxiNotification extends StatelessWidget {
                         ),
                   ),
                   TextSpan(
-                      text: " / " + subTitle,
+                      text: (subTitle.isNotEmpty) ? " / $subTitle" : "",
                       style: Theme.of(context)
                           .textTheme
                           .bodySmall!
@@ -64,7 +62,9 @@ class TaxiNotification extends StatelessWidget {
             ),
           ],
         ),
-        leading: const Icon(Icons.notifications, size: 40), //40x40
+        leading: (imageUrl != Uri.parse(""))
+            ? const Icon(Icons.notifications, size: 40)
+            : null, //TODO: 40x40 image
         backgroundColor: Colors.white,
         actions: <Widget>[
           Positioned(
@@ -88,7 +88,7 @@ class TaxiNotification extends StatelessWidget {
                       .labelSmall!
                       .copyWith(fontSize: 14),
                 ),
-                onPressed: () {}),
+                onPressed: () {}), //TODO: 버튼 작용 처리
           ),
         ],
       ),
