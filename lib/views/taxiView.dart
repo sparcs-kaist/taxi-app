@@ -2,15 +2,13 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
-import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:package_info/package_info.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:taxiapp/constants/theme.dart';
 import 'package:taxiapp/utils/fcmToken.dart';
 import 'package:taxiapp/utils/pushHandler.dart';
 import 'package:taxiapp/utils/remoteConfigController.dart';
@@ -60,6 +58,8 @@ class TaxiView extends HookWidget {
     final isFirstLogin = useState(true);
     // FCM init 여부 확인
     final isFcmInit = useState(false);
+
+    devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
 
     useEffect(() {
       if (isTimerUp.value) {
@@ -222,9 +222,9 @@ class TaxiView extends HookWidget {
         } catch (e) {
           Fluttertoast.showToast(
             msg: "버전 체크에 실패했습니다. " + e.toString(),
-            backgroundColor: Colors.white,
+            backgroundColor: toastBackgroundColor,
             toastLength: Toast.LENGTH_SHORT,
-            textColor: Colors.black,
+            textColor: toastTextColor,
           );
         }
       });
@@ -258,9 +258,9 @@ class TaxiView extends HookWidget {
             } catch (e) {
               Fluttertoast.showToast(
                 msg: "로그인에 실패했습니다.",
-                backgroundColor: Colors.white,
+                backgroundColor: toastBackgroundColor,
                 toastLength: Toast.LENGTH_SHORT,
-                textColor: Colors.black,
+                textColor: toastTextColor,
               );
             }
           }
@@ -351,8 +351,8 @@ class TaxiView extends HookWidget {
                           Fluttertoast.showToast(
                               msg: "서버와의 연결에 실패했습니다.",
                               toastLength: Toast.LENGTH_SHORT,
-                              textColor: Colors.black,
-                              backgroundColor: Colors.white);
+                              textColor: toastTextColor,
+                              backgroundColor: toastBackgroundColor);
                           isAuthLogin.value = false;
                         }
                       });
@@ -367,8 +367,8 @@ class TaxiView extends HookWidget {
                           Fluttertoast.showToast(
                               msg: "알림 권한을 허용해주세요.",
                               toastLength: Toast.LENGTH_SHORT,
-                              textColor: Colors.black,
-                              backgroundColor: Colors.white);
+                              textColor: toastTextColor,
+                              backgroundColor: toastBackgroundColor);
                           return false;
                         }
                       });
@@ -405,8 +405,8 @@ class TaxiView extends HookWidget {
                       Fluttertoast.showToast(
                           msg: "서버와의 연결에 실패했습니다.",
                           toastLength: Toast.LENGTH_SHORT,
-                          textColor: Colors.black,
-                          backgroundColor: Colors.white);
+                          textColor: toastTextColor,
+                          backgroundColor: toastBackgroundColor);
                       isAuthLogin.value = false;
                     }
                   }
@@ -429,8 +429,8 @@ class TaxiView extends HookWidget {
                         await Fluttertoast.showToast(
                             msg: "카카오톡을 실행할 수 없습니다.",
                             toastLength: Toast.LENGTH_SHORT,
-                            textColor: Colors.black,
-                            backgroundColor: Colors.white);
+                            textColor: toastTextColor,
+                            backgroundColor: toastBackgroundColor);
                       }
                     }
                   }
@@ -444,8 +444,8 @@ class TaxiView extends HookWidget {
                     Fluttertoast.showToast(
                         msg: "서버와의 연결에 실패했습니다.",
                         toastLength: Toast.LENGTH_SHORT,
-                        textColor: Colors.black,
-                        backgroundColor: Colors.white);
+                        textColor: toastTextColor,
+                        backgroundColor: toastBackgroundColor);
                     isServerError.value = true;
                   }
                 },
@@ -456,92 +456,82 @@ class TaxiView extends HookWidget {
                 }),
           )),
       isTimerUp.value && isLoaded.value && isFcmInit.value
-          ? Stack()
+          ? const Stack()
           : Scaffold(
               body: FadeTransition(opacity: animation, child: loadingView())),
       isMustUpdate.value
           ? Container(
-              color: const Color(0x66C8C8C8),
+              color: notiColor,
               child: Center(
                   child: TaxiDialog(
-                boxContent: {
+                boxMainContent: {
                   RichText(
                     textAlign: TextAlign.center,
                     text: TextSpan(
-                        text: "새로운 ",
-                        style: GoogleFonts.roboto(
-                            textStyle: const TextStyle(
-                                color: Color(0xFF323232),
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold)),
+                        style: Theme.of(context).textTheme.titleSmall,
                         children: const <TextSpan>[
-                          TextSpan(text: "버전"),
                           TextSpan(
-                              text: "이 ",
-                              style: TextStyle(fontWeight: FontWeight.normal)),
+                            text: "새로운 버전",
+                            style: TextStyle(
+                                fontFamily: 'NanumSquare_acB',
+                                fontWeight: FontWeight.w700),
+                          ),
+                          TextSpan(text: "이 "),
                           TextSpan(
                               text: "출시",
-                              style: TextStyle(color: Color(0xFF6E3678))),
-                          TextSpan(
-                              text: "되었습니다!",
-                              style: TextStyle(fontWeight: FontWeight.normal))
+                              style: TextStyle(
+                                  fontFamily: 'NanumSquare_acB',
+                                  color: taxiPrimaryColor,
+                                  fontWeight: FontWeight.w700)),
+                          TextSpan(text: "되었습니다!")
                         ]),
                   ),
+                },
+                boxSecondaryContent: {
                   Text("정상적인 사용을 위해 앱을 업데이트 해주세요.",
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.roboto(
-                          textStyle: const TextStyle(
-                              color: Color(0xFF888888),
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold))),
+                      style: Theme.of(context).textTheme.bodySmall),
                 },
                 rightButtonContent: "업데이트 하러가기",
                 leftButtonContent: "앱 종료하기",
               )),
             )
-          : Stack(),
+          : const Stack(),
       isServerError.value
           ? Container(
-              color: const Color(0x66C8C8C8),
+              color: notiColor,
               child: Center(
                   child: TaxiDialog(
-                boxContent: {
+                boxMainContent: {
                   RichText(
                     textAlign: TextAlign.center,
                     text: TextSpan(
-                        text: "서버",
-                        style: GoogleFonts.roboto(
-                            textStyle: const TextStyle(
-                                color: Color(0xFF323232),
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold)),
+                        style: Theme.of(context).textTheme.titleSmall,
                         children: const <TextSpan>[
-                          TextSpan(text: "와의 "),
                           TextSpan(
-                              text: "연결에 ",
-                              style: TextStyle(fontWeight: FontWeight.normal)),
+                            text: "서버와의 ",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          TextSpan(text: "연결에 "),
                           TextSpan(
                               text: "실패",
-                              style: TextStyle(color: Color(0xFF6E3678))),
-                          TextSpan(
-                              text: "했습니다.",
-                              style: TextStyle(fontWeight: FontWeight.normal))
+                              style: TextStyle(
+                                  color: taxiPrimaryColor,
+                                  fontWeight: FontWeight.bold)),
+                          TextSpan(text: "했습니다.")
                         ]),
                   ),
-                  Padding(padding: EdgeInsets.only(top: 5)),
+                },
+                boxSecondaryContent: {
                   Text("일시적인 오류일 수 있습니다.",
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.roboto(
-                          textStyle: const TextStyle(
-                              color: Color(0xFF888888),
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold))),
+                      style: Theme.of(context).textTheme.bodySmall),
                 },
                 rightButtonContent: "스토어로 가기",
                 leftButtonContent: "앱 종료하기",
               )),
             )
-          : Stack()
+          : const Stack()
     ]));
   }
 
@@ -569,8 +559,8 @@ class TaxiView extends HookWidget {
       backCount.value = true;
       Fluttertoast.showToast(
         msg: "한번 더 누르시면 앱을 종료합니다.",
-        backgroundColor: Colors.white,
-        textColor: Colors.black,
+        backgroundColor: toastBackgroundColor,
+        textColor: toastTextColor,
         toastLength: Toast.LENGTH_SHORT,
       );
       return false;
