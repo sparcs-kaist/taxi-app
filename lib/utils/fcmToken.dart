@@ -21,6 +21,15 @@ class FcmToken {
 
   Future<void> init() async {
     final token = await FirebaseMessaging.instance.getToken();
+    _dio.interceptors
+        .add(InterceptorsWrapper(onRequest: (options, handler) async {
+      options.headers["Origin"] = options.uri.origin;
+      return handler.next(options);
+    }, onResponse: (response, handler) async {
+      return handler.next(response);
+    }, onError: (error, handler) async {
+      return handler.next(error);
+    }));
 
     if (token == null) {
       this.token = '';

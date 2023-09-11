@@ -22,6 +22,7 @@ class MainActivity: FlutterActivity() {
                     val intent = Intent.parseUri(call.arguments as String, Intent.URI_INTENT_SCHEME)
 
                     if (intent.resolveActivity(packageManager) != null) {
+                        packageManager.getLaunchIntentForPackage(""+intent.getPackage())
                         startActivity(intent)
                         result.success(null)
                     } else {
