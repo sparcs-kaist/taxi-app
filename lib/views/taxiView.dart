@@ -396,15 +396,18 @@ class TaxiView extends HookWidget {
                       sessionToken.value != '' &&
                       uri?.origin == Uri.parse(address).origin &&
                       (await _cookieManager.getCookie(
-                                  url: Uri.parse(address), name: "connect.sid"))
+                                  url: Uri.parse(
+                                      RemoteConfigController().backUrl),
+                                  name: "connect.sid"))
                               ?.value !=
                           sessionToken.value) {
                     try {
                       await _controller.value?.stopLoading();
                       await _cookieManager.deleteCookie(
-                          url: Uri.parse(address), name: "connect.sid");
+                          url: Uri.parse(RemoteConfigController().backUrl),
+                          name: "connect.sid");
                       await _cookieManager.setCookie(
-                        url: Uri.parse(address),
+                        url: Uri.parse(RemoteConfigController().backUrl),
                         name: "connect.sid",
                         value: sessionToken.value,
                       );
