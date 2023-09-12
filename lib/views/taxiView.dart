@@ -495,7 +495,9 @@ class TaxiView extends HookWidget {
                   // 될 때까지 리로드
                   if (!isLoaded.value && LoadCount.value < 10) {
                     LoadCount.value++;
-                  } else if (isServerError.value == false && code != 102) {
+                  } else if (isServerError.value == false &&
+                      code != 102 &&
+                      code != -999) {
                     Fluttertoast.showToast(
                         msg: "서버와의 연결에 실패했습니다.",
                         toastLength: Toast.LENGTH_SHORT,
