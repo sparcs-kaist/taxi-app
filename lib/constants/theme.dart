@@ -22,6 +22,7 @@ const Color toastBackgroundColor = Colors.white;
 const Color toastTextColor = Colors.black;
 const Color notiColor = Color(0x66C8C8C8);
 final Color dialogBarrierColor = Colors.black.withOpacity(0.6);
+
 double devicePixelRatio = 3.0;
 const double taxiDialogPadding = 15.0;
 const double taxiNotificationPadding = 20.0;

@@ -21,6 +21,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:taxiapp/views/taxiDialog.dart';
 import 'package:app_links/app_links.dart';
+import 'package:taxiapp/constants/theme.dart';
 
 class TaxiView extends HookWidget {
   final CookieManager _cookieManager = CookieManager.instance();
@@ -32,6 +33,7 @@ class TaxiView extends HookWidget {
   @override
   Widget build(BuildContext context) {
     String address = RemoteConfigController().frontUrl;
+    OverlayEntry? overlayEntry;
 
     // States
     // 로딩 여부 확인
@@ -268,6 +270,119 @@ class TaxiView extends HookWidget {
       return;
     }, [isAuthLogin.value, isFcmInit.value]);
 
+    void createOverlayBar() {
+      assert(overlayEntry == null);
+
+      overlayEntry = OverlayEntry(builder: (BuildContext context) {
+        return SafeArea(
+            child: Align(
+          alignment: Alignment.topCenter,
+          heightFactor: 1.0,
+          child: Container(
+            height: 5.0,
+            width: double.infinity,
+            color: taxiPrimaryColor,
+          ),
+        ));
+      });
+      Overlay.of(context).insert(overlayEntry!);
+    }
+
+    void removeOverlayBar() {
+      overlayEntry?.remove();
+      overlayEntry = null;
+    }
+
+    //TODO: 배너 위에 보라색 바가 필요합니다.
+    void showMaterialBanner(
+        {required String title,
+        required String subTitle,
+        required String content,
+        required Map<String, Uri> button,
+        Uri? imageUrl}) {
+      ScaffoldMessenger.of(context).showMaterialBanner(MaterialBanner(
+        leadingPadding: const EdgeInsets.symmetric(
+            horizontal: taxiNotificationPadding,
+            vertical: taxiNotificationPadding / 2),
+        forceActionsBelow: true,
+        padding: EdgeInsets.only(
+            left: taxiNotificationPadding / devicePixelRatio,
+            right: taxiNotificationPadding / devicePixelRatio,
+            bottom: taxiNotificationPadding / devicePixelRatio,
+            top: MediaQuery.of(context).padding.top + 20),
+        content: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: title,
+                    style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                          fontSize: 12,
+                        ),
+                  ),
+                  TextSpan(
+                      text: (subTitle.isNotEmpty) ? " / $subTitle" : "",
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall!
+                          .copyWith(fontSize: 12, fontWeight: FontWeight.w400)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              content,
+              style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                  color: Colors.black,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: 0.4),
+            ),
+          ],
+        ),
+        leading: (imageUrl != Uri.parse(""))
+            ? Image(
+                image: NetworkImage(imageUrl.toString()),
+                width: 40,
+                height: 40,
+                fit: BoxFit.cover,
+              )
+            : null,
+        backgroundColor: Colors.white,
+        actions: <Widget>[
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  minimumSize: Size.zero,
+                  fixedSize: defaultNotificationButtonSize,
+                  padding: defaultNotificationButtonInnerPadding,
+                  backgroundColor: taxiPrimaryMaterialColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: defaultNotificationButtonBorderRadius,
+                    side: const BorderSide(color: Colors.black),
+                  ),
+                ),
+                child: Text(
+                  button.keys.first,
+                  style: Theme.of(context)
+                      .textTheme
+                      .labelSmall!
+                      .copyWith(fontSize: 14),
+                ),
+                onPressed: () {
+                  ScaffoldMessenger.of(context).clearMaterialBanners();
+                  removeOverlayBar();
+                }), //TODO: 버튼 작용 처리
+          ),
+        ],
+      ));
+    }
+
     return SafeArea(
         child: Stack(children: [
       WillPopScope(
@@ -356,6 +471,31 @@ class TaxiView extends HookWidget {
                         if (Platform.isAndroid) {
                           await Clipboard.setData(ClipboardData(text: args[0]));
                         }
+                      });
+
+                  // Web -> App
+                  _controller.value?.addJavaScriptHandler(
+                      handlerName: "popup_inAppNotification",
+                      callback: (args) async {
+                        showMaterialBanner(
+                            title: args[0]['title'],
+                            subTitle: args[0]['subTitle'],
+                            content: args[0]['content'],
+                            button: {
+                              args[0]['button']['text']:
+                                  Uri.parse(args[0]['button']['path'])
+                            },
+                            imageUrl: (args[0]['type'] ==
+                                    "default") //TODO: type showMaterialBanner 함수에서 관리
+                                ? Uri.parse(args[0]['imageUrl'])
+                                : Uri.parse(""));
+                        createOverlayBar();
+                      });
+                  // App -> Web
+                  _controller.value?.addJavaScriptHandler(
+                      handlerName: "pushHistory",
+                      callback: (args) async {
+                        return {'path'};
                       });
                 },
                 onLoadStart: (controller, uri) async {
