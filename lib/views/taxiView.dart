@@ -300,9 +300,15 @@ class TaxiView extends HookWidget {
                 shouldOverrideUrlLoading: (controller, navigationAction) async {
                   var newHeaders = Map<String, String>.from(
                       navigationAction.request.headers ?? {});
-                  if (!newHeaders.containsKey("Referer") &&
+                  if (Platform.isAndroid &&
+                      !newHeaders.containsKey("Referer") &&
                       navigationAction.request.url.toString() !=
-                          'about:blank') {
+                          'about:blank' &&
+                      (navigationAction.request.url?.origin ==
+                              Uri.parse(address).origin ||
+                          navigationAction.request.url?.origin ==
+                              Uri.parse(RemoteConfigController().backUrl)
+                                  .origin)) {
                     newHeaders['Referer'] =
                         navigationAction.request.url.toString();
                     newHeaders['Origin'] = RemoteConfigController().frontUrl;
