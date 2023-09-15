@@ -2,12 +2,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
-import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:package_info/package_info.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -22,10 +20,12 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:taxiapp/views/taxiDialog.dart';
 import 'package:app_links/app_links.dart';
 import 'package:taxiapp/constants/theme.dart';
+import 'dart:math';
 
 class TaxiView extends HookWidget {
   final CookieManager _cookieManager = CookieManager.instance();
   // late InAppWebViewController _controller;
+  late AnimationController _aniController;
 
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -34,6 +34,8 @@ class TaxiView extends HookWidget {
   Widget build(BuildContext context) {
     String address = RemoteConfigController().frontUrl;
     OverlayEntry? overlayEntry;
+    late Animation<Offset> _animation;
+    final double offsetDy = 0.3;
 
     // States
     // 로딩 여부 확인
@@ -270,9 +272,19 @@ class TaxiView extends HookWidget {
       return;
     }, [isAuthLogin.value, isFcmInit.value]);
 
-    void removeOverlayBar() {
+    void removeOverlayNotification() {
       overlayEntry?.remove();
       overlayEntry = null;
+    }
+
+    void runAnimation({required details}) {
+      _animation = Tween(begin: const Offset(0, 0), end: Offset(0.0, -offsetDy))
+          .animate(CurvedAnimation(
+              parent: _aniController, curve: Curves.decelerate));
+
+      _aniController.forward().whenComplete(() {
+        removeOverlayNotification();
+      });
     }
 
     void createOverlayNotification(
@@ -281,32 +293,27 @@ class TaxiView extends HookWidget {
         required String content,
         required Map<String, Uri> button,
         Uri? imageUrl}) {
+      if (overlayEntry != null) {
+        removeOverlayNotification();
+      }
       assert(overlayEntry == null);
 
       overlayEntry = OverlayEntry(builder: (BuildContext context) {
-        return Positioned(
-          top: MediaQuery.of(context).padding.top + 10,
-          left: MediaQuery.of(context).size.width * 0.05,
-          height: MediaQuery.of(context).size.height * 0.15,
-          width: MediaQuery.of(context).size.width * 0.9,
+        return Container(
+          margin: EdgeInsets.only(
+            top: MediaQuery.of(context).padding.top,
+          ),
+          height: min(MediaQuery.of(context).size.height * 0.15, 200),
+          width: MediaQuery.of(context).size.width,
           child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(15),
-            ),
+            color: Colors.white,
             child: Stack(
               children: [
                 Container(
-                    alignment: Alignment.topCenter,
-                    height: 5.0,
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                      color: taxiPrimaryColor,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(15),
-                        topRight: Radius.circular(15),
-                      ),
-                    )),
+                  alignment: Alignment.topCenter,
+                  height: 5.0,
+                  color: taxiPrimaryColor,
+                ),
                 Positioned(
                     left: 20,
                     top: 25,
@@ -321,29 +328,26 @@ class TaxiView extends HookWidget {
                 Positioned(
                   left: 80,
                   top: 25,
-                  child: Column(children: [
-                    Text.rich(
-                      TextSpan(
-                        children: [
-                          TextSpan(
-                            text: title,
-                            style:
-                                Theme.of(context).textTheme.bodySmall!.copyWith(
-                                      fontSize: 12,
-                                    ),
-                          ),
-                          TextSpan(
-                              text: (subTitle.isNotEmpty) ? " / $subTitle" : "",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall!
-                                  .copyWith(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w400)),
-                        ],
-                      ),
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: title,
+                          style:
+                              Theme.of(context).textTheme.bodySmall!.copyWith(
+                                    fontSize: 12,
+                                  ),
+                        ),
+                        TextSpan(
+                            text: (subTitle.isNotEmpty) ? " / $subTitle" : "",
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall!
+                                .copyWith(
+                                    fontSize: 12, fontWeight: FontWeight.w400)),
+                      ],
                     ),
-                  ]),
+                  ),
                 ),
                 Positioned(
                   left: 80,
@@ -360,7 +364,7 @@ class TaxiView extends HookWidget {
                 ),
                 Positioned(
                   bottom: 20 / devicePixelRatio,
-                  right: 20 / devicePixelRatio,
+                  right: 25 / devicePixelRatio,
                   child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         minimumSize: Size.zero,
@@ -381,7 +385,7 @@ class TaxiView extends HookWidget {
                       ),
                       onPressed: () {
                         ScaffoldMessenger.of(context).clearMaterialBanners();
-                        removeOverlayBar();
+                        removeOverlayNotification();
                       }), //TODO: 버튼 작용 처리
                 ),
               ],
