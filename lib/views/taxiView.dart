@@ -568,13 +568,6 @@ class TaxiView extends HookWidget {
                       handlerName: "popup_inAppNotification",
                       callback: (args) async {
                         createOverlayNotification(
-                          title: "title",
-                          subTitle: "subTitle",
-                          content: "content",
-                          button: {"확인하기": Uri.parse("")},
-                          imageUrl: Uri.parse(""),
-                        );
-                        createOverlayNotification(
                             title: args[0]['title'].toString(),
                             subTitle: args[0]['subtitle'].toString(),
                             content: args[0]['content'].toString(),
@@ -589,6 +582,8 @@ class TaxiView extends HookWidget {
                                     "default") //TODO: type showMaterialBanner 함수에서 관리
                                 ? Uri.parse(args[0]['imageUrl'].toString())
                                 : Uri.parse(""));
+                      });
+
                   _controller.value?.addJavaScriptHandler(
                       handlerName: "popup_instagram_story_share",
                       callback: (args) async {
