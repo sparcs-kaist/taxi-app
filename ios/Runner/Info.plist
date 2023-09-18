@@ -53,10 +53,19 @@
 	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>FacebookAppID</key>
+	<string>278480901639073</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>itms-beta</string>
 		<string>itms</string>
+		<string>instagram-stories</string>
+		<string>facebook-stories</string>
+		<string>facebook</string>
+		<string>instagram</string>
+		<string>twitter</string>
+		<string>whatsapp</string>
+		<string>tg</string>
 		<string>supertoss</string>
 		<string>uber</string>
 		<string>tmoneyonda</string>
