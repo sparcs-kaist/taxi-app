@@ -1,13 +1,17 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:package_info/package_info.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:social_share/social_share.dart';
 import 'package:taxiapp/constants/theme.dart';
 import 'package:taxiapp/utils/fcmToken.dart';
 import 'package:taxiapp/utils/pushHandler.dart';
@@ -582,6 +586,46 @@ class TaxiView extends HookWidget {
                                     "default") //TODO: type showMaterialBanner 함수에서 관리
                                 ? Uri.parse(args[0]['imageUrl'])
                                 : Uri.parse(""));
+                  _controller.value?.addJavaScriptHandler(
+                      handlerName: "popup_instagram_story_share",
+                      callback: (args) async {
+                        if (args[0] == {}) {
+                          return;
+                        }
+                        print(args);
+                        try {
+                          final Dio _dio = Dio();
+                          final backgroundResponse = await _dio.get(
+                              args[0]['backgroundLayerUrl'],
+                              options:
+                                  Options(responseType: ResponseType.bytes));
+                          final stickerResponse = await _dio.get(
+                              args[0]['stickerLayerUrl'],
+                              options:
+                                  Options(responseType: ResponseType.bytes));
+                          final backgroundFile = await File(
+                                  (await getTemporaryDirectory()).path +
+                                      "/background.png")
+                              .create(recursive: true);
+                          final stickerFile = await File(
+                                  (await getTemporaryDirectory()).path +
+                                      "/sticker.png")
+                              .create(recursive: true);
+                          await backgroundFile
+                              .writeAsBytes(backgroundResponse.data);
+                          await stickerFile.writeAsBytes(stickerResponse.data);
+
+                          await SocialShare.shareInstagramStory(
+                              appId: dotenv.get("FACEBOOK_APPID"),
+                              imagePath: stickerFile.path,
+                              backgroundResourcePath: backgroundFile.path);
+                        } catch (e) {
+                          Fluttertoast.showToast(
+                              msg: "인스타그램 스토리 공유에 실패했습니다.",
+                              toastLength: Toast.LENGTH_SHORT,
+                              textColor: toastTextColor,
+                              backgroundColor: toastBackgroundColor);
+                        }
                       });
                 },
                 onLoadStart: (controller, uri) async {
