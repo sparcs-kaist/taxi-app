@@ -240,7 +240,9 @@ class TaxiView extends HookWidget {
             if (Token().accessToken != '') {
               await Token().deleteAll();
             }
-            _cookieManager.deleteAllCookies();
+            await _cookieManager.deleteCookie(
+                url: Uri.parse(RemoteConfigController().backUrl),
+                name: "connect.sid");
             isAuthLogin.value = false;
             isLogin.value = false;
             isFirstLogin.value = false;
@@ -300,9 +302,15 @@ class TaxiView extends HookWidget {
                 shouldOverrideUrlLoading: (controller, navigationAction) async {
                   var newHeaders = Map<String, String>.from(
                       navigationAction.request.headers ?? {});
-                  if (!newHeaders.containsKey("Referer") &&
+                  if (Platform.isAndroid &&
+                      !newHeaders.containsKey("Referer") &&
                       navigationAction.request.url.toString() !=
-                          'about:blank') {
+                          'about:blank' &&
+                      (navigationAction.request.url?.origin ==
+                              Uri.parse(address).origin ||
+                          navigationAction.request.url?.origin ==
+                              Uri.parse(RemoteConfigController().backUrl)
+                                  .origin)) {
                     newHeaders['Referer'] =
                         navigationAction.request.url.toString();
                     newHeaders['Origin'] = RemoteConfigController().frontUrl;
@@ -350,11 +358,14 @@ class TaxiView extends HookWidget {
                           await FcmToken()
                               .removeToken(Token().getAccessToken());
                           await Token().deleteAll();
+                          await _cookieManager.deleteAllCookies();
                           isLogin.value = false;
                           isAuthLogin.value = false;
-                          await _cookieManager.deleteAllCookies();
-                          await _controller.value!.loadUrl(
-                              urlRequest: URLRequest(url: Uri.parse(address)));
+                          await _controller.value?.loadUrl(
+                              urlRequest: URLRequest(
+                                  url: Uri.parse(RemoteConfigController()
+                                      .frontUrl
+                                      .toString())));
                         } catch (e) {
                           // TODO
                           Fluttertoast.showToast(
@@ -396,15 +407,18 @@ class TaxiView extends HookWidget {
                       sessionToken.value != '' &&
                       uri?.origin == Uri.parse(address).origin &&
                       (await _cookieManager.getCookie(
-                                  url: Uri.parse(address), name: "connect.sid"))
+                                  url: Uri.parse(
+                                      RemoteConfigController().backUrl),
+                                  name: "connect.sid"))
                               ?.value !=
                           sessionToken.value) {
                     try {
                       await _controller.value?.stopLoading();
                       await _cookieManager.deleteCookie(
-                          url: Uri.parse(address), name: "connect.sid");
+                          url: Uri.parse(RemoteConfigController().backUrl),
+                          name: "connect.sid");
                       await _cookieManager.setCookie(
-                        url: Uri.parse(address),
+                        url: Uri.parse(RemoteConfigController().backUrl),
                         name: "connect.sid",
                         value: sessionToken.value,
                       );
@@ -492,7 +506,9 @@ class TaxiView extends HookWidget {
                   // 될 때까지 리로드
                   if (!isLoaded.value && LoadCount.value < 10) {
                     LoadCount.value++;
-                  } else if (isServerError.value == false && code != 102) {
+                  } else if (isServerError.value == false &&
+                      code != 102 &&
+                      code != -999) {
                     Fluttertoast.showToast(
                         msg: "서버와의 연결에 실패했습니다.",
                         toastLength: Toast.LENGTH_SHORT,

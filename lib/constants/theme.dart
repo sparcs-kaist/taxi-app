@@ -47,7 +47,8 @@ final defaultDialogPadding =
 
 final defaultDialogButtonSize = Size(147.50, 35);
 
-final defaultDialogButtonInnerPadding = EdgeInsets.only(top: 9, bottom: 9);
+final defaultDialogButtonInnerPadding =
+    EdgeInsets.symmetric(vertical: 9, horizontal: 15);
 
 final defaultDialogButtonBorderRadius = BorderRadius.circular(8.0);
 
@@ -109,14 +110,14 @@ ThemeData buildTheme() {
         labelLarge: TextStyle(
             fontFamily: 'NanumSquare_acB',
             color: Color(0xFFEEEEEE),
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: FontWeight.w700),
 
         //Dialog Elevated 버튼 텍스트
         labelMedium: TextStyle(
             fontFamily: 'NanumSquare',
             color: Color.fromARGB(255, 129, 129, 129),
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: FontWeight.w400)),
   );
   return base;

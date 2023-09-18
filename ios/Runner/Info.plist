@@ -66,6 +66,11 @@
 		<string>twitter</string>
 		<string>whatsapp</string>
 		<string>tg</string>
+		<string>supertoss</string>
+		<string>uber</string>
+		<string>tmoneyonda</string>
+		<string>kakaotalk</string>
+		<string>kakaot</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>

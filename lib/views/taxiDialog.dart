@@ -44,27 +44,37 @@ class TaxiDialog extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   defaultDialogPadding,
-                  ElevatedButton(
-                      style: Theme.of(context).elevatedButtonTheme.style,
-                      child: Text(leftButtonContent,
-                          style: Theme.of(context).textTheme.labelMedium),
-                      onPressed: () async {
-                        if (Platform.isIOS) {
-                          exit(0);
-                        } else {
-                          SystemNavigator.pop();
-                        }
-                      }),
+                  Expanded(
+                    child: ElevatedButton(
+                        style: Theme.of(context).elevatedButtonTheme.style,
+                        child: Text(
+                          leftButtonContent,
+                          style: Theme.of(context).textTheme.labelMedium,
+                          overflow: TextOverflow.visible,
+                        ),
+                        onPressed: () async {
+                          if (Platform.isIOS) {
+                            exit(0);
+                          } else {
+                            SystemNavigator.pop();
+                          }
+                        }),
+                  ),
                   defaultDialogVerticalMedianButtonPadding,
-                  OutlinedButton(
-                      style: Theme.of(context).outlinedButtonTheme.style,
-                      child: Text(rightButtonContent,
-                          style: Theme.of(context).textTheme.labelLarge),
-                      onPressed: () async {
-                        OpenStore.instance.open(
-                            androidAppBundleId: dotenv.get("ANDROID_APPID"),
-                            appStoreId: dotenv.get("IOS_APPID"));
-                      }),
+                  Expanded(
+                    child: OutlinedButton(
+                        style: Theme.of(context).outlinedButtonTheme.style,
+                        child: Text(
+                          rightButtonContent,
+                          style: Theme.of(context).textTheme.labelLarge,
+                          overflow: TextOverflow.visible,
+                        ),
+                        onPressed: () async {
+                          OpenStore.instance.open(
+                              androidAppBundleId: dotenv.get("ANDROID_APPID"),
+                              appStoreId: dotenv.get("IOS_APPID"));
+                        }),
+                  ),
                   defaultDialogPadding,
                 ],
               ),
