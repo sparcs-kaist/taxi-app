@@ -61,6 +61,16 @@ const defaultNotificationButtonSize = Size(90, 25);
 const defaultNotificationButtonInnerPadding =
     EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0);
 final defaultNotificationButtonBorderRadius = BorderRadius.circular(30.0);
+final defaultNotificatonOutlinedButtonStyle = OutlinedButton.styleFrom(
+  minimumSize: Size.zero,
+  fixedSize: defaultNotificationButtonSize,
+  padding: defaultNotificationButtonInnerPadding,
+  backgroundColor: taxiPrimaryMaterialColor,
+  shape: RoundedRectangleBorder(
+    borderRadius: defaultNotificationButtonBorderRadius,
+    side: const BorderSide(color: Colors.black),
+  ),
+); // TODO: ThemeData에 있는 OutlinedButtonThemeData 분리
 
 ThemeData taxiTheme() {
   final base = ThemeData(

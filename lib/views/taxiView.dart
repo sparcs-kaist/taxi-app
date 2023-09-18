@@ -25,8 +25,6 @@ import 'dart:math';
 class TaxiView extends HookWidget {
   final CookieManager _cookieManager = CookieManager.instance();
   // late InAppWebViewController _controller;
-  late AnimationController _aniController;
-
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
@@ -34,8 +32,9 @@ class TaxiView extends HookWidget {
   Widget build(BuildContext context) {
     String address = RemoteConfigController().frontUrl;
     OverlayEntry? overlayEntry;
+    late AnimationController _aniController;
     late Animation<Offset> _animation;
-    final double offsetDy = 0.3;
+    bool isBannerShow = false;
 
     // States
     // 로딩 여부 확인
@@ -272,19 +271,30 @@ class TaxiView extends HookWidget {
       return;
     }, [isAuthLogin.value, isFcmInit.value]);
 
-    void removeOverlayNotification() {
+    // 오버레이 알림 애니메이션 초기화
+    useEffect(() {
+      _aniController = useAnimationController(
+          duration: const Duration(milliseconds: 300),
+          vsync: useSingleTickerProvider());
+      _animation =
+          Tween(begin: const Offset(0, -0.5), end: const Offset(0.0, 0))
+              .animate(CurvedAnimation(
+                  parent: _aniController, curve: Curves.decelerate));
+    }, []);
+
+    void removeOverlayNotification({required Uri? uri}) {
+      if (uri != Uri.parse("")) {
+        url.value = uri.toString();
+        LoadCount.value += 1;
+      }
       overlayEntry?.remove();
       overlayEntry = null;
     }
 
-    void runAnimation({required details}) {
-      _animation = Tween(begin: const Offset(0, 0), end: Offset(0.0, -offsetDy))
-          .animate(CurvedAnimation(
-              parent: _aniController, curve: Curves.decelerate));
-
-      _aniController.forward().whenComplete(() {
-        removeOverlayNotification();
-      });
+    void removeAnimation() {
+      _aniController.reverse(); //TODO: 일정 dy 미만시 배너 삭제 취소 및 애니메이션 다시 재생
+      isBannerShow = false;
+      // removeOverlayNotification();
     }
 
     void createOverlayNotification(
@@ -294,101 +304,126 @@ class TaxiView extends HookWidget {
         required Map<String, Uri> button,
         Uri? imageUrl}) {
       if (overlayEntry != null) {
-        removeOverlayNotification();
+        removeOverlayNotification(uri: Uri.parse(""));
       }
       assert(overlayEntry == null);
+      isBannerShow = true;
 
       overlayEntry = OverlayEntry(builder: (BuildContext context) {
-        return Container(
-          margin: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top,
-          ),
-          height: min(MediaQuery.of(context).size.height * 0.15, 200),
-          width: MediaQuery.of(context).size.width,
-          child: Container(
-            color: Colors.white,
-            child: Stack(
-              children: [
-                Container(
-                  alignment: Alignment.topCenter,
-                  height: 5.0,
-                  color: taxiPrimaryColor,
-                ),
-                Positioned(
-                    left: 20,
-                    top: 25,
-                    child: (imageUrl != Uri.parse(""))
-                        ? Image(
-                            image: NetworkImage(imageUrl.toString()),
-                            width: 40,
-                            height: 40,
-                            fit: BoxFit.cover,
-                          )
-                        : const Padding(padding: EdgeInsets.zero)),
-                Positioned(
-                  left: 80,
-                  top: 25,
-                  child: Text.rich(
-                    TextSpan(
-                      children: [
+        _aniController.reset();
+        _animation =
+            Tween(begin: const Offset(0, -0.5), end: const Offset(0, 0))
+                .animate(CurvedAnimation(
+                    parent: _aniController, curve: Curves.decelerate));
+        _aniController.forward();
+
+        return SlideTransition(
+          position: _animation,
+          child: GestureDetector(
+            onPanUpdate: (details) {
+              if (details.delta.dy < -1 && isBannerShow) {
+                removeAnimation();
+              }
+            },
+            onPanEnd: (details) {
+              if (!isBannerShow) {
+                removeOverlayNotification(uri: button.values.first);
+              }
+            },
+            child: UnconstrainedBox(
+              alignment: Alignment.topCenter,
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                height: min(MediaQuery.of(context).size.height * 0.15, 200),
+                margin:
+                    EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+                color: Colors.white,
+                child: Stack(
+                  children: [
+                    Container(
+                      alignment: Alignment.topCenter,
+                      height: 5.0,
+                      color: taxiPrimaryColor,
+                    ),
+                    Positioned(
+                        left: 20,
+                        top: 25,
+                        child: (imageUrl != Uri.parse(""))
+                            ? Image(
+                                image: NetworkImage(imageUrl.toString()),
+                                width: 40,
+                                height: 40,
+                                fit: BoxFit.cover,
+                              )
+                            : const Padding(padding: EdgeInsets.zero)),
+                    Positioned(
+                      left: 20 +
+                          ((imageUrl != Uri.parse(""))
+                              ? 60
+                              : 0), // 이미지 없을 시  마진 20으로 변경
+                      top: 25,
+                      child: Text.rich(
                         TextSpan(
-                          text: title,
-                          style:
-                              Theme.of(context).textTheme.bodySmall!.copyWith(
+                          children: [
+                            TextSpan(
+                              text: title,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall!
+                                  .copyWith(
                                     fontSize: 12,
                                   ),
+                            ),
+                            TextSpan(
+                                text:
+                                    (subTitle.isNotEmpty) ? " / $subTitle" : "",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall!
+                                    .copyWith(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w400)),
+                          ],
                         ),
-                        TextSpan(
-                            text: (subTitle.isNotEmpty) ? " / $subTitle" : "",
+                      ),
+                    ),
+                    Positioned(
+                      left: 20 + ((imageUrl != Uri.parse("")) ? 60 : 0),
+                      top: 40,
+                      child: Text(
+                        content,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                            color: Colors.black,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: 0.4),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 20 / devicePixelRatio,
+                      right: 25 / devicePixelRatio,
+                      child: OutlinedButton(
+                          style: defaultNotificatonOutlinedButtonStyle,
+                          child: Text(
+                            button.keys.first,
                             style: Theme.of(context)
                                 .textTheme
-                                .bodySmall!
-                                .copyWith(
-                                    fontSize: 12, fontWeight: FontWeight.w400)),
-                      ],
+                                .labelSmall!
+                                .copyWith(fontSize: 14),
+                          ),
+                          onPressed: () {
+                            removeAnimation();
+                            Future.delayed(const Duration(milliseconds: 300),
+                                () {
+                              removeOverlayNotification(
+                                  uri: button.values.first);
+                            });
+                          }),
                     ),
-                  ),
+                  ],
                 ),
-                Positioned(
-                  left: 80,
-                  top: 40,
-                  child: Text(
-                    content,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                        color: Colors.black,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        letterSpacing: 0.4),
-                  ),
-                ),
-                Positioned(
-                  bottom: 20 / devicePixelRatio,
-                  right: 25 / devicePixelRatio,
-                  child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: Size.zero,
-                        fixedSize: defaultNotificationButtonSize,
-                        padding: defaultNotificationButtonInnerPadding,
-                        backgroundColor: taxiPrimaryMaterialColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: defaultNotificationButtonBorderRadius,
-                          side: const BorderSide(color: Colors.black),
-                        ),
-                      ),
-                      child: Text(
-                        button.keys.first,
-                        style: Theme.of(context)
-                            .textTheme
-                            .labelSmall!
-                            .copyWith(fontSize: 14),
-                      ),
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).clearMaterialBanners();
-                        removeOverlayNotification();
-                      }), //TODO: 버튼 작용 처리
-                ),
-              ],
+              ),
             ),
           ),
         );
@@ -502,12 +537,6 @@ class TaxiView extends HookWidget {
                                     "default") //TODO: type showMaterialBanner 함수에서 관리
                                 ? Uri.parse(args[0]['imageUrl'])
                                 : Uri.parse(""));
-                      });
-                  // TODO: App -> Web
-                  _controller.value?.addJavaScriptHandler(
-                      handlerName: "pushHistory",
-                      callback: (args) async {
-                        return {'path'};
                       });
                 },
                 onLoadStart: (controller, uri) async {
