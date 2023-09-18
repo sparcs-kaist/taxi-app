@@ -83,7 +83,7 @@ class MyHome extends HookWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Taxi App',
-      theme: buildTheme(),
+      theme: taxiTheme(),
       home: Container(
         color: Theme.of(context).primaryColor,
         child: Container(

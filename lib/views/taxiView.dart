@@ -34,8 +34,11 @@ class TaxiView extends HookWidget {
   Widget build(BuildContext context) {
     String address = RemoteConfigController().frontUrl;
     OverlayEntry? overlayEntry;
-    late AnimationController _aniController;
-    late Animation<Offset> _animation;
+    AnimationController _aniController =
+        useAnimationController(duration: const Duration(milliseconds: 300));
+    Animation<Offset> _animation =
+        Tween(begin: const Offset(0, -0.5), end: const Offset(0.0, 0)).animate(
+            CurvedAnimation(parent: _aniController, curve: Curves.decelerate));
     bool isBannerShow = false;
 
     // States
@@ -278,17 +281,6 @@ class TaxiView extends HookWidget {
       return;
     }, [isAuthLogin.value, isFcmInit.value]);
 
-    // 오버레이 알림 애니메이션 초기화
-    useEffect(() {
-      _aniController = useAnimationController(
-          duration: const Duration(milliseconds: 300),
-          vsync: useSingleTickerProvider());
-      _animation =
-          Tween(begin: const Offset(0, -0.5), end: const Offset(0.0, 0))
-              .animate(CurvedAnimation(
-                  parent: _aniController, curve: Curves.decelerate));
-    }, []);
-
     void removeOverlayNotification({required Uri? uri}) {
       if (uri != Uri.parse("")) {
         url.value = uri.toString();
@@ -310,6 +302,7 @@ class TaxiView extends HookWidget {
         required String content,
         required Map<String, Uri> button,
         Uri? imageUrl}) {
+      print("asd");
       if (overlayEntry != null) {
         removeOverlayNotification(uri: Uri.parse(""));
       }
@@ -571,16 +564,26 @@ class TaxiView extends HookWidget {
                       handlerName: "popup_inAppNotification",
                       callback: (args) async {
                         createOverlayNotification(
-                            title: args[0]['title'],
-                            subTitle: args[0]['subTitle'],
-                            content: args[0]['content'],
+                          title: "title",
+                          subTitle: "subTitle",
+                          content: "content",
+                          button: {"확인하기": Uri.parse("")},
+                          imageUrl: Uri.parse(""),
+                        );
+                        createOverlayNotification(
+                            title: args[0]['title'].toString(),
+                            subTitle: args[0]['subtitle'].toString(),
+                            content: args[0]['content'].toString(),
                             button: {
-                              args[0]['button']['text']:
-                                  Uri.parse(args[0]['button']['path'])
+                              args[0]['button']['text'].toString():
+                                  (args[0]['button']['path'].toString() != "")
+                                      ? Uri.parse(
+                                          args[0]['button']['path'].toString())
+                                      : Uri.parse("")
                             },
-                            imageUrl: (args[0]['type'] ==
+                            imageUrl: (args[0]['type'].toString() ==
                                     "default") //TODO: type showMaterialBanner 함수에서 관리
-                                ? Uri.parse(args[0]['imageUrl'])
+                                ? Uri.parse(args[0]['imageUrl'].toString())
                                 : Uri.parse(""));
                       });
                 },
