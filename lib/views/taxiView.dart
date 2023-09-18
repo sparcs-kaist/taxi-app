@@ -240,7 +240,9 @@ class TaxiView extends HookWidget {
             if (Token().accessToken != '') {
               await Token().deleteAll();
             }
-            _cookieManager.deleteAllCookies();
+            await _cookieManager.deleteCookie(
+                url: Uri.parse(RemoteConfigController().backUrl),
+                name: "connect.sid");
             isAuthLogin.value = false;
             isLogin.value = false;
             isFirstLogin.value = false;
@@ -356,11 +358,14 @@ class TaxiView extends HookWidget {
                           await FcmToken()
                               .removeToken(Token().getAccessToken());
                           await Token().deleteAll();
+                          await _cookieManager.deleteAllCookies();
                           isLogin.value = false;
                           isAuthLogin.value = false;
-                          await _cookieManager.deleteAllCookies();
-                          await _controller.value!.loadUrl(
-                              urlRequest: URLRequest(url: Uri.parse(address)));
+                          await _controller.value?.loadUrl(
+                              urlRequest: URLRequest(
+                                  url: Uri.parse(RemoteConfigController()
+                                      .frontUrl
+                                      .toString())));
                         } catch (e) {
                           // TODO
                           Fluttertoast.showToast(
