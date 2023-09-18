@@ -54,6 +54,7 @@ dependencies:
   app_links: ^3.4.3
   firebase_crashlytics: ^3.3.1
   url_launcher: ^6.1.14
+  social_share: ^2.3.1
 
 dev_dependencies:
   flutter_test:
