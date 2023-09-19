@@ -23,7 +23,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:taxiapp/views/taxiDialog.dart';
 import 'package:app_links/app_links.dart';
-import 'package:taxiapp/constants/theme.dart';
 import 'dart:math';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:open_store/open_store.dart';
@@ -597,7 +596,6 @@ class TaxiView extends HookWidget {
                         if (args[0] == {}) {
                           return;
                         }
-                        print(args);
                         try {
                           final Dio _dio = Dio();
                           final backgroundResponse = await _dio.get(
@@ -624,12 +622,14 @@ class TaxiView extends HookWidget {
                               appId: dotenv.get("FACEBOOK_APPID"),
                               imagePath: stickerFile.path,
                               backgroundResourcePath: backgroundFile.path);
+                          return true;
                         } catch (e) {
                           Fluttertoast.showToast(
                               msg: "인스타그램 스토리 공유에 실패했습니다.",
                               toastLength: Toast.LENGTH_SHORT,
                               textColor: toastTextColor,
                               backgroundColor: toastBackgroundColor);
+                          return false;
                         }
                       });
                 },
