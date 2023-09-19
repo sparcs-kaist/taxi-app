@@ -57,7 +57,7 @@ final defaultTaxiMarginDouble = 20.0;
 final defaultTaxiMargin =
     EdgeInsets.symmetric(horizontal: defaultTaxiMarginDouble);
 
-const defaultNotificationButtonSize = Size(90, 25);
+const defaultNotificationButtonSize = Size(80, 25);
 const defaultNotificationButtonInnerPadding =
     EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0);
 final defaultNotificationButtonBorderRadius = BorderRadius.circular(30.0);

@@ -306,7 +306,6 @@ class TaxiView extends HookWidget {
         required String content,
         required Map<String, Uri> button,
         Uri? imageUrl}) {
-      print("asd");
       if (overlayEntry != null) {
         removeOverlayNotification(uri: Uri.parse(""));
       }
@@ -351,7 +350,7 @@ class TaxiView extends HookWidget {
                     ),
                     Positioned(
                         left: 20,
-                        top: 25,
+                        top: 20,
                         child: (imageUrl != Uri.parse(""))
                             ? Image(
                                 image: NetworkImage(imageUrl.toString()),
@@ -365,7 +364,7 @@ class TaxiView extends HookWidget {
                           ((imageUrl != Uri.parse(""))
                               ? 60
                               : 0), // 이미지 없을 시  마진 20으로 변경
-                      top: 25,
+                      top: 20,
                       child: Text.rich(
                         TextSpan(
                           children: [
@@ -375,17 +374,18 @@ class TaxiView extends HookWidget {
                                   .textTheme
                                   .bodySmall!
                                   .copyWith(
-                                    fontSize: 12,
+                                    fontSize: 10,
                                   ),
                             ),
                             TextSpan(
-                                text:
-                                    (subTitle.isNotEmpty) ? " / $subTitle" : "",
+                                text: (subTitle.isNotEmpty)
+                                    ? "  /  $subTitle"
+                                    : "",
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodySmall!
                                     .copyWith(
-                                        fontSize: 12,
+                                        fontSize: 10,
                                         fontWeight: FontWeight.w400)),
                           ],
                         ),
@@ -397,9 +397,11 @@ class TaxiView extends HookWidget {
                       child: Text(
                         content,
                         overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        softWrap: false,
                         style: Theme.of(context).textTheme.bodySmall!.copyWith(
                             color: Colors.black,
-                            fontSize: 14,
+                            fontSize: 12,
                             fontWeight: FontWeight.w400,
                             letterSpacing: 0.4),
                       ),
@@ -414,7 +416,7 @@ class TaxiView extends HookWidget {
                             style: Theme.of(context)
                                 .textTheme
                                 .labelSmall!
-                                .copyWith(fontSize: 14),
+                                .copyWith(fontSize: 12),
                           ),
                           onPressed: () {
                             removeAnimation();
