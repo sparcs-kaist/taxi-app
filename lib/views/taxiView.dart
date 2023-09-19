@@ -23,7 +23,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:taxiapp/views/taxiDialog.dart';
 import 'package:app_links/app_links.dart';
-import 'package:taxiapp/constants/theme.dart';
 import 'dart:math';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:open_store/open_store.dart';
@@ -285,11 +284,7 @@ class TaxiView extends HookWidget {
       return;
     }, [isAuthLogin.value, isFcmInit.value]);
 
-    void removeOverlayNotification({required Uri? uri}) {
-      if (uri != Uri.parse("")) {
-        url.value = uri.toString();
-        LoadCount.value += 1;
-      }
+    void removeOverlayNotification() {
       overlayEntry?.remove();
       overlayEntry = null;
     }
@@ -306,9 +301,8 @@ class TaxiView extends HookWidget {
         required String content,
         required Map<String, Uri> button,
         Uri? imageUrl}) {
-      print("asd");
       if (overlayEntry != null) {
-        removeOverlayNotification(uri: Uri.parse(""));
+        removeOverlayNotification();
       }
       assert(overlayEntry == null);
       isBannerShow = true;
@@ -331,7 +325,7 @@ class TaxiView extends HookWidget {
             },
             onPanEnd: (details) {
               if (!isBannerShow) {
-                removeOverlayNotification(uri: button.values.first);
+                removeOverlayNotification();
               }
             },
             child: UnconstrainedBox(
@@ -351,7 +345,7 @@ class TaxiView extends HookWidget {
                     ),
                     Positioned(
                         left: 20,
-                        top: 25,
+                        top: 20,
                         child: (imageUrl != Uri.parse(""))
                             ? Image(
                                 image: NetworkImage(imageUrl.toString()),
@@ -365,9 +359,9 @@ class TaxiView extends HookWidget {
                           ((imageUrl != Uri.parse(""))
                               ? 60
                               : 0), // 이미지 없을 시  마진 20으로 변경
-                      top: 25,
-                      child: Text.rich(
-                        TextSpan(
+                      top: 20,
+                      child: RichText(
+                        text: TextSpan(
                           children: [
                             TextSpan(
                               text: title,
@@ -375,31 +369,40 @@ class TaxiView extends HookWidget {
                                   .textTheme
                                   .bodySmall!
                                   .copyWith(
-                                    fontSize: 12,
+                                    fontSize: 10,
                                   ),
                             ),
                             TextSpan(
-                                text:
-                                    (subTitle.isNotEmpty) ? " / $subTitle" : "",
+                                text: (subTitle.isNotEmpty)
+                                    ? "  /  $subTitle"
+                                    : "",
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodySmall!
                                     .copyWith(
-                                        fontSize: 12,
+                                        fontSize: 10,
                                         fontWeight: FontWeight.w400)),
                           ],
                         ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        softWrap: false,
                       ),
                     ),
                     Positioned(
                       left: 20 + ((imageUrl != Uri.parse("")) ? 60 : 0),
                       top: 40,
+                      width: MediaQuery.of(context).size.width -
+                          40 -
+                          ((imageUrl != Uri.parse("")) ? 60 : 0),
                       child: Text(
                         content,
                         overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        softWrap: false,
                         style: Theme.of(context).textTheme.bodySmall!.copyWith(
                             color: Colors.black,
-                            fontSize: 14,
+                            fontSize: 12,
                             fontWeight: FontWeight.w400,
                             letterSpacing: 0.4),
                       ),
@@ -414,14 +417,17 @@ class TaxiView extends HookWidget {
                             style: Theme.of(context)
                                 .textTheme
                                 .labelSmall!
-                                .copyWith(fontSize: 14),
+                                .copyWith(fontSize: 12),
                           ),
                           onPressed: () {
                             removeAnimation();
                             Future.delayed(const Duration(milliseconds: 300),
                                 () {
-                              removeOverlayNotification(
-                                  uri: button.values.first);
+                              if (button.values.first != Uri.parse("")) {
+                                url.value = button.values.first.toString();
+                                LoadCount.value += 1;
+                              }
+                              removeOverlayNotification();
                             });
                           }),
                     ),
@@ -588,9 +594,8 @@ class TaxiView extends HookWidget {
                       handlerName: "popup_instagram_story_share",
                       callback: (args) async {
                         if (args[0] == {}) {
-                          return;
+                          return false;
                         }
-                        print(args);
                         try {
                           final Dio _dio = Dio();
                           final backgroundResponse = await _dio.get(
@@ -617,12 +622,14 @@ class TaxiView extends HookWidget {
                               appId: dotenv.get("FACEBOOK_APPID"),
                               imagePath: stickerFile.path,
                               backgroundResourcePath: backgroundFile.path);
+                          return true;
                         } catch (e) {
                           Fluttertoast.showToast(
                               msg: "인스타그램 스토리 공유에 실패했습니다.",
                               toastLength: Toast.LENGTH_SHORT,
                               textColor: toastTextColor,
                               backgroundColor: toastBackgroundColor);
+                          return false;
                         }
                       });
                 },
