@@ -285,11 +285,7 @@ class TaxiView extends HookWidget {
       return;
     }, [isAuthLogin.value, isFcmInit.value]);
 
-    void removeOverlayNotification({required Uri? uri}) {
-      if (uri != Uri.parse("")) {
-        url.value = uri.toString();
-        LoadCount.value += 1;
-      }
+    void removeOverlayNotification() {
       overlayEntry?.remove();
       overlayEntry = null;
     }
@@ -422,8 +418,11 @@ class TaxiView extends HookWidget {
                             removeAnimation();
                             Future.delayed(const Duration(milliseconds: 300),
                                 () {
-                              removeOverlayNotification(
-                                  uri: button.values.first);
+                              if (button.values.first != Uri.parse("")) {
+                                url.value = button.values.first.toString();
+                                LoadCount.value += 1;
+                              }
+                              removeOverlayNotification();
                             });
                           }),
                     ),
