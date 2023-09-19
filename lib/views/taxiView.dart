@@ -361,8 +361,8 @@ class TaxiView extends HookWidget {
                               ? 60
                               : 0), // 이미지 없을 시  마진 20으로 변경
                       top: 20,
-                      child: Text.rich(
-                        TextSpan(
+                      child: RichText(
+                        text: TextSpan(
                           children: [
                             TextSpan(
                               text: title,
@@ -385,11 +385,17 @@ class TaxiView extends HookWidget {
                                         fontWeight: FontWeight.w400)),
                           ],
                         ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        softWrap: false,
                       ),
                     ),
                     Positioned(
                       left: 20 + ((imageUrl != Uri.parse("")) ? 60 : 0),
                       top: 40,
+                      width: MediaQuery.of(context).size.width -
+                          40 -
+                          ((imageUrl != Uri.parse("")) ? 60 : 0),
                       child: Text(
                         content,
                         overflow: TextOverflow.ellipsis,
