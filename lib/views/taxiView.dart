@@ -594,7 +594,7 @@ class TaxiView extends HookWidget {
                       handlerName: "popup_instagram_story_share",
                       callback: (args) async {
                         if (args[0] == {}) {
-                          return;
+                          return false;
                         }
                         try {
                           final Dio _dio = Dio();
