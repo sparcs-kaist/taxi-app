@@ -13,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:social_share/social_share.dart';
 import 'package:taxiapp/constants/theme.dart';
+import 'package:taxiapp/hooks/useLoadCount.dart';
 import 'package:taxiapp/utils/fcmToken.dart';
 import 'package:taxiapp/utils/pushHandler.dart';
 import 'package:taxiapp/utils/remoteConfigController.dart';
@@ -55,8 +56,6 @@ class TaxiView extends HookWidget {
     final isAuthLogin = useState(true);
     // 뒤로가기 2번 눌렀는 지 확인
     final backCount = useState(false);
-    // URL 로딩을 위한 더미 변수
-    final LoadCount = useState(0);
     // 최초로 로딩할 URL 값 + Firebase Dynamic Link or Messaging 통해 가져옴 / 기본 값은 홈페이지
     final url = useState(address);
     // 웹 뷰 컨트롤러
@@ -71,6 +70,8 @@ class TaxiView extends HookWidget {
     final isFirstLogin = useState(true);
     // FCM init 여부 확인
     final isFcmInit = useState(false);
+    // URL 로딩을 위한 더미 변수
+    final LoadCount = useLoadCount(_controller.value, url);
 
     devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
 
@@ -187,15 +188,6 @@ class TaxiView extends HookWidget {
         }
       });
     }, []);
-
-    // URL 로딩 부분 / LoadCount 값이 바뀔 때마다 실행
-    useEffect(() {
-      if (url.value != '' && _controller.value != null) {
-        _controller.value!
-            .loadUrl(urlRequest: URLRequest(url: Uri.parse(url.value)))
-            .then((value) {});
-      }
-    }, [LoadCount.value]);
 
     // 로딩 페이지 로고 애니메이션 & 시간 타이머
     final AnimationController aniController = useAnimationController(
