@@ -23,19 +23,27 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:taxiapp/views/taxiDialog.dart';
 import 'package:app_links/app_links.dart';
+import 'package:taxiapp/constants/theme.dart';
+import 'dart:math';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:open_store/open_store.dart';
 
 class TaxiView extends HookWidget {
   final CookieManager _cookieManager = CookieManager.instance();
   // late InAppWebViewController _controller;
-
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
   @override
   Widget build(BuildContext context) {
     String address = RemoteConfigController().frontUrl;
+    OverlayEntry? overlayEntry;
+    AnimationController _aniController =
+        useAnimationController(duration: const Duration(milliseconds: 300));
+    Animation<Offset> _animation =
+        Tween(begin: const Offset(0, -0.5), end: const Offset(0.0, 0)).animate(
+            CurvedAnimation(parent: _aniController, curve: Curves.decelerate));
+    bool isBannerShow = false;
 
     // States
     // 로딩 여부 확인
@@ -277,6 +285,156 @@ class TaxiView extends HookWidget {
       return;
     }, [isAuthLogin.value, isFcmInit.value]);
 
+    void removeOverlayNotification({required Uri? uri}) {
+      if (uri != Uri.parse("")) {
+        url.value = uri.toString();
+        LoadCount.value += 1;
+      }
+      overlayEntry?.remove();
+      overlayEntry = null;
+    }
+
+    void removeAnimation() {
+      _aniController.reverse(); //TODO: 일정 dy 미만시 배너 삭제 취소 및 애니메이션 다시 재생
+      isBannerShow = false;
+      // removeOverlayNotification();
+    }
+
+    void createOverlayNotification(
+        {required String title,
+        required String subTitle,
+        required String content,
+        required Map<String, Uri> button,
+        Uri? imageUrl}) {
+      print("asd");
+      if (overlayEntry != null) {
+        removeOverlayNotification(uri: Uri.parse(""));
+      }
+      assert(overlayEntry == null);
+      isBannerShow = true;
+
+      overlayEntry = OverlayEntry(builder: (BuildContext context) {
+        _aniController.reset();
+        _animation =
+            Tween(begin: const Offset(0, -0.5), end: const Offset(0, 0))
+                .animate(CurvedAnimation(
+                    parent: _aniController, curve: Curves.decelerate));
+        _aniController.forward();
+
+        return SlideTransition(
+          position: _animation,
+          child: GestureDetector(
+            onPanUpdate: (details) {
+              if (details.delta.dy < -1 && isBannerShow) {
+                removeAnimation();
+              }
+            },
+            onPanEnd: (details) {
+              if (!isBannerShow) {
+                removeOverlayNotification(uri: button.values.first);
+              }
+            },
+            child: UnconstrainedBox(
+              alignment: Alignment.topCenter,
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                height: min(MediaQuery.of(context).size.height * 0.15, 200),
+                margin:
+                    EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+                color: Colors.white,
+                child: Stack(
+                  children: [
+                    Container(
+                      alignment: Alignment.topCenter,
+                      height: 5.0,
+                      color: taxiPrimaryColor,
+                    ),
+                    Positioned(
+                        left: 20,
+                        top: 25,
+                        child: (imageUrl != Uri.parse(""))
+                            ? Image(
+                                image: NetworkImage(imageUrl.toString()),
+                                width: 40,
+                                height: 40,
+                                fit: BoxFit.cover,
+                              )
+                            : const Padding(padding: EdgeInsets.zero)),
+                    Positioned(
+                      left: 20 +
+                          ((imageUrl != Uri.parse(""))
+                              ? 60
+                              : 0), // 이미지 없을 시  마진 20으로 변경
+                      top: 25,
+                      child: Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: title,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall!
+                                  .copyWith(
+                                    fontSize: 12,
+                                  ),
+                            ),
+                            TextSpan(
+                                text:
+                                    (subTitle.isNotEmpty) ? " / $subTitle" : "",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall!
+                                    .copyWith(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w400)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      left: 20 + ((imageUrl != Uri.parse("")) ? 60 : 0),
+                      top: 40,
+                      child: Text(
+                        content,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                            color: Colors.black,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: 0.4),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 20 / devicePixelRatio,
+                      right: 25 / devicePixelRatio,
+                      child: OutlinedButton(
+                          style: defaultNotificatonOutlinedButtonStyle,
+                          child: Text(
+                            button.keys.first,
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall!
+                                .copyWith(fontSize: 14),
+                          ),
+                          onPressed: () {
+                            removeAnimation();
+                            Future.delayed(const Duration(milliseconds: 300),
+                                () {
+                              removeOverlayNotification(
+                                  uri: button.values.first);
+                            });
+                          }),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      });
+      Overlay.of(context).insert(overlayEntry!);
+    }
+
     return SafeArea(
         child: Stack(children: [
       WillPopScope(
@@ -403,6 +561,27 @@ class TaxiView extends HookWidget {
                         if (Platform.isAndroid) {
                           await Clipboard.setData(ClipboardData(text: args[0]));
                         }
+                      });
+
+                  // Web -> App
+                  _controller.value?.addJavaScriptHandler(
+                      handlerName: "popup_inAppNotification",
+                      callback: (args) async {
+                        createOverlayNotification(
+                            title: args[0]['title'].toString(),
+                            subTitle: args[0]['subtitle'].toString(),
+                            content: args[0]['content'].toString(),
+                            button: {
+                              args[0]['button']['text'].toString():
+                                  (args[0]['button']['path'].toString() != "")
+                                      ? Uri.parse(
+                                          args[0]['button']['path'].toString())
+                                      : Uri.parse("")
+                            },
+                            imageUrl: (args[0]['type'].toString() ==
+                                    "default") //TODO: type showMaterialBanner 함수에서 관리
+                                ? Uri.parse(args[0]['imageUrl'].toString())
+                                : Uri.parse(""));
                       });
 
                   _controller.value?.addJavaScriptHandler(

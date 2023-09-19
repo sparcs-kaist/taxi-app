@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 //primaryColor 지정 (색상코드: #6E3647)
 final Map<int, Color> primaryColor1 = {
@@ -22,10 +23,9 @@ const Color toastTextColor = Colors.black;
 const Color notiColor = Color(0x66C8C8C8);
 final Color dialogBarrierColor = Colors.black.withOpacity(0.6);
 
-//아래의 상수들은 피그마 기준 상의 패딩 픽셀과는 차이를 두고 있지만,
-//이는 모바일 환경상 웹뷰와 같은 간격을 제시하기 위해 설정한 값들입니다.
 double devicePixelRatio = 3.0;
-const double dialogPadding = 15.0;
+const double taxiDialogPadding = 15.0;
+const double taxiNotificationPadding = 20.0;
 final defaultDialogUpperTitlePadding =
     Padding(padding: EdgeInsets.symmetric(vertical: 36.0 / devicePixelRatio));
 
@@ -37,22 +37,42 @@ final defaultDialogLowerTitlePadding =
 
 final defaultDialogVerticalMedianButtonPadding = Padding(
     padding:
-        EdgeInsets.symmetric(horizontal: dialogPadding / devicePixelRatio));
+        EdgeInsets.symmetric(horizontal: taxiDialogPadding / devicePixelRatio));
 
 final defaultDialogLowerButtonPadding = Padding(
-    padding: EdgeInsets.only(bottom: (dialogPadding / 2) / devicePixelRatio));
+    padding:
+        EdgeInsets.only(bottom: (taxiDialogPadding / 2) / devicePixelRatio));
 
 final defaultDialogPadding =
-    Padding(padding: EdgeInsets.all(dialogPadding / devicePixelRatio));
+    Padding(padding: EdgeInsets.all(taxiDialogPadding / devicePixelRatio));
 
 final defaultDialogButtonSize = Size(147.50, 35);
 
-final defaultDialogButtonInnerPadding =
-    EdgeInsets.symmetric(vertical: 9, horizontal: 15);
+final defaultDialogButtonInnerPadding = EdgeInsets.only(top: 9, bottom: 9);
 
 final defaultDialogButtonBorderRadius = BorderRadius.circular(8.0);
 
-ThemeData buildTheme() {
+final defaultTaxiMarginDouble = 20.0;
+
+final defaultTaxiMargin =
+    EdgeInsets.symmetric(horizontal: defaultTaxiMarginDouble);
+
+const defaultNotificationButtonSize = Size(90, 25);
+const defaultNotificationButtonInnerPadding =
+    EdgeInsets.symmetric(horizontal: 15.0, vertical: 2.0);
+final defaultNotificationButtonBorderRadius = BorderRadius.circular(30.0);
+final defaultNotificatonOutlinedButtonStyle = OutlinedButton.styleFrom(
+  minimumSize: Size.zero,
+  fixedSize: defaultNotificationButtonSize,
+  padding: defaultNotificationButtonInnerPadding,
+  backgroundColor: taxiPrimaryMaterialColor,
+  shape: RoundedRectangleBorder(
+    borderRadius: defaultNotificationButtonBorderRadius,
+    side: const BorderSide(color: Colors.black),
+  ),
+); // TODO: ThemeData에 있는 OutlinedButtonThemeData 분리
+
+ThemeData taxiTheme() {
   final base = ThemeData(
     primarySwatch: taxiPrimaryMaterialColor,
     primaryColor: const Color(0xFF6E3678),
@@ -61,7 +81,7 @@ ThemeData buildTheme() {
     dialogTheme: DialogTheme(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       backgroundColor: Colors.white,
-      actionsPadding: EdgeInsets.all(dialogPadding / devicePixelRatio),
+      actionsPadding: const EdgeInsets.all(10.0),
       surfaceTintColor: Colors.black,
     ),
     dialogBackgroundColor: Colors.white,
@@ -89,36 +109,65 @@ ThemeData buildTheme() {
         ),
       ),
     ),
+    bannerTheme: MaterialBannerThemeData(
+      backgroundColor: Colors.white,
+    ),
 
     //텍스트 테마
     textTheme: const TextTheme(
-        //Dialog 제목
-        titleSmall: TextStyle(
-            fontFamily: 'NanumSquare',
-            color: Color(0xFF323232),
-            fontSize: 16,
-            fontWeight: FontWeight.w400),
+      //Dialog 제목
+      titleSmall: TextStyle(
+          fontFamily: 'NanumSquare',
+          color: Color(0xFF323232),
+          fontSize: 16,
+          fontWeight: FontWeight.w400),
 
-        //Dialog 상세 설명
-        bodySmall: TextStyle(
-            fontFamily: 'NanumSquare_acB',
-            color: Color(0xFF888888),
-            fontSize: 10,
-            fontWeight: FontWeight.w700),
+      //Dialog 상세 설명
+      bodySmall: TextStyle(
+          fontFamily: 'NanumSquare_acB',
+          color: Color(0xFF888888),
+          fontSize: 10,
+          fontWeight: FontWeight.w700),
 
-        //Dialog Outlined 버튼 텍스트
-        labelLarge: TextStyle(
-            fontFamily: 'NanumSquare_acB',
-            color: Color(0xFFEEEEEE),
-            fontSize: 13,
-            fontWeight: FontWeight.w700),
+      //Dialog Outlined 버튼 텍스트
+      labelLarge: TextStyle(
+          fontFamily: 'NanumSquare_acB',
+          color: Color(0xFFEEEEEE),
+          fontSize: 14,
+          fontWeight: FontWeight.w700),
 
-        //Dialog Elevated 버튼 텍스트
-        labelMedium: TextStyle(
-            fontFamily: 'NanumSquare',
-            color: Color.fromARGB(255, 129, 129, 129),
-            fontSize: 13,
-            fontWeight: FontWeight.w400)),
+      //Dialog Elevated 버튼 텍스트
+      labelMedium: TextStyle(
+          fontFamily: 'NanumSquare',
+          color: Color.fromARGB(255, 129, 129, 129),
+          fontSize: 14,
+          fontWeight: FontWeight.w400),
+      labelSmall: TextStyle(
+        color: Color(0xFFEEEEEE),
+        fontFamily: 'NanumSquare_acB',
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.4,
+      ),
+    ),
+
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      type: BottomNavigationBarType.fixed,
+      backgroundColor: Colors.white,
+      selectedItemColor: Color(0xFF6E3678),
+      selectedLabelStyle: TextStyle(
+        fontFamily: 'NanumSquare',
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.4,
+      ),
+      unselectedLabelStyle: TextStyle(
+        fontFamily: 'NanumSquare',
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.4,
+      ),
+    ),
   );
   return base;
 }
