@@ -303,7 +303,7 @@ class TaxiView extends HookWidget {
         required Map<String, Uri> button,
         Uri? imageUrl}) {
       if (overlayEntry != null) {
-        removeOverlayNotification(uri: Uri.parse(""));
+        removeOverlayNotification();
       }
       assert(overlayEntry == null);
       isBannerShow = true;
@@ -326,7 +326,7 @@ class TaxiView extends HookWidget {
             },
             onPanEnd: (details) {
               if (!isBannerShow) {
-                removeOverlayNotification(uri: button.values.first);
+                removeOverlayNotification();
               }
             },
             child: UnconstrainedBox(
