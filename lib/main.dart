@@ -14,6 +14,7 @@ import 'package:taxiapp/utils/token.dart';
 import 'package:taxiapp/views/taxiView.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:taxiapp/firebase_options.dart';
+import 'constants/theme.dart';
 
 late AndroidNotificationChannel channel;
 late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
@@ -82,13 +83,11 @@ class MyHome extends HookWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Taxi App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: taxiTheme(),
       home: Container(
-        color: const Color(0xFF6E3647),
+        color: Theme.of(context).primaryColor,
         child: Container(
-          color: Colors.white,
+          color: taxiMainBackgroundColor,
           child: TaxiView(),
         ),
       ),

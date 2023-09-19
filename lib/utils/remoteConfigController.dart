@@ -1,13 +1,11 @@
-import "package:dio/dio.dart";
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:package_info/package_info.dart';
 
 class RemoteConfigController {
   String backUrl;
   String frontUrl;
-  String ios_version;
-  String android_version;
+  String iosVersion;
+  String androidVersion;
 
   static RemoteConfigController? _instance;
 
@@ -16,34 +14,28 @@ class RemoteConfigController {
   RemoteConfigController._internal(
       {required this.backUrl,
       required this.frontUrl,
-      required this.ios_version,
-      required this.android_version});
+      required this.iosVersion,
+      required this.androidVersion});
 
   factory RemoteConfigController(
       {String? backUrl,
       String? frontUrl,
-      String? ios_version,
-      String? android_version}) {
+      String? iosVersion,
+      String? androidVersion}) {
     if (frontUrl == null ||
         backUrl == null ||
-        ios_version == null ||
-        android_version == null) {
+        iosVersion == null ||
+        androidVersion == null) {
       return _instance ??= RemoteConfigController._internal(
-          backUrl: 'https://taxi.sparcs.org/api/',
-          frontUrl: 'https://taxi.sparcs.org',
-          ios_version: '',
-          android_version: '');
+          backUrl: '', frontUrl: '', iosVersion: '', androidVersion: '');
     }
     _instance = RemoteConfigController._internal(
         backUrl: backUrl,
         frontUrl: frontUrl,
-        ios_version: ios_version,
-        android_version: android_version);
+        iosVersion: iosVersion,
+        androidVersion: androidVersion);
     return _instance ??= RemoteConfigController._internal(
-        backUrl: 'https://taxi.sparcs.org/api/',
-        frontUrl: 'https://taxi.sparcs.org',
-        ios_version: '',
-        android_version: '');
+        backUrl: '', frontUrl: '', iosVersion: '', androidVersion: '');
   }
 
   Future<void> init() async {
@@ -55,7 +47,7 @@ class RemoteConfigController {
     ));
     await remoteConfig.setDefaults({
       "back_url": "https://taxi.sparcs.org/api/",
-      "front_url": "https://taxi.sparcs.org",
+      "front_url": "https://taxi.sparcs.org/",
       "version": value.version,
       "ios_version": value.version,
     });
@@ -64,8 +56,8 @@ class RemoteConfigController {
 
     this.backUrl = remoteConfig.getString("back_url");
     this.frontUrl = remoteConfig.getString("front_url");
-    this.android_version = remoteConfig.getString("version");
-    this.ios_version = remoteConfig.getString("ios_version");
+    this.androidVersion = remoteConfig.getString("version");
+    this.iosVersion = remoteConfig.getString("ios_version");
 
     return;
   }

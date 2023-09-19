@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import "package:dio/dio.dart";
-import 'package:taxiapp/constants/constants.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:taxiapp/utils/fcmToken.dart';
+import 'package:taxiapp/utils/remoteConfigController.dart';
 
 class Token {
   String accessToken;
@@ -13,7 +13,7 @@ class Token {
   static Token? _instance;
   static final _storage = FlutterSecureStorage();
 
-  final Dio _dio = Dio(connectionOptions);
+  final Dio _dio = Dio();
   final CookieJar _cookieJar = CookieJar();
 
   Token._internal({required this.accessToken, required this.refreshToken});
@@ -30,6 +30,16 @@ class Token {
   Future<void> init() async {
     accessToken = (await getAccessTokenFromStorage()) ?? '';
     refreshToken = (await getRefreshTokenFromStorage()) ?? '';
+    _dio.interceptors.add(CookieManager(_cookieJar));
+    _dio.interceptors
+        .add(InterceptorsWrapper(onRequest: (options, handler) async {
+      options.headers["Origin"] = options.uri.origin;
+      return handler.next(options);
+    }, onResponse: (response, handler) async {
+      return handler.next(response);
+    }, onError: (error, handler) async {
+      return handler.next(error);
+    }));
   }
 
   Future<void> setAccessToken({required String accessToken}) async {
@@ -56,6 +66,7 @@ class Token {
   }
 
   Future<String?> getSession() async {
+    _dio.options.baseUrl = RemoteConfigController().backUrl;
     _dio.interceptors.add(CookieManager(_cookieJar));
     return _dio.get("/auth/app/token/login", queryParameters: {
       "accessToken": accessToken,
@@ -74,8 +85,8 @@ class Token {
         return null;
       }
       if (response.statusCode == 200) {
-        List<Cookie> cookies = await _cookieJar.loadForRequest(
-            Uri.parse(connectionOptions.baseUrl + "auth/app/token/login"));
+        List<Cookie> cookies = await _cookieJar.loadForRequest(Uri.parse(
+            RemoteConfigController().backUrl + "auth/app/token/login"));
         for (Cookie cookie in cookies) {
           if (cookie.name == "connect.sid") {
             return cookie.value;
@@ -90,6 +101,7 @@ class Token {
   }
 
   Future<bool> updateAccessTokenUsingRefreshToken() {
+    _dio.options.baseUrl = RemoteConfigController().backUrl;
     return _dio.get("/auth/app/token/refresh", queryParameters: {
       "accessToken": accessToken,
       "refreshToken": refreshToken,
