@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -11,16 +10,13 @@ import 'package:taxiapp/constants/theme.dart';
 import 'package:taxiapp/hooks/useLoadCount.dart';
 import 'package:taxiapp/utils/fcmToken.dart';
 import 'package:taxiapp/utils/firebase.dart';
-import 'package:taxiapp/utils/pushHandler.dart';
 import 'package:taxiapp/utils/registerEventHandler.dart';
 import 'package:taxiapp/utils/remoteConfigController.dart';
 import 'package:taxiapp/views/loadingView.dart';
 import 'package:taxiapp/utils/token.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:taxiapp/views/taxiDialog.dart';
-import 'package:app_links/app_links.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:open_store/open_store.dart';
 
