@@ -1,20 +1,16 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:dio/dio.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:package_info/package_info.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:social_share/social_share.dart';
 import 'package:taxiapp/constants/theme.dart';
 import 'package:taxiapp/hooks/useLoadCount.dart';
 import 'package:taxiapp/utils/fcmToken.dart';
+import 'package:taxiapp/utils/firebase.dart';
 import 'package:taxiapp/utils/pushHandler.dart';
 import 'package:taxiapp/utils/registerEventHandler.dart';
 import 'package:taxiapp/utils/remoteConfigController.dart';
@@ -25,7 +21,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:taxiapp/views/taxiDialog.dart';
 import 'package:app_links/app_links.dart';
-import 'dart:math';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:open_store/open_store.dart';
 
@@ -93,101 +88,7 @@ class TaxiView extends HookWidget {
 
     // Firebase Messaging 설정 / Firebase Dynamic Link 설정
     useEffect(() {
-      const initializationSettingsAndroid =
-          AndroidInitializationSettings('@mipmap/ic_launcher');
-
-      const initializationSettingsIOS = DarwinInitializationSettings(
-        requestAlertPermission: true,
-        requestBadgePermission: true,
-        requestSoundPermission: true,
-      );
-
-      const initializationSettings = InitializationSettings(
-        android: initializationSettingsAndroid,
-        iOS: initializationSettingsIOS,
-      );
-
-      FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-        if (message.data['url'] != null) {
-          if (message.data['url'] ==
-              (await _controller.value!.getUrl())
-                  ?.path
-                  .replaceAll("chatting", "myroom")) {
-            return;
-          } else {
-            handleMessage(message);
-          }
-        }
-      });
-
-      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-        if (message.data['url'] != null) {
-          Uri newUri = Uri.parse(RemoteConfigController().frontUrl)
-              .replace(path: message.data['url']);
-          url.value = newUri.toString();
-          LoadCount.value += 1;
-        }
-      });
-
-      FirebaseMessaging.instance
-          .getInitialMessage()
-          .then((RemoteMessage? message) {
-        if (message != null) {
-          if (message.data['url'] != null) {
-            Uri newUri = Uri.parse(RemoteConfigController().frontUrl)
-                .replace(path: message.data['url']);
-            url.value = newUri.toString();
-            LoadCount.value += 1;
-          }
-        }
-      });
-
-      flutterLocalNotificationsPlugin.initialize(
-        initializationSettings,
-        onDidReceiveNotificationResponse: (details) {
-          if (details.payload != null) {
-            url.value = RemoteConfigController().frontUrl + details.payload!;
-            LoadCount.value += 1;
-          }
-        },
-      );
-
-      flutterLocalNotificationsPlugin
-          .getNotificationAppLaunchDetails()
-          .then((NotificationAppLaunchDetails? details) {
-        if (details != null) {
-          if (details.didNotificationLaunchApp &&
-              details.notificationResponse?.payload != null) {
-            Uri new_uri = Uri.parse(address)
-                .replace(path: details.notificationResponse!.payload!);
-            url.value = new_uri.toString();
-            LoadCount.value += 1;
-          }
-        }
-      });
-
-      FirebaseDynamicLinks.instance.onLink.listen((event) {
-        url.value = event.link.toString();
-        LoadCount.value += 1;
-      });
-
-      FirebaseDynamicLinks.instance.getInitialLink().then((initalLink) async {
-        if (initalLink != null) {
-          url.value = initalLink.link.toString();
-          LoadCount.value += 1;
-        } else {
-          final _appLinks = AppLinks();
-          final Uri? uri = await _appLinks.getInitialAppLink();
-          if (uri != null) {
-            final PendingDynamicLinkData? appLinkData =
-                await FirebaseDynamicLinks.instance.getDynamicLink(uri);
-            if (appLinkData != null) {
-              url.value = appLinkData.link.toString();
-              LoadCount.value += 1;
-            }
-          }
-        }
-      });
+      initialFirebase();
     }, []);
 
     // 로딩 페이지 로고 애니메이션 & 시간 타이머
@@ -277,163 +178,6 @@ class TaxiView extends HookWidget {
       return;
     }, [isAuthLogin.value, isFcmInit.value]);
 
-    void removeOverlayNotification() {
-      overlayEntry?.remove();
-      overlayEntry = null;
-    }
-
-    void removeAnimation() {
-      _aniController.reverse(); //TODO: 일정 dy 미만시 배너 삭제 취소 및 애니메이션 다시 재생
-      isBannerShow = false;
-      // removeOverlayNotification();
-    }
-
-    void createOverlayNotification(
-        {required String title,
-        required String subTitle,
-        required String content,
-        required Map<String, Uri> button,
-        Uri? imageUrl}) {
-      if (overlayEntry != null) {
-        removeOverlayNotification();
-      }
-      assert(overlayEntry == null);
-      isBannerShow = true;
-
-      overlayEntry = OverlayEntry(builder: (BuildContext context) {
-        _aniController.reset();
-        _animation =
-            Tween(begin: const Offset(0, -0.5), end: const Offset(0, 0))
-                .animate(CurvedAnimation(
-                    parent: _aniController, curve: Curves.decelerate));
-        _aniController.forward();
-
-        return SlideTransition(
-          position: _animation,
-          child: GestureDetector(
-            onPanUpdate: (details) {
-              if (details.delta.dy < -1 && isBannerShow) {
-                removeAnimation();
-              }
-            },
-            onPanEnd: (details) {
-              if (!isBannerShow) {
-                removeOverlayNotification();
-              }
-            },
-            child: UnconstrainedBox(
-              alignment: Alignment.topCenter,
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: min(MediaQuery.of(context).size.height * 0.15, 200),
-                margin:
-                    EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-                color: Colors.white,
-                child: Stack(
-                  children: [
-                    Container(
-                      alignment: Alignment.topCenter,
-                      height: 5.0,
-                      color: taxiPrimaryColor,
-                    ),
-                    Positioned(
-                        left: 20,
-                        top: 20,
-                        child: (imageUrl != Uri.parse(""))
-                            ? Image(
-                                image: NetworkImage(imageUrl.toString()),
-                                width: 40,
-                                height: 40,
-                                fit: BoxFit.cover,
-                              )
-                            : const Padding(padding: EdgeInsets.zero)),
-                    Positioned(
-                      left: 20 +
-                          ((imageUrl != Uri.parse(""))
-                              ? 60
-                              : 0), // 이미지 없을 시  마진 20으로 변경
-                      top: 20,
-                      child: RichText(
-                        text: TextSpan(
-                          children: [
-                            TextSpan(
-                              text: title,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall!
-                                  .copyWith(
-                                    fontSize: 10,
-                                  ),
-                            ),
-                            TextSpan(
-                                text: (subTitle.isNotEmpty)
-                                    ? "  /  $subTitle"
-                                    : "",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall!
-                                    .copyWith(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w400)),
-                          ],
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        softWrap: false,
-                      ),
-                    ),
-                    Positioned(
-                      left: 20 + ((imageUrl != Uri.parse("")) ? 60 : 0),
-                      top: 40,
-                      width: MediaQuery.of(context).size.width -
-                          40 -
-                          ((imageUrl != Uri.parse("")) ? 60 : 0),
-                      child: Text(
-                        content,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                        softWrap: false,
-                        style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                            color: Colors.black,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            letterSpacing: 0.4),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 20 / devicePixelRatio,
-                      right: 25 / devicePixelRatio,
-                      child: OutlinedButton(
-                          style: defaultNotificatonOutlinedButtonStyle,
-                          child: Text(
-                            button.keys.first,
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelSmall!
-                                .copyWith(fontSize: 12),
-                          ),
-                          onPressed: () {
-                            removeAnimation();
-                            Future.delayed(const Duration(milliseconds: 300),
-                                () {
-                              if (button.values.first != Uri.parse("")) {
-                                url.value = button.values.first.toString();
-                                LoadCount.value += 1;
-                              }
-                              removeOverlayNotification();
-                            });
-                          }),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      });
-      Overlay.of(context).insert(overlayEntry!);
-    }
-
     return SafeArea(
         child: Stack(children: [
       WillPopScope(
@@ -487,14 +231,8 @@ class TaxiView extends HookWidget {
                 onWebViewCreated: (InAppWebViewController webcontroller) async {
                   _controller.value = webcontroller;
                   if (_controller.value != null) {
-                    registerEventHandler(
-                        _controller.value!,
-                        isLogin,
-                        isAuthLogin,
-                        createOverlayNotification,
-                        _cookieManager,
-                        toastTextColor,
-                        toastBackgroundColor);
+                    registerEventHandler(_controller.value!, isLogin,
+                        isAuthLogin, _cookieManager);
                   }
                 },
                 onLoadStart: (controller, uri) async {

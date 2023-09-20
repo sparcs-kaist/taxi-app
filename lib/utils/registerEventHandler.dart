@@ -12,15 +12,15 @@ import 'package:social_share/social_share.dart';
 import 'package:taxiapp/utils/fcmToken.dart';
 import 'package:taxiapp/utils/remoteConfigController.dart';
 import 'package:taxiapp/utils/token.dart';
+import 'package:taxiapp/constants/theme.dart';
+import 'package:taxiapp/utils/overlay.dart';
 
 void registerEventHandler(
-    InAppWebViewController controller,
-    ValueNotifier<bool> isLogin,
-    ValueNotifier<bool> isAuthLogin,
-    Function createOverlayNotification,
-    CookieManager cookieManager,
-    Color toastTextColor,
-    Color toastBackgroundColor) {
+  InAppWebViewController controller,
+  ValueNotifier<bool> isLogin,
+  ValueNotifier<bool> isAuthLogin,
+  CookieManager cookieManager,
+) {
   controller.addJavaScriptHandler(
     handlerName: "auth_update",
     callback: (arguments) async {
