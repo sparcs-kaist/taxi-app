@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:taxiapp/constants/theme.dart';
 
 void removeOverlayNotification(OverlayEntry? overlayEntry) {
@@ -8,13 +9,8 @@ void removeOverlayNotification(OverlayEntry? overlayEntry) {
   overlayEntry = null;
 }
 
-void removeAnimation(
-  AnimationController _aniController,
-  bool isBannerShow,
-) {
+void removeAnimation(AnimationController _aniController) {
   _aniController.reverse(); //TODO: 일정 dy 미만시 배너 삭제 취소 및 애니메이션 다시 재생
-  isBannerShow = false;
-  // removeOverlayNotification();
 }
 
 void createOverlayNotification({
@@ -22,10 +18,7 @@ void createOverlayNotification({
   required String subTitle,
   required String content,
   required Map<String, Uri> button,
-  required bool isBannerShow,
   OverlayEntry? overlayEntry,
-  required AnimationController aniController,
-  required Animation<Offset> animation,
   required BuildContext context,
   required ValueNotifier<String> url,
   required ValueNotifier<int> LoadCount,
@@ -35,7 +28,9 @@ void createOverlayNotification({
     removeOverlayNotification(overlayEntry);
   }
   assert(overlayEntry == null);
-  isBannerShow = true;
+  AnimationController aniController =
+      useAnimationController(duration: const Duration(milliseconds: 300));
+  Animation<Offset> animation;
 
   overlayEntry = OverlayEntry(builder: (BuildContext context) {
     aniController.reset();
@@ -48,14 +43,12 @@ void createOverlayNotification({
       position: animation,
       child: GestureDetector(
         onPanUpdate: (details) {
-          if (details.delta.dy < -1 && isBannerShow) {
-            removeAnimation(aniController, isBannerShow);
+          if (details.delta.dy < -1) {
+            removeAnimation(aniController);
           }
         },
         onPanEnd: (details) {
-          if (!isBannerShow) {
-            removeOverlayNotification(overlayEntry);
-          }
+          removeOverlayNotification(overlayEntry);
         },
         child: UnconstrainedBox(
           alignment: Alignment.topCenter,
@@ -143,7 +136,7 @@ void createOverlayNotification({
                             .copyWith(fontSize: 12),
                       ),
                       onPressed: () {
-                        removeAnimation(aniController, isBannerShow);
+                        removeAnimation(aniController);
                         Future.delayed(const Duration(milliseconds: 300), () {
                           if (button.values.first != Uri.parse("")) {
                             url.value = button.values.first.toString();
