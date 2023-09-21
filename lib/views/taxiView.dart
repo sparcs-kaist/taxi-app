@@ -424,7 +424,15 @@ class TaxiView extends HookWidget {
                             Future.delayed(const Duration(milliseconds: 300),
                                 () {
                               if (button.values.first != Uri.parse("")) {
-                                url.value = button.values.first.toString();
+                                url.value = RemoteConfigController()
+                                        .frontUrl
+                                        .substring(
+                                            0,
+                                            RemoteConfigController()
+                                                    .frontUrl
+                                                    .length -
+                                                1) +
+                                    button.values.first.toString();
                                 LoadCount.value += 1;
                               }
                               removeOverlayNotification();
@@ -589,7 +597,6 @@ class TaxiView extends HookWidget {
                                 ? Uri.parse(args[0]['imageUrl'].toString())
                                 : Uri.parse(""));
                       });
-
                   _controller.value?.addJavaScriptHandler(
                       handlerName: "popup_instagram_story_share",
                       callback: (args) async {
