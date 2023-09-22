@@ -299,7 +299,7 @@ class TaxiView extends HookWidget {
         {required String title,
         required String subTitle,
         required String content,
-        required Map<String, Uri> button,
+        required Map<String, String> button,
         Uri? imageUrl}) {
       if (overlayEntry != null) {
         removeOverlayNotification();
@@ -422,18 +422,14 @@ class TaxiView extends HookWidget {
                           onPressed: () {
                             removeAnimation();
                             Future.delayed(const Duration(milliseconds: 300),
-                                () {
-                              if (button.values.first != Uri.parse("")) {
-                                url.value = RemoteConfigController()
-                                        .frontUrl
-                                        .substring(
-                                            0,
-                                            RemoteConfigController()
-                                                    .frontUrl
-                                                    .length -
-                                                1) +
-                                    button.values.first.toString();
-                                LoadCount.value += 1;
+                                () async {
+                              if (button.values.first != "") {
+                                await _controller.value
+                                    ?.evaluateJavascript(source: """
+                                      window.dispatchEvent(new CustomEvent("pushHistory", {
+                                        detail: "${button.values.first}"
+                                        }));
+                              """);
                               }
                               removeOverlayNotification();
                             });
@@ -588,15 +584,15 @@ class TaxiView extends HookWidget {
                             button: {
                               args[0]['button']['text'].toString():
                                   (args[0]['button']['path'].toString() != "")
-                                      ? Uri.parse(
-                                          args[0]['button']['path'].toString())
-                                      : Uri.parse("")
+                                      ? args[0]['button']['path'].toString()
+                                      : ""
                             },
                             imageUrl: (args[0]['type'].toString() ==
                                     "default") //TODO: type showMaterialBanner 함수에서 관리
                                 ? Uri.parse(args[0]['imageUrl'].toString())
                                 : Uri.parse(""));
                       });
+
                   _controller.value?.addJavaScriptHandler(
                       handlerName: "popup_instagram_story_share",
                       callback: (args) async {
