@@ -299,7 +299,7 @@ class TaxiView extends HookWidget {
         {required String title,
         required String subTitle,
         required String content,
-        required Map<String, String> button,
+        Map<String, String> button = const {"": ""},
         Uri? imageUrl}) {
       if (overlayEntry != null) {
         removeOverlayNotification();
@@ -407,34 +407,37 @@ class TaxiView extends HookWidget {
                             letterSpacing: 0.4),
                       ),
                     ),
-                    Positioned(
-                      bottom: 20 / devicePixelRatio,
-                      right: 25 / devicePixelRatio,
-                      child: OutlinedButton(
-                          style: defaultNotificatonOutlinedButtonStyle,
-                          child: Text(
-                            button.keys.first,
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelSmall!
-                                .copyWith(fontSize: 12),
-                          ),
-                          onPressed: () {
-                            removeAnimation();
-                            Future.delayed(const Duration(milliseconds: 300),
-                                () async {
-                              if (button.values.first != "") {
-                                await _controller.value
-                                    ?.evaluateJavascript(source: """
+                    (button.keys.first != "")
+                        ? Positioned(
+                            bottom: 15 / devicePixelRatio,
+                            right: 15 / devicePixelRatio,
+                            child: OutlinedButton(
+                                style: defaultNotificatonOutlinedButtonStyle,
+                                child: Text(
+                                  button.keys.first,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall!
+                                      .copyWith(fontSize: 12),
+                                ),
+                                onPressed: () {
+                                  removeAnimation();
+                                  Future.delayed(
+                                      const Duration(milliseconds: 300),
+                                      () async {
+                                    if (button.values.first != "") {
+                                      await _controller.value
+                                          ?.evaluateJavascript(source: """
                                       window.dispatchEvent(new CustomEvent("pushHistory", {
                                         detail: "${button.values.first}"
                                         }));
                               """);
-                              }
-                              removeOverlayNotification();
-                            });
-                          }),
-                    ),
+                                    }
+                                    removeOverlayNotification();
+                                  });
+                                }),
+                          )
+                        : const Padding(padding: EdgeInsets.zero),
                   ],
                 ),
               ),
@@ -577,20 +580,36 @@ class TaxiView extends HookWidget {
                   _controller.value?.addJavaScriptHandler(
                       handlerName: "popup_inAppNotification",
                       callback: (args) async {
-                        createOverlayNotification(
-                            title: args[0]['title'].toString(),
-                            subTitle: args[0]['subtitle'].toString(),
-                            content: args[0]['content'].toString(),
-                            button: {
-                              args[0]['button']['text'].toString():
-                                  (args[0]['button']['path'].toString() != "")
-                                      ? args[0]['button']['path'].toString()
-                                      : ""
-                            },
-                            imageUrl: (args[0]['type'].toString() ==
-                                    "default") //TODO: type showMaterialBanner 함수에서 관리
-                                ? Uri.parse(args[0]['imageUrl'].toString())
-                                : Uri.parse(""));
+                        try {
+                          createOverlayNotification(
+                              title: args[0]['title'].toString(),
+                              subTitle: args[0]['subtitle'].toString(),
+                              content: args[0]['content'].toString(),
+                              button: (args[0].containsKey("button"))
+                                  ? {
+                                      args[0]['button']['text'].toString():
+                                          (args[0]['button']['path']
+                                                      .toString() !=
+                                                  "")
+                                              ? args[0]['button']['path']
+                                                  .toString()
+                                              : ""
+                                    }
+                                  : {"": ""},
+                              imageUrl: (args[0]['type'].toString() ==
+                                      "default")
+                                  ? Uri.parse(args[0]['imageUrl'].toString())
+                                  : Uri.parse(
+                                      args[0]['profileUrl'].toString()));
+                        } on Exception catch (e) {
+                          Fluttertoast.showToast(
+                              msg: "인앱 알림 로드에 실패하였습니다.",
+                              toastLength: Toast.LENGTH_SHORT,
+                              textColor: toastTextColor,
+                              backgroundColor: toastBackgroundColor);
+                          return false;
+                        }
+                        return true;
                       });
 
                   _controller.value?.addJavaScriptHandler(
