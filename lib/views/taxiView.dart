@@ -350,6 +350,7 @@ class TaxiView extends HookWidget {
               Container(
                 alignment: Alignment.topCenter,
                 child: LinearTimer(
+                  forward: false,
                   minHeight: 5,
                   color: taxiPrimaryColor,
                   duration: const Duration(seconds: 5),
