@@ -353,6 +353,7 @@ class TaxiView extends HookWidget {
                   forward: false,
                   minHeight: 5,
                   color: taxiPrimaryColor,
+                  backgroundColor: Colors.white,
                   duration: const Duration(seconds: 5),
                   onTimerEnd: () {
                     removeOverlayNotification();
