@@ -300,12 +300,33 @@ class TaxiView extends HookWidget {
         required String subTitle,
         required String content,
         Map<String, String> button = const {"": ""},
-        Uri? imageUrl}) {
+        Uri? imageUrl,
+        required int type}) {
       if (overlayEntry != null) {
         removeOverlayNotification();
       }
       assert(overlayEntry == null);
       isBannerShow = true;
+
+      double imageSize = 0;
+      double imageBorderRadius = 0;
+      double margin = 0;
+      String webviewEventPushHistory = """
+                                      window.dispatchEvent(new CustomEvent("pushHistory", {
+                                        detail: "${button.values.first}"
+                                        }));
+                              """;
+      if (type == 0) {
+        //type: default
+        imageSize = 50;
+        imageBorderRadius = 12;
+        margin = 20.0;
+      } else if (type == 1) {
+        //type: chat
+        imageSize = 40;
+        imageBorderRadius = 20;
+        margin = 0.0;
+      }
 
       overlayEntry = OverlayEntry(builder: (BuildContext context) {
         _aniController.reset();
@@ -338,27 +359,31 @@ class TaxiView extends HookWidget {
                 color: Colors.white,
                 child: Stack(
                   children: [
+                    // 상단 보라색 바
                     Container(
                       alignment: Alignment.topCenter,
                       height: 5.0,
                       color: taxiPrimaryColor,
                     ),
+                    //image
                     Positioned(
                         left: 20,
                         top: 20,
-                        child: (imageUrl != Uri.parse(""))
-                            ? Image(
-                                image: NetworkImage(imageUrl.toString()),
-                                width: 40,
-                                height: 40,
-                                fit: BoxFit.cover,
-                              )
-                            : const Padding(padding: EdgeInsets.zero)),
+                        child: ClipRRect(
+                          borderRadius:
+                              BorderRadius.circular(imageBorderRadius),
+                          child: (imageSize != 0)
+                              ? Image(
+                                  image: NetworkImage(imageUrl.toString()),
+                                  width: imageSize,
+                                  height: imageSize,
+                                  fit: BoxFit.cover,
+                                )
+                              : const Padding(padding: EdgeInsets.zero),
+                        )),
+                    //title and subTitle
                     Positioned(
-                      left: 20 +
-                          ((imageUrl != Uri.parse(""))
-                              ? 60
-                              : 0), // 이미지 없을 시  마진 20으로 변경
+                      left: 20 + imageSize + margin, // 이미지 없을 시  마진 20으로 변경
                       top: 20,
                       child: RichText(
                         text: TextSpan(
@@ -389,12 +414,14 @@ class TaxiView extends HookWidget {
                         softWrap: false,
                       ),
                     ),
+                    //본문
                     Positioned(
-                      left: 20 + ((imageUrl != Uri.parse("")) ? 60 : 0),
+                      left: 20 + imageSize + margin,
                       top: 40,
                       width: MediaQuery.of(context).size.width -
                           40 -
-                          ((imageUrl != Uri.parse("")) ? 60 : 0),
+                          imageSize +
+                          margin,
                       child: Text(
                         content,
                         overflow: TextOverflow.ellipsis,
@@ -407,6 +434,7 @@ class TaxiView extends HookWidget {
                             letterSpacing: 0.4),
                       ),
                     ),
+                    //button
                     (button.keys.first != "")
                         ? Positioned(
                             bottom: 15 / devicePixelRatio,
@@ -427,11 +455,8 @@ class TaxiView extends HookWidget {
                                       () async {
                                     if (button.values.first != "") {
                                       await _controller.value
-                                          ?.evaluateJavascript(source: """
-                                      window.dispatchEvent(new CustomEvent("pushHistory", {
-                                        detail: "${button.values.first}"
-                                        }));
-                              """);
+                                          ?.evaluateJavascript(
+                                              source: webviewEventPushHistory);
                                     }
                                     removeOverlayNotification();
                                   });
@@ -581,6 +606,15 @@ class TaxiView extends HookWidget {
                       handlerName: "popup_inAppNotification",
                       callback: (args) async {
                         try {
+                          int types = 0;
+                          switch (args[0]['type'].toString()) {
+                            case "default":
+                              types = 0;
+                              break;
+                            case "chat":
+                              types = 1;
+                              break;
+                          }
                           createOverlayNotification(
                               title: args[0]['title'].toString(),
                               subTitle: args[0]['subtitle'].toString(),
@@ -588,14 +622,10 @@ class TaxiView extends HookWidget {
                               button: (args[0].containsKey("button"))
                                   ? {
                                       args[0]['button']['text'].toString():
-                                          (args[0]['button']['path']
-                                                      .toString() !=
-                                                  "")
-                                              ? args[0]['button']['path']
-                                                  .toString()
-                                              : ""
+                                          args[0]['button']['path'].toString()
                                     }
                                   : {"": ""},
+                              type: types,
                               imageUrl: (args[0]['type'].toString() ==
                                       "default")
                                   ? Uri.parse(args[0]['imageUrl'].toString())
