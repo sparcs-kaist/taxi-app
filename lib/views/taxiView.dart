@@ -26,6 +26,8 @@ import 'package:app_links/app_links.dart';
 import 'dart:math';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:open_store/open_store.dart';
+import 'package:swipeable_tile/swipeable_tile.dart';
+import 'package:linear_timer/linear_timer.dart';
 
 class TaxiView extends HookWidget {
   final CookieManager _cookieManager = CookieManager.instance();
@@ -39,9 +41,6 @@ class TaxiView extends HookWidget {
     OverlayEntry? overlayEntry;
     AnimationController _aniController =
         useAnimationController(duration: const Duration(milliseconds: 300));
-    Animation<Offset> _animation =
-        Tween(begin: const Offset(0, -0.5), end: const Offset(0.0, 0)).animate(
-            CurvedAnimation(parent: _aniController, curve: Curves.decelerate));
     bool isBannerShow = false;
 
     // States
@@ -329,144 +328,123 @@ class TaxiView extends HookWidget {
       }
 
       overlayEntry = OverlayEntry(builder: (BuildContext context) {
-        _aniController.reset();
-        _animation =
-            Tween(begin: const Offset(0, -0.5), end: const Offset(0, 0))
-                .animate(CurvedAnimation(
-                    parent: _aniController, curve: Curves.decelerate));
-        _aniController.forward();
-
-        return SlideTransition(
-          position: _animation,
-          child: GestureDetector(
-            onPanUpdate: (details) {
-              if (details.delta.dy < -1 && isBannerShow) {
-                removeAnimation();
-              }
-            },
-            onPanEnd: (details) {
-              if (!isBannerShow) {
-                removeOverlayNotification();
-              }
-            },
-            child: UnconstrainedBox(
-              alignment: Alignment.topCenter,
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: min(MediaQuery.of(context).size.height * 0.15, 200),
-                margin:
-                    EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-                color: Colors.white,
-                child: Stack(
-                  children: [
-                    // 상단 보라색 바
-                    Container(
-                      alignment: Alignment.topCenter,
-                      height: 5.0,
-                      color: taxiPrimaryColor,
-                    ),
-                    //image
-                    Positioned(
-                        left: 20,
-                        top: 20,
-                        child: ClipRRect(
-                          borderRadius:
-                              BorderRadius.circular(imageBorderRadius),
-                          child: (imageSize != 0)
-                              ? Image(
-                                  image: NetworkImage(imageUrl.toString()),
-                                  width: imageSize,
-                                  height: imageSize,
-                                  fit: BoxFit.cover,
-                                )
-                              : const Padding(padding: EdgeInsets.zero),
-                        )),
-                    //title and subTitle
-                    Positioned(
-                      left: 20 + imageSize + margin, // 이미지 없을 시  마진 20으로 변경
-                      top: 20,
-                      child: RichText(
-                        text: TextSpan(
-                          children: [
-                            TextSpan(
-                              text: title,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall!
-                                  .copyWith(
-                                    fontSize: 10,
-                                  ),
-                            ),
-                            TextSpan(
-                                text: (subTitle.isNotEmpty)
-                                    ? "  /  $subTitle"
-                                    : "",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall!
-                                    .copyWith(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w400)),
-                          ],
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        softWrap: false,
-                      ),
-                    ),
-                    //본문
-                    Positioned(
-                      left: 20 + imageSize + margin,
-                      top: 40,
-                      width: MediaQuery.of(context).size.width -
-                          40 -
-                          imageSize +
-                          margin,
-                      child: Text(
-                        content,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                        softWrap: false,
-                        style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                            color: Colors.black,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            letterSpacing: 0.4),
-                      ),
-                    ),
-                    //button
-                    (button.keys.first != "")
-                        ? Positioned(
-                            bottom: 15 / devicePixelRatio,
-                            right: 15 / devicePixelRatio,
-                            child: OutlinedButton(
-                                style: defaultNotificatonOutlinedButtonStyle,
-                                child: Text(
-                                  button.keys.first,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelSmall!
-                                      .copyWith(fontSize: 12),
-                                ),
-                                onPressed: () {
-                                  removeAnimation();
-                                  Future.delayed(
-                                      const Duration(milliseconds: 300),
-                                      () async {
-                                    if (button.values.first != "") {
-                                      await _controller.value
-                                          ?.evaluateJavascript(
-                                              source: webviewEventPushHistory);
-                                    }
-                                    removeOverlayNotification();
-                                  });
-                                }),
-                          )
-                        : const Padding(padding: EdgeInsets.zero),
-                  ],
+        return SwipeableTile(
+          color: Colors.white,
+          swipeThreshold: 0.2,
+          direction: SwipeDirection.horizontal,
+          onSwiped: (direction) {
+            removeOverlayNotification();
+          },
+          backgroundBuilder: (context, direction, progress) {
+            if (direction == SwipeDirection.endToStart) {
+              // return your widget
+            } else if (direction == SwipeDirection.startToEnd) {
+              // return your widget
+            }
+            return Container();
+          },
+          key: UniqueKey(),
+          child: Stack(
+            children: [
+              // 상단 보라색 바
+              Container(
+                alignment: Alignment.topCenter,
+                child: LinearTimer(
+                  minHeight: 5,
+                  color: taxiPrimaryColor,
+                  duration: const Duration(seconds: 5),
+                  onTimerEnd: () {
+                    removeOverlayNotification();
+                  },
                 ),
               ),
-            ),
+              //image
+              Positioned(
+                  left: 20,
+                  top: 20,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(imageBorderRadius),
+                    child: (imageSize != 0)
+                        ? Image(
+                            image: NetworkImage(imageUrl.toString()),
+                            width: imageSize,
+                            height: imageSize,
+                            fit: BoxFit.cover,
+                          )
+                        : const Padding(padding: EdgeInsets.zero),
+                  )),
+              //title and subTitle
+              Positioned(
+                left: 20 + imageSize + margin, // 이미지 없을 시  마진 20으로 변경
+                top: 20,
+                child: RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: title,
+                        style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                              fontSize: 10,
+                            ),
+                      ),
+                      TextSpan(
+                          text: (subTitle.isNotEmpty) ? "  /  $subTitle" : "",
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall!
+                              .copyWith(
+                                  fontSize: 10, fontWeight: FontWeight.w400)),
+                    ],
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  softWrap: false,
+                ),
+              ),
+              //본문
+              Positioned(
+                left: 20 + imageSize + margin,
+                top: 40,
+                width:
+                    MediaQuery.of(context).size.width - 40 - imageSize + margin,
+                child: Text(
+                  content,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
+                  softWrap: false,
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                      color: Colors.black,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 0.4),
+                ),
+              ),
+              //button
+              (button.keys.first != "")
+                  ? Positioned(
+                      bottom: 15 / devicePixelRatio,
+                      right: 15 / devicePixelRatio,
+                      child: OutlinedButton(
+                          style: defaultNotificatonOutlinedButtonStyle,
+                          child: Text(
+                            button.keys.first,
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall!
+                                .copyWith(fontSize: 12),
+                          ),
+                          onPressed: () {
+                            Future.delayed(const Duration(milliseconds: 300),
+                                () async {
+                              if (button.values.first != "") {
+                                await _controller.value?.evaluateJavascript(
+                                    source: webviewEventPushHistory);
+                              }
+                              removeOverlayNotification();
+                            });
+                          }),
+                    )
+                  : const Padding(padding: EdgeInsets.zero),
+            ],
           ),
         );
       });
