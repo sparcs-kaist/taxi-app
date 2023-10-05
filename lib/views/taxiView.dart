@@ -345,6 +345,7 @@ class TaxiView extends HookWidget {
           },
           key: UniqueKey(),
           child: Stack(
+            alignment: Alignment.topCenter, //TODO: 마진 한계 설정
             children: [
               // 상단 보라색 바
               Container(
