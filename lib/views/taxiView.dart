@@ -324,130 +324,194 @@ class TaxiView extends HookWidget {
         //type: chat
         imageSize = 40;
         imageBorderRadius = 20;
-        margin = 0.0;
+        margin = 20.0;
       }
 
       overlayEntry = OverlayEntry(builder: (BuildContext context) {
-        return SwipeableTile(
-          color: Colors.white,
-          swipeThreshold: 0.2,
-          direction: SwipeDirection.horizontal,
-          onSwiped: (direction) {
-            removeOverlayNotification();
-          },
-          backgroundBuilder: (context, direction, progress) {
-            if (direction == SwipeDirection.endToStart) {
-              // return your widget
-            } else if (direction == SwipeDirection.startToEnd) {
-              // return your widget
-            }
-            return Container();
-          },
-          key: UniqueKey(),
-          child: Stack(
-            alignment: Alignment.topCenter, //TODO: 마진 한계 설정
-            children: [
-              // 상단 보라색 바
-              Container(
-                alignment: Alignment.topCenter,
-                child: LinearTimer(
-                  forward: false,
-                  minHeight: 5,
-                  color: taxiPrimaryColor,
-                  backgroundColor: Colors.white,
-                  duration: const Duration(seconds: 5),
-                  onTimerEnd: () {
-                    removeOverlayNotification();
-                  },
-                ),
-              ),
-              //image
-              Positioned(
-                  left: 20,
-                  top: 20,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(imageBorderRadius),
-                    child: (imageSize != 0)
-                        ? Image(
-                            image: NetworkImage(imageUrl.toString()),
-                            width: imageSize,
-                            height: imageSize,
-                            fit: BoxFit.cover,
-                          )
-                        : const Padding(padding: EdgeInsets.zero),
-                  )),
-              //title and subTitle
-              Positioned(
-                left: 20 + imageSize + margin, // 이미지 없을 시  마진 20으로 변경
-                top: 20,
-                child: RichText(
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                        text: title,
-                        style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                              fontSize: 10,
-                            ),
-                      ),
-                      TextSpan(
-                          text: (subTitle.isNotEmpty) ? "  /  $subTitle" : "",
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall!
-                              .copyWith(
-                                  fontSize: 10, fontWeight: FontWeight.w400)),
-                    ],
+        return Container(
+          padding: EdgeInsets.zero,
+          alignment: Alignment.topCenter,
+          margin: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+          child: SwipeableTile(
+            borderRadius: 0,
+            color: Colors.white,
+            swipeThreshold: 0.2,
+            direction: SwipeDirection.horizontal,
+            onSwiped: (direction) {
+              removeOverlayNotification();
+            },
+            backgroundBuilder: (context, direction, progress) {
+              if (direction == SwipeDirection.endToStart) {
+                // return your widget
+              } else if (direction == SwipeDirection.startToEnd) {
+                // return your widget
+              }
+              return Container();
+            },
+            key: UniqueKey(),
+            child: SizedBox(
+              height: min(MediaQuery.of(context).size.height * 0.15, 120),
+              width: MediaQuery.of(context).size.width,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  LinearTimer(
+                    forward: false,
+                    minHeight: 5,
+                    color: taxiPrimaryColor,
+                    backgroundColor: Colors.white,
+                    duration: const Duration(seconds: 5),
+                    onTimerEnd: () {
+                      removeOverlayNotification();
+                    },
                   ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                  softWrap: false,
-                ),
-              ),
-              //본문
-              Positioned(
-                left: 20 + imageSize + margin,
-                top: 40,
-                width:
-                    MediaQuery.of(context).size.width - 40 - imageSize + margin,
-                child: Text(
-                  content,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
-                  softWrap: false,
-                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                      color: Colors.black,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: 0.4),
-                ),
-              ),
-              //button
-              (button.keys.first != "")
-                  ? Positioned(
-                      bottom: 15 / devicePixelRatio,
-                      right: 15 / devicePixelRatio,
-                      child: OutlinedButton(
-                          style: defaultNotificatonOutlinedButtonStyle,
-                          child: Text(
-                            button.keys.first,
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelSmall!
-                                .copyWith(fontSize: 12),
+                  Padding(
+                      padding: EdgeInsets.symmetric(
+                          vertical: 15 / devicePixelRatio)),
+                  SizedBox(
+                    width: min(375, MediaQuery.of(context).size.width),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8 / devicePixelRatio)),
+                            (imageSize != 0)
+                                ? SizedBox(
+                                    width: imageSize,
+                                    height: imageSize,
+                                    child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(
+                                            imageBorderRadius),
+                                        child: Image(
+                                          image:
+                                              NetworkImage(imageUrl.toString()),
+                                          width: imageSize,
+                                          height: imageSize,
+                                          fit: BoxFit.cover,
+                                        )),
+                                  )
+                                : const Padding(padding: EdgeInsets.zero),
+                            Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 20 / devicePixelRatio)),
+                            SizedBox(
+                              width: 280,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  RichText(
+                                    text: TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: title,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall!
+                                              .copyWith(
+                                                fontSize: 10,
+                                              ),
+                                        ),
+                                        TextSpan(
+                                            text: (subTitle.isNotEmpty)
+                                                ? "  /  $subTitle"
+                                                : "",
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall!
+                                                .copyWith(
+                                                    fontSize: 10,
+                                                    fontWeight:
+                                                        FontWeight.w400)),
+                                      ],
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    softWrap: false,
+                                  ),
+                                  Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          vertical: 8 / devicePixelRatio)),
+                                  Text(
+                                    content,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 2,
+                                    softWrap: false,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall!
+                                        .copyWith(
+                                            color: Colors.black,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w400,
+                                            letterSpacing: 0.4),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: 20 / devicePixelRatio)),
+                          ],
+                        ),
+                        Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 8 / devicePixelRatio)),
+                        //button
+                        Container(
+                          alignment: Alignment.topRight,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              (button.keys.first != "")
+                                  ? OutlinedButton(
+                                      style:
+                                          defaultNotificatonOutlinedButtonStyle,
+                                      child: Text(
+                                        button.keys.first,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelSmall!
+                                            .copyWith(fontSize: 12),
+                                      ),
+                                      onPressed: () {
+                                        Future.delayed(
+                                            const Duration(milliseconds: 300),
+                                            () async {
+                                          if (button.values.first != "") {
+                                            await _controller.value
+                                                ?.evaluateJavascript(
+                                                    source:
+                                                        webviewEventPushHistory);
+                                          }
+                                          removeOverlayNotification();
+                                        });
+                                      },
+                                    )
+                                  : const Padding(padding: EdgeInsets.zero),
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 20 / devicePixelRatio),
+                              ),
+                            ],
                           ),
-                          onPressed: () {
-                            Future.delayed(const Duration(milliseconds: 300),
-                                () async {
-                              if (button.values.first != "") {
-                                await _controller.value?.evaluateJavascript(
-                                    source: webviewEventPushHistory);
-                              }
-                              removeOverlayNotification();
-                            });
-                          }),
-                    )
-                  : const Padding(padding: EdgeInsets.zero),
-            ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         );
       });
