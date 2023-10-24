@@ -350,7 +350,7 @@ class TaxiView extends HookWidget {
             },
             key: UniqueKey(),
             child: SizedBox(
-              height: min(MediaQuery.of(context).size.height * 0.15, 120),
+              height: min(MediaQuery.of(context).size.height * 0.15, 130),
               width: MediaQuery.of(context).size.width,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -361,14 +361,14 @@ class TaxiView extends HookWidget {
                     minHeight: 5,
                     color: taxiPrimaryColor,
                     backgroundColor: Colors.white,
-                    duration: const Duration(seconds: 5),
+                    duration: const Duration(minutes: 1),
                     onTimerEnd: () {
                       removeOverlayNotification();
                     },
                   ),
                   Padding(
                       padding: EdgeInsets.symmetric(
-                          vertical: 15 / devicePixelRatio)),
+                          vertical: 16 / devicePixelRatio)),
                   SizedBox(
                     width: min(375, MediaQuery.of(context).size.width),
                     child: Column(
@@ -382,7 +382,7 @@ class TaxiView extends HookWidget {
                           children: [
                             Padding(
                                 padding: EdgeInsets.symmetric(
-                                    horizontal: 8 / devicePixelRatio)),
+                                    horizontal: 20 / devicePixelRatio)),
                             (imageSize != 0)
                                 ? SizedBox(
                                     width: imageSize,
@@ -460,7 +460,7 @@ class TaxiView extends HookWidget {
                             ),
                             Padding(
                                 padding: EdgeInsets.symmetric(
-                                    vertical: 20 / devicePixelRatio)),
+                                    horizontal: 20 / devicePixelRatio)),
                           ],
                         ),
                         Padding(
