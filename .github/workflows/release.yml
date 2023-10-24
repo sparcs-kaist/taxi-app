@@ -3,6 +3,11 @@ on:
   push:
     tags:
       - "v*"
+
+env:
+  FLUTTER_VERSION: "3"
+  JAVA_VERSION: "11"
+
 jobs:
   release-ios:
     name: Build and release iOS app
@@ -56,6 +61,20 @@ jobs:
           ruby-version: "3.1.2"
       - name: Create GoogleService-Info.plist
         run: echo '${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}' | base64 --decode > ios/Runner/GoogleService-Info.plist
+      - name: Create keystore File from Github Secrets
+        run: |
+          echo "${{ secrets.ANDROID_KEY_STORE}}" > keystore.b64
+          base64 -d -i keystore.b64 > android/app/happycastle.keystore
+      - name: Create Keystore Env
+        run: |
+          echo "UPLOAD_STORE_FILE=happycastle.keystore" > android/key.properties
+          echo "UPLOAD_STORE_PASSWORD=$UPLOAD_STORE_PASSWORD" >> android/key.properties
+          echo "UPLOAD_KEY_PASSWORD=UPLOAD_KEY_PASSWORD" >> android/key.properties
+          echo "UPLOAD_KEY_ALIAS=UPLOAD_KEY_ALIAS" >> android/key.properties
+        env:
+          UPLOAD_KEY_ALIAS: ${{ secrets.UPLOAD_KEY_ALIAS }}
+          UPLOAD_STORE_PASSWORD: ${{ secrets.UPLOAD_STORE_PASSWORD }}
+          UPLOAD_KEY_PASSWORD: $${{secrets.UPLOAD_KEY_PASSWORD }}
       - name: Install Fastlane
         run: cd android && bundle install && cd ..
       - name: Install packages
