@@ -39,9 +39,6 @@ class TaxiView extends HookWidget {
   Widget build(BuildContext context) {
     String address = RemoteConfigController().frontUrl;
     OverlayEntry? overlayEntry;
-    AnimationController _aniController =
-        useAnimationController(duration: const Duration(milliseconds: 300));
-    bool isBannerShow = false;
 
     // States
     // 로딩 여부 확인
@@ -288,10 +285,14 @@ class TaxiView extends HookWidget {
       overlayEntry = null;
     }
 
-    void removeAnimation() {
-      _aniController.reverse(); //TODO: 일정 dy 미만시 배너 삭제 취소 및 애니메이션 다시 재생
-      isBannerShow = false;
-      // removeOverlayNotification();
+    void pushHistory(String url) {
+      Future.delayed(const Duration(milliseconds: 300), () async {
+        if (url != "") {
+          await _controller.value?.evaluateJavascript(
+              source:
+                  """ window.dispatchEvent(new CustomEvent("pushHistory", {detail: "${url}"}));""");
+        }
+      });
     }
 
     void createOverlayNotification(
@@ -305,26 +306,18 @@ class TaxiView extends HookWidget {
         removeOverlayNotification();
       }
       assert(overlayEntry == null);
-      isBannerShow = true;
 
       double imageSize = 0;
       double imageBorderRadius = 0;
-      double margin = 0;
-      String webviewEventPushHistory = """
-                                      window.dispatchEvent(new CustomEvent("pushHistory", {
-                                        detail: "${button.values.first}"
-                                        }));
-                              """;
+
       if (type == 0) {
         //type: default
         imageSize = 50;
         imageBorderRadius = 12;
-        margin = 20.0;
       } else if (type == 1) {
         //type: chat
         imageSize = 40;
         imageBorderRadius = 20;
-        margin = 20.0;
       }
 
       overlayEntry = OverlayEntry(builder: (BuildContext context) {
@@ -341,11 +334,6 @@ class TaxiView extends HookWidget {
               removeOverlayNotification();
             },
             backgroundBuilder: (context, direction, progress) {
-              if (direction == SwipeDirection.endToStart) {
-                // return your widget
-              } else if (direction == SwipeDirection.startToEnd) {
-                // return your widget
-              }
               return Container();
             },
             key: UniqueKey(),
@@ -485,17 +473,8 @@ class TaxiView extends HookWidget {
                                             .copyWith(fontSize: 12),
                                       ),
                                       onPressed: () {
-                                        Future.delayed(
-                                            const Duration(milliseconds: 300),
-                                            () async {
-                                          if (button.values.first != "") {
-                                            await _controller.value
-                                                ?.evaluateJavascript(
-                                                    source:
-                                                        webviewEventPushHistory);
-                                          }
-                                          removeOverlayNotification();
-                                        });
+                                        pushHistory(button.values.first);
+                                        removeOverlayNotification();
                                       },
                                     )
                                   : const Padding(padding: EdgeInsets.zero),
