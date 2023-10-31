@@ -10,6 +10,7 @@
 .history
 .svn/
 .env
+taxi-account.json
 
 # IntelliJ related
 *.iml
