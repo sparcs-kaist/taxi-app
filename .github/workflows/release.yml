@@ -65,6 +65,9 @@ jobs:
         run: |
           echo "${{ secrets.ANDROID_KEY_STORE}}" > keystore.b64
           base64 -d -i keystore.b64 > android/app/happycastle.keystore
+      - name: Create Service Account JSON from Github Secrets
+        run: |
+          echo '${{secrets.ANDROID_UPLOAD_GOOGLE_ACOUNT}}' > android/taxi-account.json
       - name: Create Keystore Env
         run: |
           echo "UPLOAD_STORE_FILE=happycastle.keystore" > android/key.properties
