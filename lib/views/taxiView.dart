@@ -26,6 +26,8 @@ import 'package:app_links/app_links.dart';
 import 'dart:math';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:open_store/open_store.dart';
+import 'package:swipeable_tile/swipeable_tile.dart';
+import 'package:linear_timer/linear_timer.dart';
 
 class TaxiView extends HookWidget {
   final CookieManager _cookieManager = CookieManager.instance();
@@ -37,12 +39,6 @@ class TaxiView extends HookWidget {
   Widget build(BuildContext context) {
     String address = RemoteConfigController().frontUrl;
     OverlayEntry? overlayEntry;
-    AnimationController _aniController =
-        useAnimationController(duration: const Duration(milliseconds: 300));
-    Animation<Offset> _animation =
-        Tween(begin: const Offset(0, -0.5), end: const Offset(0.0, 0)).animate(
-            CurvedAnimation(parent: _aniController, curve: Curves.decelerate));
-    bool isBannerShow = false;
 
     // States
     // 로딩 여부 확인
@@ -289,150 +285,210 @@ class TaxiView extends HookWidget {
       overlayEntry = null;
     }
 
-    void removeAnimation() {
-      _aniController.reverse(); //TODO: 일정 dy 미만시 배너 삭제 취소 및 애니메이션 다시 재생
-      isBannerShow = false;
-      // removeOverlayNotification();
+    void pushHistory(String url) {
+      Future.delayed(const Duration(milliseconds: 300), () async {
+        if (url != "") {
+          await _controller.value?.evaluateJavascript(
+              source:
+                  """ window.dispatchEvent(new CustomEvent("pushHistory", {detail: "${url}"}));""");
+        }
+      });
     }
 
     void createOverlayNotification(
         {required String title,
         required String subTitle,
         required String content,
-        required Map<String, Uri> button,
-        Uri? imageUrl}) {
+        Map<String, String> button = const {"": ""},
+        Uri? imageUrl,
+        required int type}) {
       if (overlayEntry != null) {
         removeOverlayNotification();
       }
       assert(overlayEntry == null);
-      isBannerShow = true;
+
+      double imageSize = 0;
+      double imageBorderRadius = 0;
+
+      if (type == 0) {
+        //type: default
+        imageSize = 50;
+        imageBorderRadius = 12;
+      } else if (type == 1) {
+        //type: chat
+        imageSize = 40;
+        imageBorderRadius = 20;
+      }
 
       overlayEntry = OverlayEntry(builder: (BuildContext context) {
-        _aniController.reset();
-        _animation =
-            Tween(begin: const Offset(0, -0.5), end: const Offset(0, 0))
-                .animate(CurvedAnimation(
-                    parent: _aniController, curve: Curves.decelerate));
-        _aniController.forward();
-
-        return SlideTransition(
-          position: _animation,
-          child: GestureDetector(
-            onPanUpdate: (details) {
-              if (details.delta.dy < -1 && isBannerShow) {
-                removeAnimation();
-              }
+        return Container(
+          padding: EdgeInsets.zero,
+          alignment: Alignment.topCenter,
+          margin: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+          child: SwipeableTile(
+            borderRadius: 0,
+            color: Colors.white,
+            swipeThreshold: 0.2,
+            direction: SwipeDirection.horizontal,
+            onSwiped: (direction) {
+              removeOverlayNotification();
             },
-            onPanEnd: (details) {
-              if (!isBannerShow) {
-                removeOverlayNotification();
-              }
+            backgroundBuilder: (context, direction, progress) {
+              return Container();
             },
-            child: UnconstrainedBox(
-              alignment: Alignment.topCenter,
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: min(MediaQuery.of(context).size.height * 0.15, 200),
-                margin:
-                    EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-                color: Colors.white,
-                child: Stack(
-                  children: [
-                    Container(
-                      alignment: Alignment.topCenter,
-                      height: 5.0,
-                      color: taxiPrimaryColor,
-                    ),
-                    Positioned(
-                        left: 20,
-                        top: 20,
-                        child: (imageUrl != Uri.parse(""))
-                            ? Image(
-                                image: NetworkImage(imageUrl.toString()),
-                                width: 40,
-                                height: 40,
-                                fit: BoxFit.cover,
-                              )
-                            : const Padding(padding: EdgeInsets.zero)),
-                    Positioned(
-                      left: 20 +
-                          ((imageUrl != Uri.parse(""))
-                              ? 60
-                              : 0), // 이미지 없을 시  마진 20으로 변경
-                      top: 20,
-                      child: RichText(
-                        text: TextSpan(
+            key: UniqueKey(),
+            child: SizedBox(
+              height: 120,
+              width: MediaQuery.of(context).size.width,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  LinearTimer(
+                    forward: false,
+                    minHeight: 4,
+                    color: taxiPrimaryColor,
+                    backgroundColor: Colors.white,
+                    duration: const Duration(seconds: 10),
+                    onTimerEnd: () {
+                      removeOverlayNotification();
+                    },
+                  ),
+                  Padding(
+                      padding: EdgeInsets.symmetric(
+                          vertical: 16 / devicePixelRatio)),
+                  SizedBox(
+                    width: min(375, MediaQuery.of(context).size.width),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            TextSpan(
-                              text: title,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall!
-                                  .copyWith(
-                                    fontSize: 10,
+                            Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 20 / devicePixelRatio)),
+                            (imageSize != 0)
+                                ? SizedBox(
+                                    width: imageSize,
+                                    height: imageSize,
+                                    child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(
+                                            imageBorderRadius),
+                                        child: Image(
+                                          image:
+                                              NetworkImage(imageUrl.toString()),
+                                          width: imageSize,
+                                          height: imageSize,
+                                          fit: BoxFit.cover,
+                                        )),
+                                  )
+                                : const Padding(padding: EdgeInsets.zero),
+                            Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 30 / devicePixelRatio)),
+                            SizedBox(
+                              width: 280,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  RichText(
+                                    text: TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: title,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall!
+                                              .copyWith(
+                                                fontSize: 10,
+                                              ),
+                                        ),
+                                        TextSpan(
+                                            text: (subTitle.isNotEmpty)
+                                                ? "  /  $subTitle"
+                                                : "",
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall!
+                                                .copyWith(
+                                                    fontSize: 10,
+                                                    fontWeight:
+                                                        FontWeight.w400)),
+                                      ],
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    softWrap: false,
                                   ),
+                                  Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          vertical: 8 / devicePixelRatio)),
+                                  Text(
+                                    content,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 2,
+                                    softWrap: false,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall!
+                                        .copyWith(
+                                            color: Colors.black,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w400,
+                                            letterSpacing: 0.4),
+                                  ),
+                                ],
+                              ),
                             ),
-                            TextSpan(
-                                text: (subTitle.isNotEmpty)
-                                    ? "  /  $subTitle"
-                                    : "",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall!
-                                    .copyWith(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w400)),
+                            Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 20 / devicePixelRatio)),
                           ],
                         ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        softWrap: false,
-                      ),
-                    ),
-                    Positioned(
-                      left: 20 + ((imageUrl != Uri.parse("")) ? 60 : 0),
-                      top: 40,
-                      width: MediaQuery.of(context).size.width -
-                          40 -
-                          ((imageUrl != Uri.parse("")) ? 60 : 0),
-                      child: Text(
-                        content,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                        softWrap: false,
-                        style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                            color: Colors.black,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            letterSpacing: 0.4),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 20 / devicePixelRatio,
-                      right: 25 / devicePixelRatio,
-                      child: OutlinedButton(
-                          style: defaultNotificatonOutlinedButtonStyle,
-                          child: Text(
-                            button.keys.first,
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelSmall!
-                                .copyWith(fontSize: 12),
+                        Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 8 / devicePixelRatio)),
+                        //button
+                        Container(
+                          alignment: Alignment.topRight,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              (button.keys.first != "")
+                                  ? OutlinedButton(
+                                      style:
+                                          defaultNotificatonOutlinedButtonStyle,
+                                      child: Text(
+                                        button.keys.first,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelSmall!
+                                            .copyWith(fontSize: 12),
+                                      ),
+                                      onPressed: () {
+                                        pushHistory(button.values.first);
+                                        removeOverlayNotification();
+                                      },
+                                    )
+                                  : const Padding(padding: EdgeInsets.zero),
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 20 / devicePixelRatio),
+                              ),
+                            ],
                           ),
-                          onPressed: () {
-                            removeAnimation();
-                            Future.delayed(const Duration(milliseconds: 300),
-                                () {
-                              if (button.values.first != Uri.parse("")) {
-                                url.value = button.values.first.toString();
-                                LoadCount.value += 1;
-                              }
-                              removeOverlayNotification();
-                            });
-                          }),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -573,21 +629,41 @@ class TaxiView extends HookWidget {
                   _controller.value?.addJavaScriptHandler(
                       handlerName: "popup_inAppNotification",
                       callback: (args) async {
-                        createOverlayNotification(
-                            title: args[0]['title'].toString(),
-                            subTitle: args[0]['subtitle'].toString(),
-                            content: args[0]['content'].toString(),
-                            button: {
-                              args[0]['button']['text'].toString():
-                                  (args[0]['button']['path'].toString() != "")
-                                      ? Uri.parse(
-                                          args[0]['button']['path'].toString())
-                                      : Uri.parse("")
-                            },
-                            imageUrl: (args[0]['type'].toString() ==
-                                    "default") //TODO: type showMaterialBanner 함수에서 관리
-                                ? Uri.parse(args[0]['imageUrl'].toString())
-                                : Uri.parse(""));
+                        try {
+                          int types = 0;
+                          switch (args[0]['type'].toString()) {
+                            case "default":
+                              types = 0;
+                              break;
+                            case "chat":
+                              types = 1;
+                              break;
+                          }
+                          createOverlayNotification(
+                              title: args[0]['title'].toString(),
+                              subTitle: args[0]['subtitle'].toString(),
+                              content: args[0]['content'].toString(),
+                              button: (args[0].containsKey("button"))
+                                  ? {
+                                      args[0]['button']['text'].toString():
+                                          args[0]['button']['path'].toString()
+                                    }
+                                  : {"": ""},
+                              type: types,
+                              imageUrl: (args[0]['type'].toString() ==
+                                      "default")
+                                  ? Uri.parse(args[0]['imageUrl'].toString())
+                                  : Uri.parse(
+                                      args[0]['profileUrl'].toString()));
+                        } on Exception catch (e) {
+                          Fluttertoast.showToast(
+                              msg: "인앱 알림 로드에 실패하였습니다.",
+                              toastLength: Toast.LENGTH_SHORT,
+                              textColor: toastTextColor,
+                              backgroundColor: toastBackgroundColor);
+                          return false;
+                        }
+                        return true;
                       });
 
                   _controller.value?.addJavaScriptHandler(
