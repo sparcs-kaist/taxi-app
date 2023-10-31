@@ -338,7 +338,7 @@ class TaxiView extends HookWidget {
             },
             key: UniqueKey(),
             child: SizedBox(
-              height: min(MediaQuery.of(context).size.height * 0.15, 130),
+              height: 120,
               width: MediaQuery.of(context).size.width,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -346,10 +346,10 @@ class TaxiView extends HookWidget {
                 children: [
                   LinearTimer(
                     forward: false,
-                    minHeight: 5,
+                    minHeight: 4,
                     color: taxiPrimaryColor,
                     backgroundColor: Colors.white,
-                    duration: const Duration(minutes: 1),
+                    duration: const Duration(seconds: 10),
                     onTimerEnd: () {
                       removeOverlayNotification();
                     },
@@ -389,7 +389,7 @@ class TaxiView extends HookWidget {
                                 : const Padding(padding: EdgeInsets.zero),
                             Padding(
                                 padding: EdgeInsets.symmetric(
-                                    horizontal: 20 / devicePixelRatio)),
+                                    horizontal: 30 / devicePixelRatio)),
                             SizedBox(
                               width: 280,
                               child: Column(
