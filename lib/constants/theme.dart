@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 //primaryColor 지정 (색상코드: #6E3647)
 final Map<int, Color> primaryColor1 = {
@@ -54,8 +53,8 @@ final defaultDialogButtonBorderRadius = BorderRadius.circular(8.0);
 
 final defaultTaxiMarginDouble = 20.0;
 
-final defaultTaxiMargin =
-    EdgeInsets.symmetric(horizontal: defaultTaxiMarginDouble);
+final defaultTaxiMargin = EdgeInsets.symmetric(
+    horizontal: defaultTaxiMarginDouble, vertical: defaultTaxiMarginDouble);
 
 const defaultNotificationButtonSize = Size(80, 25);
 const defaultNotificationButtonInnerPadding =
@@ -115,7 +114,14 @@ ThemeData taxiTheme() {
 
     //텍스트 테마
     textTheme: const TextTheme(
-      //Dialog 제목
+      //Dialog title
+      titleMedium: TextStyle(
+          fontFamily: 'NanumSquare_acB',
+          color: Color(0xFF323232),
+          fontSize: 18,
+          fontWeight: FontWeight.w700),
+
+      //Dialog midTitle
       titleSmall: TextStyle(
           fontFamily: 'NanumSquare',
           color: Color(0xFF323232),
