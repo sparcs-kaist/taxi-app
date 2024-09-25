@@ -37,9 +37,9 @@ dependencies:
   flutter_inappwebview: ^5.7.2
   flutter_secure_storage: ^8.0.0
   dio: ^5.0.0
-  firebase_messaging: ^14.6.1
-  flutter_local_notifications: ^14.0.0
-  firebase_core: ^2.13.0
+  firebase_messaging: ^15.1.2
+  flutter_local_notifications: ^17.2.3
+  firebase_core: ^3.5.0
   flutter_web_auth: ^0.5.0
   dio_cookie_manager: ^2.1.4
   google_fonts: ^4.0.0
@@ -47,12 +47,12 @@ dependencies:
   cookie_jar: ^3.0.1
   flutter_dotenv: ^5.0.2
   package_info: ^2.0.2
-  firebase_remote_config: ^3.0.14
+  firebase_remote_config: ^5.1.2
   open_store: ^0.5.0
   permission_handler: ^10.2.0
-  firebase_dynamic_links: ^5.1.1
-  app_links: ^3.4.3
-  firebase_crashlytics: ^3.3.1
+  firebase_dynamic_links: ^6.0.7
+  app_links: ^6.3.2
+  firebase_crashlytics: ^4.1.2
   url_launcher: ^6.1.14
   social_share: ^2.3.1
   path_provider: ^2.1.1
@@ -68,7 +68,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.0
+  flutter_lints: ^4.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

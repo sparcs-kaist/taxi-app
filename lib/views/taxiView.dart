@@ -171,7 +171,7 @@ class TaxiView extends HookWidget {
           LoadCount.value += 1;
         } else {
           final _appLinks = AppLinks();
-          final Uri? uri = await _appLinks.getInitialAppLink();
+          final Uri? uri = await _appLinks.getInitialLink();
           if (uri != null) {
             final PendingDynamicLinkData? appLinkData =
                 await FirebaseDynamicLinks.instance.getDynamicLink(uri);
@@ -504,332 +504,348 @@ class TaxiView extends HookWidget {
               _goBack(context, backCount, isAuthLogin, _controller.value),
           child: Scaffold(
             body: InAppWebView(
-                initialOptions: InAppWebViewGroupOptions(
-                    crossPlatform: InAppWebViewOptions(
-                        useShouldOverrideUrlLoading: true,
-                        applicationNameForUserAgent: "taxi-app-webview/" +
-                            (Platform.isAndroid ? "android" : "ios"),
-                        resourceCustomSchemes: [
-                          'intent',
-                          'supertoss',
-                          'uber',
-                          'tmoneyonda',
-                          'kakaotalk',
-                          'kakaot'
-                        ]),
-                    android: AndroidInAppWebViewOptions(
-                        useHybridComposition: true,
-                        overScrollMode:
-                            AndroidOverScrollMode.OVER_SCROLL_NEVER),
-                    ios: IOSInAppWebViewOptions(disallowOverScroll: true)),
-                // initialUrlRequest: URLRequest(url: Uri.parse(address)),
-                shouldOverrideUrlLoading: (controller, navigationAction) async {
-                  var newHeaders = Map<String, String>.from(
-                      navigationAction.request.headers ?? {});
-                  if (Platform.isAndroid &&
-                      !newHeaders.containsKey("Referer") &&
-                      navigationAction.request.url.toString() !=
-                          'about:blank' &&
-                      (navigationAction.request.url?.origin ==
-                              Uri.parse(address).origin ||
-                          navigationAction.request.url?.origin ==
-                              Uri.parse(RemoteConfigController().backUrl)
-                                  .origin)) {
-                    newHeaders['Referer'] =
-                        navigationAction.request.url.toString();
-                    newHeaders['Origin'] = RemoteConfigController().frontUrl;
-                    var newRequest = navigationAction.request;
-                    newRequest.headers = newHeaders;
-                    await controller.loadUrl(urlRequest: newRequest);
+              initialOptions: InAppWebViewGroupOptions(
+                  crossPlatform: InAppWebViewOptions(
+                      useShouldOverrideUrlLoading: true,
+                      applicationNameForUserAgent: "taxi-app-webview/" +
+                          (Platform.isAndroid ? "android" : "ios"),
+                      resourceCustomSchemes: [
+                        'intent',
+                        'supertoss',
+                        'uber',
+                        'tmoneyonda',
+                        'kakaotalk',
+                        'kakaot'
+                      ]),
+                  android: AndroidInAppWebViewOptions(
+                    useHybridComposition: true,
+                    overScrollMode: AndroidOverScrollMode.OVER_SCROLL_NEVER,
+                    geolocationEnabled: true,
+                  ),
+                  ios: IOSInAppWebViewOptions(
+                    disallowOverScroll: true,
+                    allowsInlineMediaPlayback: true,
+                  )),
+              // initialUrlRequest: URLRequest(url: Uri.parse(address)),
+              shouldOverrideUrlLoading: (controller, navigationAction) async {
+                var newHeaders = Map<String, String>.from(
+                    navigationAction.request.headers ?? {});
+                if (Platform.isAndroid &&
+                    !newHeaders.containsKey("Referer") &&
+                    navigationAction.request.url.toString() != 'about:blank' &&
+                    (navigationAction.request.url?.origin ==
+                            Uri.parse(address).origin ||
+                        navigationAction.request.url?.origin ==
+                            Uri.parse(RemoteConfigController().backUrl)
+                                .origin)) {
+                  newHeaders['Referer'] =
+                      navigationAction.request.url.toString();
+                  newHeaders['Origin'] = RemoteConfigController().frontUrl;
+                  var newRequest = navigationAction.request;
+                  newRequest.headers = newHeaders;
+                  await controller.loadUrl(urlRequest: newRequest);
 
-                    return NavigationActionPolicy.CANCEL;
-                  }
+                  return NavigationActionPolicy.CANCEL;
+                }
 
-                  return NavigationActionPolicy.ALLOW;
-                },
-                onWebViewCreated: (InAppWebViewController webcontroller) async {
-                  _controller.value = webcontroller;
-                  _controller.value?.addJavaScriptHandler(
-                    handlerName: "auth_update",
-                    callback: (arguments) async {
-                      // 로그인 해제 시 로그인 State 변경
-                      if (arguments == [{}]) {
-                        isLogin.value = false;
-                        return;
-                      }
-                      // 로그인 성공 시 / 기존 토큰 삭제 후 새로운 토큰 저장
-                      if (!isAuthLogin.value) {
-                        if (arguments[0]['accessToken'] != null &&
-                            arguments[0]['refreshToken'] != null) {
-                          await Token().deleteAll();
-                          await Token().setAccessToken(
-                              accessToken: arguments[0]['accessToken']);
-                          await Token().setRefreshToken(
-                              refreshToken: arguments[0]['refreshToken']);
-                          await FcmToken()
-                              .registerToken(arguments[0]['accessToken']);
-                          isAuthLogin.value = true;
-                        }
-                      }
-                      return;
-                    },
-                  );
-
-                  _controller.value?.addJavaScriptHandler(
-                      handlerName: "auth_logout",
-                      callback: (args) async {
-                        try {
-                          await FcmToken()
-                              .removeToken(Token().getAccessToken());
-                          await Token().deleteAll();
-                          await _cookieManager.deleteAllCookies();
-                          isLogin.value = false;
-                          isAuthLogin.value = false;
-                          await _controller.value?.loadUrl(
-                              urlRequest: URLRequest(
-                                  url: Uri.parse(RemoteConfigController()
-                                      .frontUrl
-                                      .toString())));
-                        } catch (e) {
-                          // TODO
-                          Fluttertoast.showToast(
-                              msg: "서버와의 연결에 실패했습니다.",
-                              toastLength: Toast.LENGTH_SHORT,
-                              textColor: toastTextColor,
-                              backgroundColor: toastBackgroundColor);
-                          isAuthLogin.value = false;
-                        }
-                      });
-
-                  _controller.value?.addJavaScriptHandler(
-                      handlerName: "try_notification",
-                      callback: (args) async {
-                        if (await Permission.notification.isGranted) {
-                          return true;
-                        } else {
-                          openAppSettings();
-                          Fluttertoast.showToast(
-                              msg: "알림 권한을 허용해주세요.",
-                              toastLength: Toast.LENGTH_SHORT,
-                              textColor: toastTextColor,
-                              backgroundColor: toastBackgroundColor);
-                          return false;
-                        }
-                      });
-
-                  _controller.value?.addJavaScriptHandler(
-                      handlerName: "clipboard_copy",
-                      callback: (args) async {
-                        if (Platform.isAndroid) {
-                          await Clipboard.setData(ClipboardData(text: args[0]));
-                        }
-                      });
-
-                  // Web -> App
-                  _controller.value?.addJavaScriptHandler(
-                      handlerName: "popup_inAppNotification",
-                      callback: (args) async {
-                        try {
-                          int types = 0;
-                          switch (args[0]['type'].toString()) {
-                            case "default":
-                              types = 0;
-                              break;
-                            case "chat":
-                              types = 1;
-                              break;
-                          }
-                          createOverlayNotification(
-                              title: args[0]['title'].toString(),
-                              subTitle: args[0]['subtitle'].toString(),
-                              content: args[0]['content'].toString(),
-                              button: (args[0].containsKey("button"))
-                                  ? {
-                                      args[0]['button']['text'].toString():
-                                          args[0]['button']['path'].toString()
-                                    }
-                                  : {"": ""},
-                              type: types,
-                              imageUrl: (args[0]['type'].toString() ==
-                                      "default")
-                                  ? Uri.parse(args[0]['imageUrl'].toString())
-                                  : Uri.parse(
-                                      args[0]['profileUrl'].toString()));
-                        } on Exception catch (e) {
-                          Fluttertoast.showToast(
-                              msg: "인앱 알림 로드에 실패하였습니다.",
-                              toastLength: Toast.LENGTH_SHORT,
-                              textColor: toastTextColor,
-                              backgroundColor: toastBackgroundColor);
-                          return false;
-                        }
-                        return true;
-                      });
-
-                  _controller.value?.addJavaScriptHandler(
-                      handlerName: "popup_instagram_story_share",
-                      callback: (args) async {
-                        if (args[0] == {}) {
-                          return false;
-                        }
-                        try {
-                          final Dio _dio = Dio();
-                          final backgroundResponse = await _dio.get(
-                              args[0]['backgroundLayerUrl'],
-                              options:
-                                  Options(responseType: ResponseType.bytes));
-                          final stickerResponse = await _dio.get(
-                              args[0]['stickerLayerUrl'],
-                              options:
-                                  Options(responseType: ResponseType.bytes));
-                          final backgroundFile = await File(
-                                  (await getTemporaryDirectory()).path +
-                                      "/background.png")
-                              .create(recursive: true);
-                          final stickerFile = await File(
-                                  (await getTemporaryDirectory()).path +
-                                      "/sticker.png")
-                              .create(recursive: true);
-                          await backgroundFile
-                              .writeAsBytes(backgroundResponse.data);
-                          await stickerFile.writeAsBytes(stickerResponse.data);
-
-                          await SocialShare.shareInstagramStory(
-                              appId: dotenv.get("FACEBOOK_APPID"),
-                              imagePath: stickerFile.path,
-                              backgroundResourcePath: backgroundFile.path);
-                          return true;
-                        } catch (e) {
-                          Fluttertoast.showToast(
-                              msg: "인스타그램 스토리 공유에 실패했습니다.",
-                              toastLength: Toast.LENGTH_SHORT,
-                              textColor: toastTextColor,
-                              backgroundColor: toastBackgroundColor);
-                          return false;
-                        }
-                      });
-                },
-                onLoadStart: (controller, uri) async {
-                  if (isFcmInit.value &&
-                      isLogin.value &&
-                      sessionToken.value != '' &&
-                      uri?.origin == Uri.parse(address).origin &&
-                      (await _cookieManager.getCookie(
-                                  url: Uri.parse(
-                                      RemoteConfigController().backUrl),
-                                  name: "connect.sid"))
-                              ?.value !=
-                          sessionToken.value) {
-                    try {
-                      await _controller.value?.stopLoading();
-                      await _cookieManager.deleteCookie(
-                          url: Uri.parse(RemoteConfigController().backUrl),
-                          name: "connect.sid");
-                      await _cookieManager.setCookie(
-                        url: Uri.parse(RemoteConfigController().backUrl),
-                        name: "connect.sid",
-                        value: sessionToken.value,
-                      );
-                      await _controller.value?.reload();
-                    } catch (e) {
-                      // TODO : handle error
-                      Fluttertoast.showToast(
-                          msg: "서버와의 연결에 실패했습니다.",
-                          toastLength: Toast.LENGTH_SHORT,
-                          textColor: toastTextColor,
-                          backgroundColor: toastBackgroundColor);
-                      isAuthLogin.value = false;
-                    }
-                  }
-                },
-                onLoadResourceCustomScheme: (controller, url) async {
-                  if (!['intent'].contains(url.scheme)) {
-                    await controller.stopLoading();
-                    if (await canLaunchUrlString(url.toString())) {
-                      await launchUrlString(url.toString(),
-                          mode: LaunchMode.externalApplication);
+                return NavigationActionPolicy.ALLOW;
+              },
+              onWebViewCreated: (InAppWebViewController webcontroller) async {
+                _controller.value = webcontroller;
+                _controller.value?.addJavaScriptHandler(
+                  handlerName: "auth_update",
+                  callback: (arguments) async {
+                    // 로그인 해제 시 로그인 State 변경
+                    if (arguments == [{}]) {
+                      isLogin.value = false;
                       return;
                     }
-                    switch (url.scheme) {
-                      case 'supertoss':
-                        OpenStore.instance.open(
-                            androidAppBundleId: "viva.republica.toss",
-                            appStoreId: "839333328");
-                        break;
-                      case 'uber':
-                        OpenStore.instance.open(
-                            androidAppBundleId: "com.ubercab",
-                            appStoreId: "368677368");
-                        break;
-                      case 'tmoneyonda':
-                        OpenStore.instance.open(
-                            androidAppBundleId: "kr.co.orangetaxi.passenger",
-                            appStoreId: "1489918157");
-                        break;
-                      case 'kakaotalk': //카카오페이 결제시
-                        OpenStore.instance.open(
-                            androidAppBundleId: "com.kakao.talk",
-                            appStoreId: "362057947");
-                        break;
-                      case 'kakaot':
-                        OpenStore.instance.open(
-                            androidAppBundleId: "com.kakao.taxi",
-                            appStoreId: "981110422");
-                        break;
-                      default:
-                        await Fluttertoast.showToast(
-                            msg: "해당 앱을 실행할 수 없습니다.",
-                            toastLength: Toast.LENGTH_SHORT,
-                            textColor: Colors.black,
-                            backgroundColor: Colors.white);
-                        break;
+                    // 로그인 성공 시 / 기존 토큰 삭제 후 새로운 토큰 저장
+                    if (!isAuthLogin.value) {
+                      if (arguments[0]['accessToken'] != null &&
+                          arguments[0]['refreshToken'] != null) {
+                        await Token().deleteAll();
+                        await Token().setAccessToken(
+                            accessToken: arguments[0]['accessToken']);
+                        await Token().setRefreshToken(
+                            refreshToken: arguments[0]['refreshToken']);
+                        await FcmToken()
+                            .registerToken(arguments[0]['accessToken']);
+                        isAuthLogin.value = true;
+                      }
                     }
-                    return null;
-                  }
-                  if (Platform.isAndroid) {
-                    if (url.scheme == 'intent') {
+                    return;
+                  },
+                );
+
+                _controller.value?.addJavaScriptHandler(
+                    handlerName: "auth_logout",
+                    callback: (args) async {
                       try {
-                        await controller.stopLoading();
-                        const MethodChannel channel =
-                            MethodChannel('org.sparcs.taxi_app/taxi_only');
-                        final result = await channel.invokeMethod(
-                            "launchURI", url.toString());
-                        if (result != null) {
-                          await _controller.value?.loadUrl(
-                              urlRequest: URLRequest(url: Uri.parse(result)));
-                        }
+                        await FcmToken().removeToken(Token().getAccessToken());
+                        await Token().deleteAll();
+                        await _cookieManager.deleteAllCookies();
+                        isLogin.value = false;
+                        isAuthLogin.value = false;
+                        await _controller.value?.loadUrl(
+                            urlRequest: URLRequest(
+                                url: Uri.parse(RemoteConfigController()
+                                    .frontUrl
+                                    .toString())));
                       } catch (e) {
                         // TODO
-                        await Fluttertoast.showToast(
-                            msg: "카카오톡을 실행할 수 없습니다.",
+                        Fluttertoast.showToast(
+                            msg: "서버와의 연결에 실패했습니다.",
                             toastLength: Toast.LENGTH_SHORT,
                             textColor: toastTextColor,
                             backgroundColor: toastBackgroundColor);
+                        isAuthLogin.value = false;
                       }
-                    }
-                  }
-                  return null;
-                },
-                onLoadError: (controller, url, code, message) {
-                  // 될 때까지 리로드
-                  if (!isLoaded.value && LoadCount.value < 10) {
-                    LoadCount.value++;
-                  } else if (isServerError.value == false &&
-                      code != 102 &&
-                      code != -999) {
+                    });
+
+                _controller.value?.addJavaScriptHandler(
+                    handlerName: "try_notification",
+                    callback: (args) async {
+                      if (await Permission.notification.isGranted) {
+                        return true;
+                      } else {
+                        openAppSettings();
+                        Fluttertoast.showToast(
+                            msg: "알림 권한을 허용해주세요.",
+                            toastLength: Toast.LENGTH_SHORT,
+                            textColor: toastTextColor,
+                            backgroundColor: toastBackgroundColor);
+                        return false;
+                      }
+                    });
+
+                _controller.value?.addJavaScriptHandler(
+                    handlerName: "clipboard_copy",
+                    callback: (args) async {
+                      if (Platform.isAndroid) {
+                        await Clipboard.setData(ClipboardData(text: args[0]));
+                      }
+                    });
+
+                // Web -> App
+                _controller.value?.addJavaScriptHandler(
+                    handlerName: "popup_inAppNotification",
+                    callback: (args) async {
+                      try {
+                        int types = 0;
+                        switch (args[0]['type'].toString()) {
+                          case "default":
+                            types = 0;
+                            break;
+                          case "chat":
+                            types = 1;
+                            break;
+                        }
+                        createOverlayNotification(
+                            title: args[0]['title'].toString(),
+                            subTitle: args[0]['subtitle'].toString(),
+                            content: args[0]['content'].toString(),
+                            button: (args[0].containsKey("button"))
+                                ? {
+                                    args[0]['button']['text'].toString():
+                                        args[0]['button']['path'].toString()
+                                  }
+                                : {"": ""},
+                            type: types,
+                            imageUrl: (args[0]['type'].toString() == "default")
+                                ? Uri.parse(args[0]['imageUrl'].toString())
+                                : Uri.parse(args[0]['profileUrl'].toString()));
+                      } on Exception catch (e) {
+                        Fluttertoast.showToast(
+                            msg: "인앱 알림 로드에 실패하였습니다.",
+                            toastLength: Toast.LENGTH_SHORT,
+                            textColor: toastTextColor,
+                            backgroundColor: toastBackgroundColor);
+                        return false;
+                      }
+                      return true;
+                    });
+
+                _controller.value?.addJavaScriptHandler(
+                    handlerName: "popup_instagram_story_share",
+                    callback: (args) async {
+                      if (args[0] == {}) {
+                        return false;
+                      }
+                      try {
+                        final Dio _dio = Dio();
+                        final backgroundResponse = await _dio.get(
+                            args[0]['backgroundLayerUrl'],
+                            options: Options(responseType: ResponseType.bytes));
+                        final stickerResponse = await _dio.get(
+                            args[0]['stickerLayerUrl'],
+                            options: Options(responseType: ResponseType.bytes));
+                        final backgroundFile = await File(
+                                (await getTemporaryDirectory()).path +
+                                    "/background.png")
+                            .create(recursive: true);
+                        final stickerFile = await File(
+                                (await getTemporaryDirectory()).path +
+                                    "/sticker.png")
+                            .create(recursive: true);
+                        await backgroundFile
+                            .writeAsBytes(backgroundResponse.data);
+                        await stickerFile.writeAsBytes(stickerResponse.data);
+
+                        await SocialShare.shareInstagramStory(
+                            appId: dotenv.get("FACEBOOK_APPID"),
+                            imagePath: stickerFile.path,
+                            backgroundResourcePath: backgroundFile.path);
+                        return true;
+                      } catch (e) {
+                        Fluttertoast.showToast(
+                            msg: "인스타그램 스토리 공유에 실패했습니다.",
+                            toastLength: Toast.LENGTH_SHORT,
+                            textColor: toastTextColor,
+                            backgroundColor: toastBackgroundColor);
+                        return false;
+                      }
+                    });
+              },
+              onLoadStart: (controller, uri) async {
+                if (isFcmInit.value &&
+                    isLogin.value &&
+                    sessionToken.value != '' &&
+                    uri?.origin == Uri.parse(address).origin &&
+                    (await _cookieManager.getCookie(
+                                url:
+                                    Uri.parse(RemoteConfigController().backUrl),
+                                name: "connect.sid"))
+                            ?.value !=
+                        sessionToken.value) {
+                  try {
+                    await _controller.value?.stopLoading();
+                    await _cookieManager.deleteCookie(
+                        url: Uri.parse(RemoteConfigController().backUrl),
+                        name: "connect.sid");
+                    await _cookieManager.setCookie(
+                      url: Uri.parse(RemoteConfigController().backUrl),
+                      name: "connect.sid",
+                      value: sessionToken.value,
+                    );
+                    await _controller.value?.reload();
+                  } catch (e) {
+                    // TODO : handle error
                     Fluttertoast.showToast(
                         msg: "서버와의 연결에 실패했습니다.",
                         toastLength: Toast.LENGTH_SHORT,
                         textColor: toastTextColor,
                         backgroundColor: toastBackgroundColor);
-                    isServerError.value = true;
+                    isAuthLogin.value = false;
                   }
-                },
-                onLoadStop: (finish, uri) async {
-                  if (!isServerError.value) {
-                    isLoaded.value = true;
+                }
+              },
+              onLoadResourceCustomScheme: (controller, url) async {
+                if (!['intent'].contains(url.scheme)) {
+                  await controller.stopLoading();
+                  if (await canLaunchUrlString(url.toString())) {
+                    await launchUrlString(url.toString(),
+                        mode: LaunchMode.externalApplication);
+                    return;
                   }
-                }),
+                  switch (url.scheme) {
+                    case 'supertoss':
+                      OpenStore.instance.open(
+                          androidAppBundleId: "viva.republica.toss",
+                          appStoreId: "839333328");
+                      break;
+                    case 'uber':
+                      OpenStore.instance.open(
+                          androidAppBundleId: "com.ubercab",
+                          appStoreId: "368677368");
+                      break;
+                    case 'tmoneyonda':
+                      OpenStore.instance.open(
+                          androidAppBundleId: "kr.co.orangetaxi.passenger",
+                          appStoreId: "1489918157");
+                      break;
+                    case 'kakaotalk': //카카오페이 결제시
+                      OpenStore.instance.open(
+                          androidAppBundleId: "com.kakao.talk",
+                          appStoreId: "362057947");
+                      break;
+                    case 'kakaot':
+                      OpenStore.instance.open(
+                          androidAppBundleId: "com.kakao.taxi",
+                          appStoreId: "981110422");
+                      break;
+                    default:
+                      await Fluttertoast.showToast(
+                          msg: "해당 앱을 실행할 수 없습니다.",
+                          toastLength: Toast.LENGTH_SHORT,
+                          textColor: Colors.black,
+                          backgroundColor: Colors.white);
+                      break;
+                  }
+                  return null;
+                }
+                if (Platform.isAndroid) {
+                  if (url.scheme == 'intent') {
+                    try {
+                      await controller.stopLoading();
+                      const MethodChannel channel =
+                          MethodChannel('org.sparcs.taxi_app/taxi_only');
+                      final result = await channel.invokeMethod(
+                          "launchURI", url.toString());
+                      if (result != null) {
+                        await _controller.value?.loadUrl(
+                            urlRequest: URLRequest(url: Uri.parse(result)));
+                      }
+                    } catch (e) {
+                      // TODO
+                      await Fluttertoast.showToast(
+                          msg: "카카오톡을 실행할 수 없습니다.",
+                          toastLength: Toast.LENGTH_SHORT,
+                          textColor: toastTextColor,
+                          backgroundColor: toastBackgroundColor);
+                    }
+                  }
+                }
+                return null;
+              },
+              onLoadError: (controller, url, code, message) {
+                // 될 때까지 리로드
+                if (!isLoaded.value && LoadCount.value < 10) {
+                  LoadCount.value++;
+                } else if (isServerError.value == false &&
+                    code != 102 &&
+                    code != -999) {
+                  Fluttertoast.showToast(
+                      msg: "서버와의 연결에 실패했습니다.",
+                      toastLength: Toast.LENGTH_SHORT,
+                      textColor: toastTextColor,
+                      backgroundColor: toastBackgroundColor);
+                  isServerError.value = true;
+                }
+              },
+              onLoadStop: (finish, uri) async {
+                if (!isServerError.value) {
+                  isLoaded.value = true;
+                }
+              },
+              androidOnPermissionRequest:
+                  (controller, origin, resources) async {
+                if (resources.contains("location")) {
+                  var status = await Permission.location.request();
+                  if (!status.isGranted) {
+                    openAppSettings();
+                  }
+                }
+                return PermissionRequestResponse(
+                    resources: resources,
+                    action: PermissionRequestResponseAction.GRANT);
+              },
+              androidOnGeolocationPermissionsShowPrompt:
+                  (InAppWebViewController controller, String origin) async {
+                return GeolocationPermissionShowPromptResponse(
+                    origin: origin, allow: true, retain: true);
+              },
+            ),
           )),
       isTimerUp.value && isLoaded.value && isFcmInit.value
           ? const Stack()
