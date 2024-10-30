@@ -565,10 +565,20 @@ class TaxiView extends HookWidget {
                       // 로그인 해제 시 로그인 State 변경
                       if (arguments == [{}]) {
                         isLogin.value = false;
+                        await ChannelTalk.updateUser(
+                          name: '',
+                          email: '',
+                          mobileNumber: '',
+                        );
                         return;
                       }
                       // 로그인 성공 시 / 기존 토큰 삭제 후 새로운 토큰 저장
                       if (!isAuthLogin.value) {
+                        await ChannelTalk.updateUser(
+                          name: arguments[0]['name'],
+                          email: arguments[0]['email'],
+                          mobileNumber: arguments[0]['mobileNumber'],
+                        );
                         if (arguments[0]['accessToken'] != null &&
                             arguments[0]['refreshToken'] != null) {
                           await Token().deleteAll();
