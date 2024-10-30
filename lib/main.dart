@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:taxiapp/utils/fcmToken.dart';
 import 'package:taxiapp/utils/remoteConfigController.dart';
 import 'package:taxiapp/utils/pushHandler.dart';
 import 'package:taxiapp/utils/token.dart';
@@ -15,6 +16,7 @@ import 'package:taxiapp/views/taxiView.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:taxiapp/firebase_options.dart';
 import 'constants/theme.dart';
+import 'package:channel_talk_flutter/channel_talk_flutter.dart';
 
 late AndroidNotificationChannel channel;
 late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
@@ -72,6 +74,19 @@ void main() async {
     provisional: true,
     sound: true,
   );
+  await FcmToken().init();
+
+  await ChannelTalk.boot(
+      pluginKey: '0abc4b50-9e66-4b45-b910-eb654a481f08', // Required
+      memberHash: FcmToken().fcmToken, // Required
+      language: Language.korean,
+      appearance: Appearance.light,
+      channelButtonOption: ChannelButtonOption(
+          position: ChannelButtonPosition.right, xMargin: 16, yMargin: 80));
+
+  await ChannelTalk.initPushToken(deviceToken: FcmToken().fcmToken);
+
+  await ChannelTalk.showChannelButton();
 
   await RemoteConfigController().init();
 

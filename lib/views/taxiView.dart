@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:channel_talk_flutter/channel_talk_flutter.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
@@ -523,6 +524,14 @@ class TaxiView extends HookWidget {
                             AndroidOverScrollMode.OVER_SCROLL_NEVER),
                     ios: IOSInAppWebViewOptions(disallowOverScroll: true)),
                 // initialUrlRequest: URLRequest(url: Uri.parse(address)),
+                onUpdateVisitedHistory:
+                    (controller, url, androidIsReload) async {
+                  if ((url?.path ?? "").contains("chatting")) {
+                    await ChannelTalk.hideChannelButton();
+                  } else {
+                    await ChannelTalk.showChannelButton();
+                  }
+                },
                 shouldOverrideUrlLoading: (controller, navigationAction) async {
                   var newHeaders = Map<String, String>.from(
                       navigationAction.request.headers ?? {});
@@ -549,6 +558,7 @@ class TaxiView extends HookWidget {
                 },
                 onWebViewCreated: (InAppWebViewController webcontroller) async {
                   _controller.value = webcontroller;
+
                   _controller.value?.addJavaScriptHandler(
                     handlerName: "auth_update",
                     callback: (arguments) async {
