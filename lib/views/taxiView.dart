@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:channel_talk_flutter/channel_talk_flutter.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
@@ -523,6 +524,14 @@ class TaxiView extends HookWidget {
                             AndroidOverScrollMode.OVER_SCROLL_NEVER),
                     ios: IOSInAppWebViewOptions(disallowOverScroll: true)),
                 // initialUrlRequest: URLRequest(url: Uri.parse(address)),
+                onUpdateVisitedHistory:
+                    (controller, url, androidIsReload) async {
+                  if ((url?.path ?? "").contains("chatting")) {
+                    await ChannelTalk.hideChannelButton();
+                  } else {
+                    await ChannelTalk.showChannelButton();
+                  }
+                },
                 shouldOverrideUrlLoading: (controller, navigationAction) async {
                   var newHeaders = Map<String, String>.from(
                       navigationAction.request.headers ?? {});
@@ -549,16 +558,27 @@ class TaxiView extends HookWidget {
                 },
                 onWebViewCreated: (InAppWebViewController webcontroller) async {
                   _controller.value = webcontroller;
+
                   _controller.value?.addJavaScriptHandler(
                     handlerName: "auth_update",
                     callback: (arguments) async {
                       // 로그인 해제 시 로그인 State 변경
                       if (arguments == [{}]) {
                         isLogin.value = false;
+                        await ChannelTalk.updateUser(
+                          name: '',
+                          email: '',
+                          mobileNumber: '',
+                        );
                         return;
                       }
                       // 로그인 성공 시 / 기존 토큰 삭제 후 새로운 토큰 저장
                       if (!isAuthLogin.value) {
+                        await ChannelTalk.updateUser(
+                          name: arguments[0]['name'],
+                          email: arguments[0]['email'],
+                          mobileNumber: arguments[0]['mobileNumber'],
+                        );
                         if (arguments[0]['accessToken'] != null &&
                             arguments[0]['refreshToken'] != null) {
                           await Token().deleteAll();
