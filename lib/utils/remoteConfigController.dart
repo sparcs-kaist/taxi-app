@@ -1,3 +1,4 @@
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:package_info/package_info.dart';
 
@@ -51,8 +52,11 @@ class RemoteConfigController {
       "version": value.version,
       "ios_version": value.version,
     });
-
-    await remoteConfig.fetchAndActivate();
+    try {
+      await remoteConfig.fetchAndActivate();
+    } catch (e) {
+      FirebaseCrashlytics.instance.log(e.toString());
+    }
 
     this.backUrl = remoteConfig.getString("back_url");
     this.frontUrl = remoteConfig.getString("front_url");
