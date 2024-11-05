@@ -35,6 +35,17 @@ class TaxiView extends HookWidget {
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
+  //TODO: Remove this on production
+  Future<void> _requestLocationPermission() async {
+    var status = await Permission.locationWhenInUse.status;
+    if (status.isDenied) {
+      status = await Permission.locationWhenInUse.request();
+    }
+    if (!status.isGranted) {
+      Fluttertoast.showToast(msg: "위치 권한이 거부되었습니다.");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     String address = RemoteConfigController().frontUrl;
@@ -69,6 +80,12 @@ class TaxiView extends HookWidget {
     final isFcmInit = useState(false);
 
     devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+
+    //TODO: Remove this on production
+    useEffect(() {
+      _requestLocationPermission();
+      return;
+    }, []);
 
     useEffect(() {
       if (isTimerUp.value) {
@@ -620,6 +637,22 @@ class TaxiView extends HookWidget {
                     });
 
                 _controller.value?.addJavaScriptHandler(
+                    handlerName: "try_location",
+                    callback: (args) async {
+                      if (await Permission.locationWhenInUse.isGranted) {
+                        return true;
+                      } else {
+                        openAppSettings();
+                        Fluttertoast.showToast(
+                            msg: "위치 권한을 허용해주세요.",
+                            toastLength: Toast.LENGTH_SHORT,
+                            textColor: toastTextColor,
+                            backgroundColor: toastBackgroundColor);
+                        return false;
+                      }
+                    });
+
+                _controller.value?.addJavaScriptHandler(
                     handlerName: "clipboard_copy",
                     callback: (args) async {
                       if (Platform.isAndroid) {
@@ -830,12 +863,6 @@ class TaxiView extends HookWidget {
               },
               androidOnPermissionRequest:
                   (controller, origin, resources) async {
-                if (resources.contains("location")) {
-                  var status = await Permission.location.request();
-                  if (!status.isGranted) {
-                    openAppSettings();
-                  }
-                }
                 return PermissionRequestResponse(
                     resources: resources,
                     action: PermissionRequestResponseAction.GRANT);

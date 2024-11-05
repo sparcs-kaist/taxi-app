@@ -59,6 +59,7 @@ dependencies:
   http: ^1.1.0
   swipeable_tile: ^2.0.0+3
   linear_timer: ^2.0.0
+  geolocator: ^13.0.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
