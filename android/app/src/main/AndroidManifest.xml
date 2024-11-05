@@ -74,8 +74,8 @@
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="taxi_notification" />
     <provider
-        android:name="com.pichillilorenzo.flutter_inappwebview.InAppWebViewFileProvider"
-        android:authorities="${applicationId}.flutter_inappwebview.fileprovider"
+        android:name="com.pichillilorenzo.flutter_inappwebview_android.InAppWebViewFileProvider"
+        android:authorities="${applicationId}.flutter_inappwebview_android.fileprovider"
         android:exported="false"
         android:grantUriPermissions="true">
         <meta-data

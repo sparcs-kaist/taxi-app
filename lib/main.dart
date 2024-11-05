@@ -35,7 +35,7 @@ void main() async {
   };
 
   if (Platform.isAndroid) {
-    await AndroidInAppWebViewController.setWebContentsDebuggingEnabled(true);
+    await InAppWebViewController.setWebContentsDebuggingEnabled(true);
   }
   // await Future.delayed(Duration(seconds: 5));
 

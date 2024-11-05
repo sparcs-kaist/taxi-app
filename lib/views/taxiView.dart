@@ -188,7 +188,7 @@ class TaxiView extends HookWidget {
     useEffect(() {
       if (url.value != '' && _controller.value != null) {
         _controller.value!
-            .loadUrl(urlRequest: URLRequest(url: Uri.parse(url.value)))
+            .loadUrl(urlRequest: URLRequest(url: WebUri(url.value)))
             .then((value) {});
       }
     }, [LoadCount.value]);
@@ -248,7 +248,7 @@ class TaxiView extends HookWidget {
               await Token().deleteAll();
             }
             await _cookieManager.deleteCookie(
-                url: Uri.parse(RemoteConfigController().backUrl),
+                url: WebUri(RemoteConfigController().backUrl),
                 name: "connect.sid");
             isAuthLogin.value = false;
             isLogin.value = false;
@@ -499,29 +499,28 @@ class TaxiView extends HookWidget {
 
     return SafeArea(
         child: Stack(children: [
-      WillPopScope(
-          onWillPop: () =>
+      PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (_, __) =>
               _goBack(context, backCount, isAuthLogin, _controller.value),
           child: Scaffold(
             body: InAppWebView(
-                initialOptions: InAppWebViewGroupOptions(
-                    crossPlatform: InAppWebViewOptions(
-                        useShouldOverrideUrlLoading: true,
-                        applicationNameForUserAgent: "taxi-app-webview/" +
-                            (Platform.isAndroid ? "android" : "ios"),
-                        resourceCustomSchemes: [
-                          'intent',
-                          'supertoss',
-                          'uber',
-                          'tmoneyonda',
-                          'kakaotalk',
-                          'kakaot'
-                        ]),
-                    android: AndroidInAppWebViewOptions(
-                        useHybridComposition: true,
-                        overScrollMode:
-                            AndroidOverScrollMode.OVER_SCROLL_NEVER),
-                    ios: IOSInAppWebViewOptions(disallowOverScroll: true)),
+                initialSettings: InAppWebViewSettings(
+                    useShouldOverrideUrlLoading: true,
+                    applicationNameForUserAgent: "taxi-app-webview/" +
+                        (Platform.isAndroid ? "android" : "ios"),
+                    resourceCustomSchemes: [
+                      'intent',
+                      'supertoss',
+                      'uber',
+                      'tmoneyonda',
+                      'kakaotalk',
+                      'kakaot'
+                    ],
+                    useHybridComposition: true,
+                    overScrollMode: OverScrollMode.NEVER,
+                    disallowOverScroll: true),
+
                 // initialUrlRequest: URLRequest(url: Uri.parse(address)),
                 shouldOverrideUrlLoading: (controller, navigationAction) async {
                   var newHeaders = Map<String, String>.from(
@@ -587,9 +586,9 @@ class TaxiView extends HookWidget {
                           isAuthLogin.value = false;
                           await _controller.value?.loadUrl(
                               urlRequest: URLRequest(
-                                  url: Uri.parse(RemoteConfigController()
-                                      .frontUrl
-                                      .toString())));
+                                  url: WebUri(
+                                      (RemoteConfigController().frontUrl)
+                                          .toString())));
                         } catch (e) {
                           // TODO
                           Fluttertoast.showToast(
@@ -715,18 +714,17 @@ class TaxiView extends HookWidget {
                       sessionToken.value != '' &&
                       uri?.origin == Uri.parse(address).origin &&
                       (await _cookieManager.getCookie(
-                                  url: Uri.parse(
-                                      RemoteConfigController().backUrl),
+                                  url: WebUri(RemoteConfigController().backUrl),
                                   name: "connect.sid"))
                               ?.value !=
                           sessionToken.value) {
                     try {
                       await _controller.value?.stopLoading();
                       await _cookieManager.deleteCookie(
-                          url: Uri.parse(RemoteConfigController().backUrl),
+                          url: WebUri(RemoteConfigController().backUrl),
                           name: "connect.sid");
                       await _cookieManager.setCookie(
-                        url: Uri.parse(RemoteConfigController().backUrl),
+                        url: WebUri(RemoteConfigController().backUrl),
                         name: "connect.sid",
                         value: sessionToken.value,
                       );
@@ -742,15 +740,15 @@ class TaxiView extends HookWidget {
                     }
                   }
                 },
-                onLoadResourceCustomScheme: (controller, url) async {
-                  if (!['intent'].contains(url.scheme)) {
+                onLoadResourceWithCustomScheme: (controller, url) async {
+                  if (!['intent'].contains(url.url.scheme)) {
                     await controller.stopLoading();
                     if (await canLaunchUrlString(url.toString())) {
                       await launchUrlString(url.toString(),
                           mode: LaunchMode.externalApplication);
                       return;
                     }
-                    switch (url.scheme) {
+                    switch (url.url.scheme) {
                       case 'supertoss':
                         OpenStore.instance.open(
                             androidAppBundleId: "viva.republica.toss",
@@ -787,7 +785,7 @@ class TaxiView extends HookWidget {
                     return null;
                   }
                   if (Platform.isAndroid) {
-                    if (url.scheme == 'intent') {
+                    if (url.url.scheme == 'intent') {
                       try {
                         await controller.stopLoading();
                         const MethodChannel channel =
@@ -796,7 +794,7 @@ class TaxiView extends HookWidget {
                             "launchURI", url.toString());
                         if (result != null) {
                           await _controller.value?.loadUrl(
-                              urlRequest: URLRequest(url: Uri.parse(result)));
+                              urlRequest: URLRequest(url: WebUri(result)));
                         }
                       } catch (e) {
                         // TODO
@@ -810,13 +808,14 @@ class TaxiView extends HookWidget {
                   }
                   return null;
                 },
-                onLoadError: (controller, url, code, message) {
+                onReceivedError: (controller, req, err) {
                   // 될 때까지 리로드
                   if (!isLoaded.value && LoadCount.value < 10) {
                     LoadCount.value++;
                   } else if (isServerError.value == false &&
-                      code != 102 &&
-                      code != -999) {
+                      err.type != WebResourceErrorType.CANCELLED &&
+                      err.type !=
+                          WebResourceErrorType.USER_CANCELLED_AUTHENTICATION) {
                     Fluttertoast.showToast(
                         msg: "서버와의 연결에 실패했습니다.",
                         toastLength: Toast.LENGTH_SHORT,
@@ -911,7 +910,7 @@ class TaxiView extends HookWidget {
     ]));
   }
 
-  Future<bool> _goBack(
+  Future<void> _goBack(
       BuildContext context,
       ValueNotifier<bool> backCount,
       ValueNotifier<bool> isAuthLogin,
@@ -919,18 +918,15 @@ class TaxiView extends HookWidget {
     Uri? current_uri = await _controller!.getUrl();
     final address = RemoteConfigController().frontUrl;
     if (Uri.parse(address).origin != current_uri?.origin) {
-      await _controller.loadUrl(
-          urlRequest: URLRequest(url: Uri.parse(address)));
+      await _controller.loadUrl(urlRequest: URLRequest(url: WebUri(address)));
       backCount.value = false;
-      return false;
     } else if (await _controller.canGoBack() &&
         (current_uri?.path != '/') &&
         (current_uri?.path != '/home')) {
       _controller.goBack();
       backCount.value = false;
-      return false;
     } else if (backCount.value) {
-      return true;
+      Navigator.pop(context);
     } else {
       backCount.value = true;
       Fluttertoast.showToast(
@@ -939,7 +935,6 @@ class TaxiView extends HookWidget {
         textColor: toastTextColor,
         toastLength: Toast.LENGTH_SHORT,
       );
-      return false;
     }
   }
 }
