@@ -171,7 +171,7 @@ class TaxiView extends HookWidget {
           LoadCount.value += 1;
         } else {
           final _appLinks = AppLinks();
-          final Uri? uri = await _appLinks.getInitialAppLink();
+          final Uri? uri = await _appLinks.getInitialLink();
           if (uri != null) {
             final PendingDynamicLinkData? appLinkData =
                 await FirebaseDynamicLinks.instance.getDynamicLink(uri);
