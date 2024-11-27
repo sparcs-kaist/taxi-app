@@ -35,7 +35,7 @@ void main() async {
   };
 
   if (Platform.isAndroid) {
-    await AndroidInAppWebViewController.setWebContentsDebuggingEnabled(true);
+    await InAppWebViewController.setWebContentsDebuggingEnabled(true);
   }
   // await Future.delayed(Duration(seconds: 5));
 
@@ -55,25 +55,24 @@ void main() async {
 
   FirebaseMessaging.onBackgroundMessage(handleMessage);
 
-  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-    alert: false,
-    badge: false,
-    sound: false,
-  );
-
-  await Token().init();
-
-  await FirebaseMessaging.instance.requestPermission(
-    alert: true,
-    announcement: false,
-    badge: true,
-    carPlay: false,
-    criticalAlert: false,
-    provisional: true,
-    sound: true,
-  );
-
-  await RemoteConfigController().init();
+  await Future.wait([
+    FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+      alert: false,
+      badge: false,
+      sound: false,
+    ),
+    Token().init(),
+    FirebaseMessaging.instance.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: true,
+      sound: true,
+    ),
+    RemoteConfigController().init()
+  ]);
 
   runApp(MyHome());
 }
