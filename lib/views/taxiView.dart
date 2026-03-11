@@ -507,6 +507,7 @@ class TaxiView extends HookWidget {
                 initialOptions: InAppWebViewGroupOptions(
                     crossPlatform: InAppWebViewOptions(
                         useShouldOverrideUrlLoading: true,
+                        enableViewportScale: true,
                         applicationNameForUserAgent: "taxi-app-webview/" +
                             (Platform.isAndroid ? "android" : "ios"),
                         resourceCustomSchemes: [
@@ -520,7 +521,8 @@ class TaxiView extends HookWidget {
                     android: AndroidInAppWebViewOptions(
                         useHybridComposition: true,
                         overScrollMode:
-                            AndroidOverScrollMode.OVER_SCROLL_NEVER),
+                            AndroidOverScrollMode.OVER_SCROLL_NEVER,
+                        geolocationEnabled: true),
                     ios: IOSInAppWebViewOptions(disallowOverScroll: true)),
                 // initialUrlRequest: URLRequest(url: Uri.parse(address)),
                 shouldOverrideUrlLoading: (controller, navigationAction) async {
@@ -610,6 +612,22 @@ class TaxiView extends HookWidget {
                           openAppSettings();
                           Fluttertoast.showToast(
                               msg: "알림 권한을 허용해주세요.",
+                              toastLength: Toast.LENGTH_SHORT,
+                              textColor: toastTextColor,
+                              backgroundColor: toastBackgroundColor);
+                          return false;
+                        }
+                      });
+
+                  _controller.value?.addJavaScriptHandler(
+                      handlerName: "try_location",
+                      callback: (args) async {
+                        if (await Permission.locationWhenInUse.isGranted) {
+                          return true;
+                        } else {
+                          openAppSettings();
+                          Fluttertoast.showToast(
+                              msg: "위치 권한을 허용해주세요.",
                               toastLength: Toast.LENGTH_SHORT,
                               textColor: toastTextColor,
                               backgroundColor: toastBackgroundColor);
@@ -829,6 +847,23 @@ class TaxiView extends HookWidget {
                   if (!isServerError.value) {
                     isLoaded.value = true;
                   }
+                },
+                androidOnPermissionRequest:
+                    (controller, origin, resources) async {
+                  if (resources.contains("geolocation")) {
+                    var status = await Permission.location.request();
+                    if (!status.isGranted) {
+                      openAppSettings();
+                    }
+                  }
+                  return PermissionRequestResponse(
+                      resources: resources,
+                      action: PermissionRequestResponseAction.GRANT);
+                },
+                androidOnGeolocationPermissionsShowPrompt:
+                    (InAppWebViewController controller, String origin) async {
+                  return GeolocationPermissionShowPromptResponse(
+                      origin: origin, allow: true, retain: true);
                 }),
           )),
       isTimerUp.value && isLoaded.value && isFcmInit.value
