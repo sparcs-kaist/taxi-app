@@ -78,7 +78,7 @@ ThemeData taxiTheme() {
     primaryColor: const Color(0xFF6E3678),
 
     //dialog 테마
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       backgroundColor: Colors.white,
       actionsPadding: const EdgeInsets.all(10.0),

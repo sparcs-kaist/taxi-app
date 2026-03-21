@@ -33,8 +33,11 @@ Future<void> handleMessage(RemoteMessage message) async {
   var details =
       NotificationDetails(android: androidNotiDetails, iOS: iOSNotiDetails);
 
-  flutterLocalNotificationsPlugin.show(Random().nextInt(100000000),
-      message.data['title'], message.data['body'], details,
+  flutterLocalNotificationsPlugin.show(
+      id: Random().nextInt(100000000),
+      title: message.data['title'],
+      body: message.data['body'],
+      notificationDetails: details,
       payload: message.data['url']);
 }
 
