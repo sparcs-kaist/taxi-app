@@ -11,6 +11,7 @@ subprojects {
     project.afterEvaluate { sub ->
         if (sub.hasProperty('android')) {
             sub.android {
+                compileSdkVersion 36
                 if (namespace == null) {
                     namespace sub.group
                 }
