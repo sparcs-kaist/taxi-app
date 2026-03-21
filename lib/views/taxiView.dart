@@ -137,7 +137,7 @@ class TaxiView extends HookWidget {
       });
 
       flutterLocalNotificationsPlugin.initialize(
-        initializationSettings,
+        settings: initializationSettings,
         onDidReceiveNotificationResponse: (details) {
           if (details.payload != null) {
             url.value = RemoteConfigController().frontUrl + details.payload!;
@@ -171,7 +171,7 @@ class TaxiView extends HookWidget {
           LoadCount.value += 1;
         } else {
           final _appLinks = AppLinks();
-          final Uri? uri = await _appLinks.getInitialAppLink();
+          final Uri? uri = await _appLinks.getInitialLink();
           if (uri != null) {
             final PendingDynamicLinkData? appLinkData =
                 await FirebaseDynamicLinks.instance.getDynamicLink(uri);
@@ -188,7 +188,7 @@ class TaxiView extends HookWidget {
     useEffect(() {
       if (url.value != '' && _controller.value != null) {
         _controller.value!
-            .loadUrl(urlRequest: URLRequest(url: Uri.parse(url.value)))
+            .loadUrl(urlRequest: URLRequest(url: WebUri(url.value)))
             .then((value) {});
       }
     }, [LoadCount.value]);
@@ -248,7 +248,7 @@ class TaxiView extends HookWidget {
               await Token().deleteAll();
             }
             await _cookieManager.deleteCookie(
-                url: Uri.parse(RemoteConfigController().backUrl),
+                url: WebUri(RemoteConfigController().backUrl),
                 name: "connect.sid");
             isAuthLogin.value = false;
             isLogin.value = false;
@@ -587,7 +587,7 @@ class TaxiView extends HookWidget {
                           isAuthLogin.value = false;
                           await _controller.value?.loadUrl(
                               urlRequest: URLRequest(
-                                  url: Uri.parse(RemoteConfigController()
+                                  url: WebUri(RemoteConfigController()
                                       .frontUrl
                                       .toString())));
                         } catch (e) {
@@ -715,7 +715,7 @@ class TaxiView extends HookWidget {
                       sessionToken.value != '' &&
                       uri?.origin == Uri.parse(address).origin &&
                       (await _cookieManager.getCookie(
-                                  url: Uri.parse(
+                                  url: WebUri(
                                       RemoteConfigController().backUrl),
                                   name: "connect.sid"))
                               ?.value !=
@@ -723,10 +723,10 @@ class TaxiView extends HookWidget {
                     try {
                       await _controller.value?.stopLoading();
                       await _cookieManager.deleteCookie(
-                          url: Uri.parse(RemoteConfigController().backUrl),
+                          url: WebUri(RemoteConfigController().backUrl),
                           name: "connect.sid");
                       await _cookieManager.setCookie(
-                        url: Uri.parse(RemoteConfigController().backUrl),
+                        url: WebUri(RemoteConfigController().backUrl),
                         name: "connect.sid",
                         value: sessionToken.value,
                       );
@@ -796,7 +796,7 @@ class TaxiView extends HookWidget {
                             "launchURI", url.toString());
                         if (result != null) {
                           await _controller.value?.loadUrl(
-                              urlRequest: URLRequest(url: Uri.parse(result)));
+                              urlRequest: URLRequest(url: WebUri(result)));
                         }
                       } catch (e) {
                         // TODO
@@ -920,7 +920,7 @@ class TaxiView extends HookWidget {
     final address = RemoteConfigController().frontUrl;
     if (Uri.parse(address).origin != current_uri?.origin) {
       await _controller.loadUrl(
-          urlRequest: URLRequest(url: Uri.parse(address)));
+          urlRequest: URLRequest(url: WebUri(address)));
       backCount.value = false;
       return false;
     } else if (await _controller.canGoBack() &&
