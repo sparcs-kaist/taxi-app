@@ -1,4 +1,3 @@
-
 allprojects {
     repositories {
         google()
@@ -9,6 +8,15 @@ allprojects {
 rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
+    project.afterEvaluate { sub ->
+        if (sub.hasProperty('android')) {
+            sub.android {
+                if (namespace == null) {
+                    namespace sub.group
+                }
+            }
+        }
+    }
 }
 subprojects {
     project.evaluationDependsOn(':app')
@@ -16,16 +24,4 @@ subprojects {
 
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
-}
-
-subprojects {
-    afterEvaluate { project ->
-        if (project.hasProperty('android')) {
-            project.android {
-                if (namespace == null) {
-                    namespace project.group
-                }
-            }
-        }
-    }
 }
