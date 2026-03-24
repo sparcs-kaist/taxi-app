@@ -155,6 +155,7 @@ class TaxiView extends HookWidget {
             Uri new_uri = Uri.parse(address)
                 .replace(path: details.notificationResponse!.payload!);
             url.value = new_uri.toString();
+
             LoadCount.value += 1;
           }
         }
