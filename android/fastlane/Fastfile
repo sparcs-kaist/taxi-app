@@ -1,38 +1,43 @@
 # This file contains the fastlane.tools configuration
 # You can find the documentation at https://docs.fastlane.tools
-#
-# For a list of all available actions, check out
-#
-#     https://docs.fastlane.tools/actions
-#
-# For a list of all available plugins, check out
-#
-#     https://docs.fastlane.tools/plugins/available-plugins
-#
-
-# Uncomment the line if you want fastlane to automatically update itself
-# update_fastlane
 
 default_platform(:android)
 
 platform :android do
-  desc "Runs all the tests"
-  lane :test do
-    gradle(task: "test")
-  end
+  desc "Build an app bundle and upload it to Google Play"
+  desc "Track is read from PLAY_TRACK (default: internal)"
+  lane :release do
+    track = ENV.fetch("PLAY_TRACK", "internal")
 
-  desc "Submit a new Beta Build to Crashlytics Beta"
-  lane :beta do
-    gradle(task: "clean assembleRelease")
-    crashlytics
-  
-    # sh "your_script.sh"
-    # You can also use other beta testing services here
-  end
+    # versionCode: one above the highest code already on any Play track,
+    # so it never has to be bumped by hand in pubspec.yaml.
+    codes = %w[internal alpha beta production].flat_map do |t|
+      google_play_track_version_codes(track: t)
+    rescue StandardError => e
+      UI.important("Could not read version codes for #{t}: #{e.message}")
+      []
+    end
+    UI.user_error!("Could not read any version codes from Google Play") if codes.empty?
+    version_code = codes.max + 1
 
-  desc "Deploy a new version to the Google Play"
-  lane :deploy do
-    gradle(task: "clean assembleRelease")
-    upload_to_play_store
+    # versionName: from the v* tag if present, otherwise pubspec.yaml.
+    ref = ENV["GITHUB_REF_NAME"].to_s
+    version_name = ref.start_with?("v") ? ref.delete_prefix("v") : nil
+
+    args = ["flutter build appbundle --release", "--build-number=#{version_code}"]
+    args << "--build-name=#{version_name}" if version_name
+    UI.message("Building versionCode #{version_code}, versionName #{version_name || '(pubspec)'}")
+    sh("cd ../.. && #{args.join(' ')}")
+
+    upload_to_play_store(
+      track: track,
+      aab: File.expand_path("../../build/app/outputs/bundle/release/app-release.aab", __dir__),
+      # Production uploads stay as a draft so a person rolls them out from Play Console.
+      release_status: track == "production" ? "draft" : "completed",
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
   end
 end
