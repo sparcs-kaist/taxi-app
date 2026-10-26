@@ -40,13 +40,12 @@ dependencies:
   firebase_messaging: ^15.2.10
   flutter_local_notifications: ^21.0.0
   firebase_core: ^3.15.2
-  flutter_web_auth: ^0.6.0
   dio_cookie_manager: ^3.4.0
   google_fonts: ^8.0.2
   fluttertoast: ^9.0.0
   cookie_jar: ^4.0.9
   flutter_dotenv: ^6.0.0
-  package_info: ^2.0.2
+  package_info_plus: ^10.2.2
   firebase_remote_config: ^5.5.0
   open_store: ^0.5.0
   permission_handler: ^12.0.1
@@ -54,7 +53,7 @@ dependencies:
   app_links: ^7.0.0
   firebase_crashlytics: ^4.3.10
   url_launcher: ^6.1.14
-  social_share: ^2.3.1
+  appinio_social_share: ^0.3.3
   path_provider: ^2.1.1
   http: ^1.1.0
   swipeable_tile: ^2.0.0+3

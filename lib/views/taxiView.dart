@@ -8,10 +8,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:package_info/package_info.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:social_share/social_share.dart';
+import 'package:appinio_social_share/appinio_social_share.dart';
 import 'package:taxiapp/constants/theme.dart';
 import 'package:taxiapp/utils/fcmToken.dart';
 import 'package:taxiapp/utils/pushHandler.dart';
@@ -694,10 +694,18 @@ class TaxiView extends HookWidget {
                               .writeAsBytes(backgroundResponse.data);
                           await stickerFile.writeAsBytes(stickerResponse.data);
 
-                          await SocialShare.shareInstagramStory(
-                              appId: dotenv.get("FACEBOOK_APPID"),
-                              imagePath: stickerFile.path,
-                              backgroundResourcePath: backgroundFile.path);
+                          final socialShare = AppinioSocialShare();
+                          if (Platform.isAndroid) {
+                            await socialShare.android.shareToInstagramStory(
+                                dotenv.get("FACEBOOK_APPID"),
+                                stickerImage: stickerFile.path,
+                                backgroundImage: backgroundFile.path);
+                          } else {
+                            await socialShare.iOS.shareToInstagramStory(
+                                dotenv.get("FACEBOOK_APPID"),
+                                stickerImage: stickerFile.path,
+                                backgroundImage: backgroundFile.path);
+                          }
                           return true;
                         } catch (e) {
                           Fluttertoast.showToast(
