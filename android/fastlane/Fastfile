@@ -5,9 +5,9 @@ default_platform(:android)
 
 platform :android do
   desc "Build an app bundle and upload it to Google Play"
-  desc "Track is read from PLAY_TRACK (default: internal)"
+  desc "Track is read from PLAY_TRACK (default: alpha)"
   lane :release do
-    track = ENV.fetch("PLAY_TRACK", "internal")
+    track = ENV.fetch("PLAY_TRACK", "alpha")
 
     # versionCode: one above the highest code already on any Play track,
     # so it never has to be bumped by hand in pubspec.yaml.

@@ -8,8 +8,8 @@ on:
       track:
         description: "Google Play track"
         type: choice
-        options: [internal, alpha, beta, production]
-        default: internal
+        options: [alpha, internal, beta, production]
+        default: alpha
 
 env:
   FLUTTER_VERSION: "3"
@@ -93,5 +93,5 @@ jobs:
       - name: Build and upload to Google Play
         working-directory: android
         env:
-          PLAY_TRACK: ${{ inputs.track || 'internal' }}
+          PLAY_TRACK: ${{ inputs.track || 'alpha' }}
         run: bundle exec fastlane release
