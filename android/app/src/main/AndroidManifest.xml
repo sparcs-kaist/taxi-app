@@ -7,7 +7,10 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />  
+    <!-- Not used (no notification sets fullScreenIntent). Removed so Play
+         doesn't require a full-screen intent declaration; tools:node also strips
+         it if a library merges it in. -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" tools:node="remove" />
     
     <queries>
         <package android:name="com.kakao.talk" />
