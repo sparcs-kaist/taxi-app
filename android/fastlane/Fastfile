@@ -9,16 +9,10 @@ platform :android do
   lane :release do
     track = ENV.fetch("PLAY_TRACK", "alpha")
 
-    # versionCode: one above the highest code already on any Play track,
-    # so it never has to be bumped by hand in pubspec.yaml.
-    codes = %w[internal alpha beta production].flat_map do |t|
-      google_play_track_version_codes(track: t)
-    rescue StandardError => e
-      UI.important("Could not read version codes for #{t}: #{e.message}")
-      []
-    end
-    UI.user_error!("Could not read any version codes from Google Play") if codes.empty?
-    version_code = codes.max + 1
+    # versionCode: minutes since the Unix epoch, so it always increases and
+    # never has to be bumped by hand. Stays under Play's 2100000000 limit for
+    # thousands of years.
+    version_code = Time.now.to_i / 60
 
     # versionName: from the v* tag if present, otherwise pubspec.yaml.
     ref = ENV["GITHUB_REF_NAME"].to_s
