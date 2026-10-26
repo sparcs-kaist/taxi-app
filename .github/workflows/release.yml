@@ -5,11 +5,6 @@ on:
       - "v*"
   workflow_dispatch:
     inputs:
-      track:
-        description: "Google Play track"
-        type: choice
-        options: [alpha, internal, beta, production]
-        default: alpha
       version_name:
         description: "Version name, e.g. 1.0.5 (empty: use pubspec.yaml)"
         type: string
@@ -53,7 +48,7 @@ jobs:
         run: cd ios && fastlane release type:github
         timeout-minutes: 40
   release-android:
-    name: Build and release Android app
+    name: Build Android app bundle
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -65,11 +60,6 @@ jobs:
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.3"
-          bundler-cache: true
-          working-directory: android
       - name: Create .env
         run: |
           echo "FRONT_ADDRESS=https://taxi.sparcs.org" > .env
@@ -78,14 +68,12 @@ jobs:
         env:
           ANDROID_KEY_STORE: ${{ secrets.ANDROID_KEY_STORE }}
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
-          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.ANDROID_UPLOAD_GOOGLE_ACOUNT }}
           UPLOAD_KEY_ALIAS: ${{ secrets.UPLOAD_KEY_ALIAS }}
           UPLOAD_KEY_PASSWORD: ${{ secrets.UPLOAD_KEY_PASSWORD }}
           UPLOAD_STORE_PASSWORD: ${{ secrets.UPLOAD_STORE_PASSWORD }}
         run: |
           printf '%s' "$ANDROID_KEY_STORE" | base64 --decode > android/app/upload.keystore
           printf '%s' "$GOOGLE_SERVICES_JSON" | base64 --decode > android/app/google-services.json
-          printf '%s' "$PLAY_SERVICE_ACCOUNT_JSON" > android/taxi-account.json
           {
             echo "UPLOAD_STORE_FILE=upload.keystore"
             echo "UPLOAD_STORE_PASSWORD=$UPLOAD_STORE_PASSWORD"
@@ -94,9 +82,36 @@ jobs:
           } > android/key.properties
       - name: Install packages
         run: flutter pub get
-      - name: Build and upload to Google Play
-        working-directory: android
+      - name: Build app bundle
+        id: build
         env:
-          PLAY_TRACK: ${{ inputs.track || 'alpha' }}
           VERSION_NAME: ${{ inputs.version_name }}
-        run: bundle exec fastlane release
+        run: |
+          # versionCode: minutes since the Unix epoch, so it always increases and
+          # never has to be bumped by hand.
+          version_code=$(( $(date +%s) / 60 ))
+
+          # versionName: manual run input, else the v* tag, else pubspec.yaml.
+          version_name="${VERSION_NAME// /}"
+          if [ -z "$version_name" ] && [[ "$GITHUB_REF_NAME" == v* ]]; then
+            version_name="${GITHUB_REF_NAME#v}"
+          fi
+          if [ -z "$version_name" ]; then
+            version_name=$(sed -n 's/^version: *\([^+]*\).*/\1/p' pubspec.yaml)
+          fi
+          if ! [[ "$version_name" =~ ^[0-9]+(\.[0-9]+)*$ ]]; then
+            echo "::error::Invalid version name '$version_name', expected something like 1.0.5"
+            exit 1
+          fi
+
+          echo "Building versionName $version_name, versionCode $version_code"
+          flutter build appbundle --release --build-name="$version_name" --build-number="$version_code"
+          echo "artifact=taxi-$version_name-$version_code" >> "$GITHUB_OUTPUT"
+          echo "### Android: $version_name ($version_code)" >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload app bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.build.outputs.artifact }}
+          path: build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 14
